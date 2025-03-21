@@ -17,6 +17,9 @@ option(LIBIGL_WITH_PNG                     "Use PNG"             ON)
 
 # add_definitions ( -DIGL_VIEWER_VIEWER_QUIET=1 ) # this basically shuts down the usage commands in the terminal 
 
+# Add the autodiff subdirectory to the include path
+include_directories(${CMAKE_SOURCE_DIR}/autodiff)
+
 message(STATUS ${CMAKE_MODULE_PATH})
 include(libigl)
 
