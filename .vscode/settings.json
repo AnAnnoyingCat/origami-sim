@@ -90,6 +90,10 @@
 		"typeindex": "cpp",
 		"typeinfo": "cpp",
 		"valarray": "cpp",
-		"variant": "cpp"
-	}
+		"variant": "cpp",
+		"cholesky": "cpp",
+		"geometry": "cpp"
+	},
+	"workbench.editor.empty.hint": "hidden",
+	"inlineChat.lineNaturalLanguageHint": false
 }
