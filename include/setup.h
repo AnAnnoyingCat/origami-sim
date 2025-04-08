@@ -11,5 +11,7 @@
  * @param F 	Faces of simulation mesh
  * @param E 	Edges of simulation mesh
  * @param l0 	Rest lengths of all springs
+ * @param k 	Per spring stiffness constant calculated based on l0
+ * @param EA 	E is young's modulus and A is the cross-sectional area of the beam
  */
-void setup(Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::VectorXd &x0, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXi &E, Eigen::VectorXd &l0);
+void setup(Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::VectorXd &x0, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXi &E, Eigen::VectorXd &l0, Eigen::VectorXd &k, double EA);

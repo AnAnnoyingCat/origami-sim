@@ -1,4 +1,5 @@
 #include <Eigen/Dense>
+
 /**
  * @brief Function to update the global vertex positions V for the Viewer to display
  * 
