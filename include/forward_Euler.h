@@ -8,23 +8,15 @@
  * @param q 				generalized coordinates
  * @param qdot 				generalized velocities
  * @param dt 				time step size
- * @param axial_force 		axial_force(result, q) returns the axial forces in the system
- * @param tmp_force_axial 	scratch space to store the axial force in (reserved for performance reasons)
- * @param tmp_force_crease  scratch space to store the crease force in
- * @param tmp_force_face	scratch space to store the face force in
+ * @param force 			force(result, q, qdot) returns all the forces in the system
  * @param tmp_force			scratch space to store the total force in
  */
-template <typename AXIAL_FORCE>
-inline void forward_euler(Eigen::VectorXd &q, Eigen::VectorXd &qdot, double dt, AXIAL_FORCE &axial_force, Eigen::VectorXd &tmp_force_axial, Eigen::VectorXd &tmp_force_crease, Eigen::VectorXd &tmp_force_face, Eigen::VectorXd tmp_force){
-	// Begin by calculating all the forces
-	axial_force(tmp_force_axial, q);
+template <typename FORCE>
+inline void forward_euler(Eigen::VectorXd &q, Eigen::VectorXd &qdot, double dt, FORCE &force, Eigen::VectorXd tmp_force){
+	// Calculate all the forces
+	force(tmp_force, q, qdot);
 
-	// Crease forces
-
-	// Face force
-
-	tmp_force = axial_force;
-
+	// Perform forward Euler update. May be replaced by another scheme later.
 	qdot += tmp_force * dt;
 	q += qdot * dt;
 }

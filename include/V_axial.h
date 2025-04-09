@@ -9,4 +9,4 @@
  * @param l0 		Undeformed length of the (spring)edge
  * @param stiffness Stiffness constant for this (spring)edge
  */
-void V_spring_particle_particle(double &V, Eigen::Ref<const Eigen::Vector3d> q0,  Eigen::Ref<const Eigen::Vector3d> q1, double l0, double stiffness);
+void V_axial(double &V, Eigen::Ref<const Eigen::Vector3d> q0,  Eigen::Ref<const Eigen::Vector3d> q1, double l0, double stiffness);

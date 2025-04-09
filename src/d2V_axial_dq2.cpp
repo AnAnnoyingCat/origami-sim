@@ -1,4 +1,4 @@
-#include <d²V_axial_dq².h>
+#include <d2V_axial_dq2.h>
 
 void d2V_axial_dq2(Eigen::Ref<Eigen::Matrix<double, 6, 6>> H, Eigen::Ref<const Eigen::Vector3d> q0, Eigen::Ref<const Eigen::Vector3d> q1, double l0, double stiffness){
 	Eigen::Vector3d q = q1 - q0;
