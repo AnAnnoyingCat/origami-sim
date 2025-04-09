@@ -13,7 +13,7 @@ void assemble_edge_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> 
 
 		Eigen::Matrix<double, 6, 1> force;
 		dV_axial_dq(force, q0, q1, l0(currEdge), k(currEdge));
-		f.segment<3>(3 * v0) -= force.segment<3>(0);
-		f.segment<3>(3 * v1) -= force.segment<3>(3);
+		f.segment<3>(3 * v0) += force.segment<3>(0);
+		f.segment<3>(3 * v1) += force.segment<3>(3);
 	}
 }

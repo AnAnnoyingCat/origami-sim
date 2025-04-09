@@ -25,6 +25,7 @@ void setup(Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::VectorXd &x0, Eigen
 	
 	// Basic Edge Lengths and stiffnesses
 	l0.resize(E.rows());
+	k.resize(E.rows());
 	for (int i = 0; i < E.rows(); i++){
 		int v0 = E(i, 0);
 		int v1 = E(i, 1);
