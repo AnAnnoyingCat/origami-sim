@@ -14,4 +14,4 @@
  * @param k 	Per spring stiffness constant calculated based on l0
  * @param EA 	E is young's modulus and A is the cross-sectional area of the beam
  */
-void setup(Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::VectorXd &x0, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXi &E, Eigen::VectorXd &l0, Eigen::VectorXd &k, double EA);
+void setup(Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::VectorXd &x0, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXi &E, Eigen::VectorXd edge_theta, Eigen::VectorXd &l0, Eigen::VectorXd &k, double EA, std::vector<std::array<int, 4>> edge_adjacent_vertices);

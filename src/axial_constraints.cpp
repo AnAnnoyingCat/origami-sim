@@ -1,6 +1,6 @@
-#include "dV_axial_dq.h"
+#include "axial_constraints.h"
 
-void dV_axial_dq(Eigen::Ref<Eigen::Matrix<double, 6, 1>> f, Eigen::Ref<const Eigen::Vector3d> q0, Eigen::Ref<const Eigen::Vector3d> q1, double l0, double stiffness){
+void F_axial(Eigen::Ref<Eigen::Matrix<double, 6, 1>> f, Eigen::Ref<const Eigen::Vector3d> q0, Eigen::Ref<const Eigen::Vector3d> q1, double l0, double stiffness){
 	Eigen::Vector3d q = q1 - q0;
 	double len = q.norm();
 

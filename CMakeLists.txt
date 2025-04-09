@@ -17,8 +17,8 @@ option(LIBIGL_WITH_OPENGL_GLFW_IMGUI       "Use IMGUI"           ON)
 option(LIBIGL_WITH_PNG                     "Use PNG"             ON)
 
 # include directories
-include_directories(${CMAKE_SOURCE_DIR}/autodiff)
 include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_SOURCE_DIR}/external/include)
 
 message(STATUS ${CMAKE_MODULE_PATH})
 include(libigl)

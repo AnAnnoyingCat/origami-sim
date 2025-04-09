@@ -1,6 +1,6 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
-#include <dV_axial_dq.h>
+#include <axial_constraints.h>
 
 /**
  * @brief Calculate the size 3*n vector of forces acting on each vertex
