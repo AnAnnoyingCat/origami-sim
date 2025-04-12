@@ -125,7 +125,6 @@ void simulate(){
 
         // Next time step
         t += dt;
-        simulating = false;
         // Small delay to make the animation visible
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }

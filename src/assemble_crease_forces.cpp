@@ -8,7 +8,6 @@ void assemble_crease_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd
 	for (int currCrease = 0; currCrease < edge_adjacent_vertices.size(); currCrease++){
 		// Check if current edge is a border edge
 		if (edge_adjacent_vertices[currCrease][0] == -1){
-			std::cout << "ignoring border edge" << std::endl;
 			continue;
 		}
 
@@ -18,11 +17,6 @@ void assemble_crease_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd
 		int v_left = edge_adjacent_vertices[currCrease][1];
 		int v_begin = edge_adjacent_vertices[currCrease][2];
 		int v_end = edge_adjacent_vertices[currCrease][3];
-		std::cout << "calculating edge " << currCrease << std::endl;
-		std::cout << "Edge " << currCrease 
-          << " k_crease size: " << k_crease.size() 
-          << " theta size: " << curr_theta.size() 
-          << std::endl;
 
 		Eigen::Vector3d q1 = q.segment<3>(3 * v_right);
 		Eigen::Vector3d q2 = q.segment<3>(3 * v_left);
@@ -30,7 +24,6 @@ void assemble_crease_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd
 		Eigen::Vector3d q4 = q.segment<3>(3 * v_end);
 
 		F_crease(force, q1, q2, q3, q4, k_crease(currCrease), curr_theta(currCrease));
-		std::cout << "this edge's target angle is " << curr_theta(currCrease) << ", stiffness is: " << k_crease(currCrease) << ", and the resulting force is: " << force << std::endl;
 		f.segment<3>(3 * v_right) += force.segment<3>(0);
 		f.segment<3>(3 * v_left) += force.segment<3>(3);
 		f.segment<3>(3 * v_begin) += force.segment<3>(6);
