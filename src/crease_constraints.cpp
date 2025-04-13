@@ -20,6 +20,9 @@ void F_crease(Eigen::Ref<Eigen::Matrix<double, 12, 1>> f, Eigen::Ref<const Eigen
 	getAngle(alpha3_42, q3, q4, q2);
 	cot(alpha3_42);
 
+	std::cout << "n1: " << n1.transpose() << std::endl;
+	std::cout << "n2: " << n2.transpose() << std::endl;
+
 	// Calculate current fold angle theta 
     Eigen::Vector3d crease_dir = (q4 - q3).normalized();
     double cos_phi = n1.dot(n2);
@@ -30,19 +33,20 @@ void F_crease(Eigen::Ref<Eigen::Matrix<double, 12, 1>> f, Eigen::Ref<const Eigen
 	Eigen::Vector3d n1h1 = n1 / h1;
 	Eigen::Vector3d n2h2 = n2 / h2;
 	
-	double k_theta_targettheta = -k_crease * (current_theta - theta_target);
+	double kdtheta = -k_crease * (current_theta - theta_target);
+	std::cout << "thetathingy: " << kdtheta << std::endl;
 
 	// dθ/dp1
-	f.segment<3>(0) = k_theta_targettheta * n1 / h1;
+	f.segment<3>(0) = kdtheta * n1 / h1;
 
 	// dθ/dp2
-	f.segment<3>(3) = k_theta_targettheta * n2 / h2;
+	f.segment<3>(3) = kdtheta * n2 / h2;
 	
 	// dθ/dp3
-	f.segment<3>(6) = k_theta_targettheta * ((-alpha4_31 / (alpha3_14 + alpha4_31)) * n1h1 + (-alpha4_23 / (alpha3_42 + alpha4_23)) * n2h2);
+	f.segment<3>(6) = kdtheta * ((-alpha4_31 / (alpha3_14 + alpha4_31)) * n1h1 + (-alpha4_23 / (alpha3_42 + alpha4_23)) * n2h2);
 
 	// dθ/dp4
-	f.segment<3>(9) = k_theta_targettheta * ((-alpha3_14 / (alpha3_14 + alpha4_31)) * n1h1 + (-alpha3_42 / (alpha3_42 + alpha4_23)) * n2h2);
+	f.segment<3>(9) = kdtheta * ((-alpha3_14 / (alpha3_14 + alpha4_31)) * n1h1 + (-alpha3_42 / (alpha3_42 + alpha4_23)) * n2h2);\
 }
 
 /// Returns the angle at q0 between q1 (RIGHT) and q2 (LEFT) in alpha

@@ -1,8 +1,6 @@
-#include <iostream>
-#include <Eigen/Dense>
 #include <setup.h>
 
-void setup(Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::VectorXd &x0, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXi &E, Eigen::VectorXd& edge_theta, Eigen::VectorXd &l0, Eigen::VectorXd &k_axial, Eigen::VectorXd& k_crease, double& EA, double& k_fold, double& k_facet, std::vector<std::array<int, 4>>& edge_adjacent_vertices){
+void setup(Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::VectorXd &x0, Eigen::SparseMatrix<double>& P, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXi &E, Eigen::VectorXd& edge_theta, Eigen::VectorXd &l0, Eigen::VectorXd &k_axial, Eigen::VectorXd& k_crease, double& EA, double& k_fold, double& k_facet, std::vector<std::array<int, 4>>& edge_adjacent_vertices){
 	// Initial mesh (a square with diagonals)
     V.resize(4, 3);
     V << 0, 0, 0,
@@ -25,7 +23,8 @@ void setup(Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::VectorXd &x0, Eigen
 	
 	// Diagonal should be folded to 60 degrees
 	edge_theta.resize(5);
-	edge_theta << 0, 0, 0, 0, 60;
+	edge_theta << 0, 0, 0, 0, 60.0 * M_PI / 180;
+	std::cout << "theta is: " << edge_theta << std::endl;
 
 	//Type of each edge. "B" = Border, "M" = Mountain, "V" = Valley, "F" = Flat / Facet
 	std::vector<std::string> edge_type;
@@ -71,9 +70,38 @@ void setup(Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::VectorXd &x0, Eigen
 	q = Eigen::Map<Eigen::VectorXd>(Vt.data(), Vt.rows() * Vt.cols());
 	qdot.setZero();
 
-	// Specify which vertices are fixed in space
-	x0.resize(2);
-	x0 << 1, 2;
+	// Specify which vertices are fixed in space. fixedVerts(i) == 1 <=> Vertex i is fixed in space
+	Eigen::VectorXd fixedVerts;
+	fixedVerts.resize(4);
+	fixedVerts << 0, 1, 1, 0;
+
+	// Create the projection matrix P 
+	std::vector<Eigen::Triplet<double>> triplets;
+	triplets.resize(3 * fixedVerts.size());
+
+	int fixedCnt = 0;
+	int tripletCnt = 0;
+	for (int i = 0; i < q.size() / 3; i++){
+		if (fixedVerts(i) == 0){
+			// Current position is not fixed
+			int base = 3 * i;
+			triplets[tripletCnt++] = {base, base, 1.0};
+			triplets[tripletCnt++] = {base + 1, base + 1, 1.0};
+			triplets[tripletCnt++] = {base + 2, base + 2, 1.0};
+			fixedCnt++;
+		}
+	}
+
+	P.resize(q.size(), q.size());
+	P.setFromTriplets(triplets.begin(), triplets.end());
+
+	// Copied from the assignment a2
+	x0 = q - P.transpose()*P*q;
+	//correct q and qdot so they are the right size
+    q = P*q;
+    qdot = P*qdot;
+
+
 
 	// Add the edge adjacent vertices, used in the calculation for the crease constraints
 	edge_adjacent_vertices.resize(5);

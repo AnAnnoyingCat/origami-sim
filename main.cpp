@@ -19,9 +19,12 @@
 
 // Simulation state
 bool simulating = true;
-Eigen::VectorXd q;          // Generalized Vertex Coordinates, size 3*x vector
-Eigen::VectorXd qdot;       // Generalized Vertex Velocities
-Eigen::VectorXd x0;         // Fixed Point Constraints
+Eigen::VectorXd q;                  // Generalized Vertex Coordinates, size 3*x vector
+Eigen::VectorXd qdot;               // Generalized Vertex Velocities
+Eigen::SparseMatrix<double> M;      // Sparse Mass Matrix.
+Eigen::SparseMatrix<double> P;      // Fixed Point Constraints
+Eigen::VectorXd x0;                 // Fixed vertex indices
+
 Eigen::MatrixXd V;          // Vertices of the CP, nx3 matrix
 Eigen::MatrixXi F;          // Faces of the CP, mx3 matrix
 Eigen::MatrixXi E;          // Edges of the CP (Springs), ex2 matrix
@@ -30,17 +33,18 @@ Eigen::VectorXd curr_theta; // Current Target fold angle for each edge (CURRENTL
 Eigen::VectorXd l0;         // Original length of the Edges, size e vector
 Eigen::VectorXd k_axial;    // Per edge stiffness constant
 Eigen::VectorXd k_crease;   // Per crease stiffness constant
-Eigen::SparseMatrix<double> M;                          // Sparse Mass Matrix.
+
 std::vector<std::array<int, 4>> edge_adjacent_vertices; // For each edge, stores the four vertices making up the two triangles which meet at the edge. The order is: Right vertex, Left Vertex, Start Vertex, End Vertex. It is {-1, -1, -1, -1} for border edges
 
-double yM = 1.0;            // Normalized Young's modulus
-double csa = 1e3;           // Scaled cross-sectional area (Both used to calculate per axis stiffness)
-double EA = yM * csa;       // Axial stiffness parameter, used in calculating axial stiffness
-double k_fold = 1e2;         // Stiffness for a mountain or valley crease (Should be much smaller than the axial stiffness)
-double k_facet = 1e2;        // Stiffness for a facet crease
+
 double t = 0;               // Simulation Time
-double dt = 0.001;          // Time Step
+double dt = 0.0002;          // Time Step
 double vertexMass = 1;      // Per vertex mass. Currently constant
+double yM = 1.0;            // Normalized Young's modulus
+double csa = 1e4;           // Scaled cross-sectional area (Both used to calculate per axis stiffness)
+double EA = yM * csa;       // Axial stiffness parameter, used in calculating axial stiffness
+double k_fold = 1e2;        // Stiffness for a mountain or valley crease (Should be much smaller than the axial stiffness)
+double k_facet = 1e2;       // Stiffness for a facet crease
 
 // Working memory for integrator
 Eigen::SparseMatrix<double> tmp_stiffness;
@@ -50,7 +54,7 @@ Eigen::VectorXd tmp_force;
 igl::opengl::glfw::Viewer* viewer_ptr = nullptr;
 
 // Debug flags
-const bool PRINT_FORCE_INFO = false;
+const bool PRINT_FORCE_INFO = true;
 
 /// @brief Prints to console the total energy of the system - should be constant with no new energy introduced
 void print_energy_status(){
@@ -61,7 +65,7 @@ void print_energy_status(){
         
         // Calculate per vertex kinetic energy
         for (int p = 0; p < V.rows(); p++) {
-            T_vert(T_vertex, qdot.segment<3>(3 * p), vertexMass);
+            T_vert(T_vertex, (P.transpose() * qdot).segment<3>(3 * p), vertexMass);
 
             KE += T_vertex;
         }
@@ -71,7 +75,7 @@ void print_energy_status(){
             int v0 = E(p, 0);
             int v1 = E(p, 1);
 
-            V_axial(V_edge, q.segment<3>(3 * v0), q.segment<3>(3 * v1), l0(p), k_axial(p));
+            V_axial(V_edge, (P.transpose() * q + x0).segment<3>(3 * v0), (P.transpose() * q + x0).segment<3>(3 * v1), l0(p), k_axial(p));
 
             PE += V_edge;
         }
@@ -87,7 +91,7 @@ void print_energy_status(){
 }
 
 /// @brief Helper function which updates V using q
-void updateV(Eigen::MatrixXd& V, Eigen::VectorXd& q){
+void updateV(Eigen::MatrixXd& V, Eigen::VectorXd q){
 	int n = V.rows();  
 	for (int i = 0; i < n; i++){
 		V.row(i) = q.segment<3>(3 * i);
@@ -103,19 +107,24 @@ void simulate(){
             f.resize(q.size());
             f.setZero();
 
-            assemble_edge_forces(f, q, E, l0, k_axial);
-            assemble_crease_forces(f, q, edge_adjacent_vertices, k_crease, edge_theta);
-            // TODO: ADD MORE FORCES -> Creases and Faces
+            assemble_edge_forces(f, P.transpose() * q + x0, E, l0, k_axial);
+
+            assemble_crease_forces(f, P.transpose() * q + x0, edge_adjacent_vertices, k_crease, edge_theta);
+            
+
+
+            // TODO: ADD MORE FORCES ->  Faces
         };
 
         // auto stiffness = [&](Eigen::SparseMatrix<double> &K, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::VectorXd> qdot) { 
-        //     assemble_stiffness(K, q, qdot, V, E, l0, k);
+        //     assemble_stiffness(K, P.transpose() * q + x0, P.transpose() * qdot, V, E, l0, k);
         // };
 
         forward_euler(q, qdot, dt, forces, tmp_force);
 
         // update vertex positions from q and increment time
-        updateV(V, q);
+        updateV(V, P.transpose() * q + x0);
+        
 
         // Update the viewer's mesh
         if (viewer_ptr){
@@ -133,13 +142,17 @@ void simulate(){
 int main(int argc, char *argv[])
 {   
     // Call setup to set up all the meshes and variables
-    setup(q, qdot, x0, V, F, E, edge_theta, l0, k_axial, k_crease, EA, k_fold, k_facet, edge_adjacent_vertices);
+    setup(q, qdot, x0, P, V, F, E, edge_theta, l0, k_axial, k_crease, EA, k_fold, k_facet, edge_adjacent_vertices);
+
+    // Set up mass matrix
     make_mass_matrix(M, q, vertexMass);
+    M = P*M*P.transpose();
 
     // Introduce offset to check how forces react
-    // q(0) = 0.1;
-    // q(1) = 0.1;
-    // updateV(V, q);
+    q(0) = 0.1;
+    q(1) = 0.1;
+    q(2) = 0.3;
+    updateV(V, P.transpose() * q + x0);
 
     // Create viewer
     igl::opengl::glfw::Viewer viewer;
