@@ -16,6 +16,7 @@
 #include <linearly_implicit_euler.h>
 #include <assemble_stiffness.h>
 #include <make_mass_matrix.h>
+#include <assemble_damping_forces.h>
 
 // Simulation state
 bool simulating = true;
@@ -36,15 +37,13 @@ Eigen::VectorXd k_crease;   // Per crease stiffness constant
 
 std::vector<std::array<int, 4>> edge_adjacent_vertices; // For each edge, stores the four vertices making up the two triangles which meet at the edge. The order is: Right vertex, Left Vertex, Start Vertex, End Vertex. It is {-1, -1, -1, -1} for border edges
 
-
 double t = 0;               // Simulation Time
-double dt = 0.0002;          // Time Step
+double dt = 0.0002;         // Time Step
 double vertexMass = 1;      // Per vertex mass. Currently constant
-double yM = 1.0;            // Normalized Young's modulus
-double csa = 1e4;           // Scaled cross-sectional area (Both used to calculate per axis stiffness)
-double EA = yM * csa;       // Axial stiffness parameter, used in calculating axial stiffness
+double EA = 1.0 * 1e4;      // Axial stiffness parameter, used in calculating axial stiffness
 double k_fold = 1e2;        // Stiffness for a mountain or valley crease (Should be much smaller than the axial stiffness)
 double k_facet = 1e2;       // Stiffness for a facet crease
+double zeta = 0.25;         // Parameter in the damping ratio from the paper
 
 // Working memory for integrator
 Eigen::SparseMatrix<double> tmp_stiffness;
@@ -54,7 +53,7 @@ Eigen::VectorXd tmp_force;
 igl::opengl::glfw::Viewer* viewer_ptr = nullptr;
 
 // Debug flags
-const bool PRINT_FORCE_INFO = true;
+const bool PRINT_FORCE_INFO = false;
 
 /// @brief Prints to console the total energy of the system - should be constant with no new energy introduced
 void print_energy_status(){
@@ -106,14 +105,15 @@ void simulate(){
             // Set f to zero and then add all the forces to it
             f.resize(q.size());
             f.setZero();
-
+            //std::cout << "==================================" << std::endl;
             assemble_edge_forces(f, P.transpose() * q + x0, E, l0, k_axial);
-
+            //std::cout << "after assembling edge forces, f is: " << f << std::endl;
             assemble_crease_forces(f, P.transpose() * q + x0, edge_adjacent_vertices, k_crease, edge_theta);
-            
+            //std::cout << "after assembling crease forces, f is: " << f << std::endl;
+            // TODO: assemble_face_forces()
 
-
-            // TODO: ADD MORE FORCES ->  Faces
+            assemble_damping_forces(f, qdot, E, k_axial, zeta);
+            //std::cout << "after assembling damping forces, f is: " << f << std::endl;
         };
 
         // auto stiffness = [&](Eigen::SparseMatrix<double> &K, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::VectorXd> qdot) { 
@@ -136,6 +136,7 @@ void simulate(){
         t += dt;
         // Small delay to make the animation visible
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        
     }
 }
 
@@ -149,10 +150,10 @@ int main(int argc, char *argv[])
     M = P*M*P.transpose();
 
     // Introduce offset to check how forces react
-    q(0) = 0.1;
-    q(1) = 0.1;
-    q(2) = 0.3;
-    updateV(V, P.transpose() * q + x0);
+    // q(0) = 0.1;
+    // q(1) = 0.1;
+    // q(2) = 0.3;
+    // updateV(V, P.transpose() * q + x0);
 
     // Create viewer
     igl::opengl::glfw::Viewer viewer;

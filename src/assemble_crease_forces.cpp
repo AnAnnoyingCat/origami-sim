@@ -24,7 +24,6 @@ void assemble_crease_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd
 		Eigen::Vector3d q4 = q.segment<3>(3 * v_end);
 
 		F_crease(force, q1, q2, q3, q4, k_crease(currCrease), curr_theta(currCrease));
-		std::cout << "force is: " << force << std::endl;
 		f.segment<3>(3 * v_right) += force.segment<3>(0);
 		f.segment<3>(3 * v_left) += force.segment<3>(3);
 		f.segment<3>(3 * v_begin) += force.segment<3>(6);
