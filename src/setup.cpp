@@ -23,7 +23,7 @@ void setup(Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::VectorXd &x0, Eigen
 	
 	// Diagonal should be folded to 60 degrees
 	edge_theta.resize(5);
-	edge_theta << 0, 0, 0, 0, 0.0 * M_PI / 180;
+	edge_theta << 0, 0, 0, 0, -90.0 * M_PI / 180;
 
 	//Type of each edge. "B" = Border, "M" = Mountain, "V" = Valley, "F" = Flat / Facet
 	std::vector<std::string> edge_type;

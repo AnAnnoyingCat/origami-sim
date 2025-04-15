@@ -1,5 +1,6 @@
 #include "assemble_crease_forces.h"
 #include <iostream>
+#include <fstream>
 
 void assemble_crease_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, const std::vector<std::array<int, 4>>& edge_adjacent_vertices, Eigen::Ref<const Eigen::VectorXd> k_crease, Eigen::Ref<const Eigen::VectorXd> curr_theta){
 	// Pre-allocate force and reuse the same memory for performance
@@ -30,3 +31,4 @@ void assemble_crease_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd
 		f.segment<3>(3 * v_end) += force.segment<3>(9);
 	}
 }
+

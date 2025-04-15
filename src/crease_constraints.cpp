@@ -22,9 +22,8 @@ void F_crease(Eigen::Ref<Eigen::Matrix<double, 12, 1>> f, Eigen::Ref<const Eigen
 
 	// Calculate current fold angle theta 
     Eigen::Vector3d crease_dir = (q4 - q3).normalized();
-    double cos_phi = n1.dot(n2);
-    double sin_phi = (n1.cross(n2)).dot(crease_dir);
-    double current_theta = M_PI - std::atan2(sin_phi, cos_phi);
+	double current_theta = std::atan2((n1.cross(n2)).dot(crease_dir), n1.dot(n2));
+	//std::cout << "Current fold angle according to my calculation: " << current_theta << std::endl;
 
 	// Precompute some values
 	Eigen::Vector3d n1h1 = n1 / h1;
