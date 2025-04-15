@@ -1,4 +1,5 @@
 #include <Eigen/Dense>
+#include <trig_helper_functions.h>
 
 /**
  * @brief Calculate the per fold force
@@ -12,9 +13,3 @@
  * @param theta_Target The target theta of the given crease
  */
 void F_crease(Eigen::Ref<Eigen::Matrix<double, 12, 1>> f, Eigen::Ref<const Eigen::Vector3d> q1,  Eigen::Ref<const Eigen::Vector3d> q2, Eigen::Ref<const Eigen::Vector3d> q3, Eigen::Ref<const Eigen::Vector3d> q4, double k_crease, double theta_target);
-
-// Declare helper functions
-void getAngle(double& alpha, Eigen::Ref<const Eigen::Vector3d> q0, Eigen::Ref<const Eigen::Vector3d> q1, Eigen::Ref<const Eigen::Vector3d> q2);
-void geth(double& h, Eigen::Ref<const Eigen::Vector3d> q0, Eigen::Ref<const Eigen::Vector3d> q1, Eigen::Ref<const Eigen::Vector3d> q2);
-void getNormal(Eigen::Vector3d& n, Eigen::Ref<const Eigen::Vector3d> q0, Eigen::Ref<const Eigen::Vector3d> q1, Eigen::Ref<const Eigen::Vector3d> q2);
-void cot(double& alpha);

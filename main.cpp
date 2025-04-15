@@ -32,6 +32,7 @@ Eigen::MatrixXi E;          // Edges of the CP (Springs), ex2 matrix
 Eigen::VectorXd edge_theta; // Final Target fold angle for each edge
 Eigen::VectorXd curr_theta; // Current Target fold angle for each edge (CURRENTLY UNUSED)
 Eigen::VectorXd l0;         // Original length of the Edges, size e vector
+Eigen::MatrixXd alpha0;     // Nominal angles in flat state of CP
 Eigen::VectorXd k_axial;    // Per edge stiffness constant
 Eigen::VectorXd k_crease;   // Per crease stiffness constant
 
@@ -43,6 +44,7 @@ double vertexMass = 1;      // Per vertex mass. Currently constant
 double EA = 1.0 * 5e4;      // Axial stiffness parameter, used in calculating axial stiffness
 double k_fold = 1e3;        // Stiffness for a mountain or valley crease (Should be much smaller than the axial stiffness)
 double k_facet = 1e3;       // Stiffness for a facet crease
+double k_face = 2e2;        // Stiffness for the face constraints
 double zeta = 0.25;         // Parameter in the damping ratio from the paper
 
 // Working memory for integrator
@@ -84,8 +86,6 @@ void print_energy_status(){
         std::cout << "Kinetic Energy of the system: " << KE << std::endl;
         std::cout << "Potential Energy of the system: " << PE << std::endl;
         std::cout << "Total Energy of the system: " << KE + PE << std::endl;
-
-        //std::cout << "current coordinates:" << P.transpose() * q + x0 << std::endl;
 
         // Don't spam the console too much
         std::this_thread::sleep_for(std::chrono::milliseconds(250));
@@ -148,7 +148,7 @@ void animated_angle(){
 int main(int argc, char *argv[])
 {   
     // Call setup to set up all the meshes and variables
-    setup(q, qdot, x0, P, V, F, E, edge_theta, l0, k_axial, k_crease, EA, k_fold, k_facet, edge_adjacent_vertices);
+    setup(q, qdot, x0, P, V, F, alpha0, E, edge_theta, l0, k_axial, k_crease, EA, k_fold, k_facet, edge_adjacent_vertices);
 
     // Set up mass matrix
     make_mass_matrix(M, q, vertexMass);

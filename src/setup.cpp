@@ -1,6 +1,6 @@
 #include <setup.h>
 
-void setup(Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::VectorXd &x0, Eigen::SparseMatrix<double>& P, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXi &E, Eigen::VectorXd& edge_theta, Eigen::VectorXd &l0, Eigen::VectorXd &k_axial, Eigen::VectorXd& k_crease, double& EA, double& k_fold, double& k_facet, std::vector<std::array<int, 4>>& edge_adjacent_vertices){
+void setup(Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::VectorXd &x0, Eigen::SparseMatrix<double>& P, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &alpha0, Eigen::MatrixXi &E, Eigen::VectorXd& edge_theta, Eigen::VectorXd &l0, Eigen::VectorXd &k_axial, Eigen::VectorXd& k_crease, double& EA, double& k_fold, double& k_facet, std::vector<std::array<int, 4>>& edge_adjacent_vertices){
 	// Initial mesh (a square with diagonals)
     V.resize(4, 3);
     V << 0, 0, 0,
@@ -10,8 +10,12 @@ void setup(Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::VectorXd &x0, Eigen
     
 	// Two triangle Faces
     F.resize(2, 3);
-    F << 2, 1, 0,
-		 2, 3, 1;
+    F << 0, 1, 2,
+		 3, 2, 1;
+
+	alpha0.resize(2, 3);
+	alpha0 << 90 * M_PI / 180, 45 * M_PI / 180, 45 * M_PI / 180,
+			  90 * M_PI / 180, 45 * M_PI / 180, 45 * M_PI / 180;
 	
 	// Square with one diagonal Edge
 	E.resize(5, 2);
