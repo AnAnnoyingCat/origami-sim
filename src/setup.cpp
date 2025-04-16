@@ -1,4 +1,67 @@
 #include <setup.h>
+#include <iostream>
+
+using json = nlohmann::json;
+
+void setup_simulation_params(std::string filename, double& dt, double& vertexMass, double& EA, double& k_fold, double& k_facet, double& k_face, double& zeta){
+	// Use nlohmann JSON to grab the simulation parameters from the specified filename. If something isn't specified, set it to default value.
+	std::ifstream file(filename);
+
+	if (file){
+		json params = json::parse(file);
+
+		if (params.contains("dt")){
+			dt = params["dt"].template get<double>();
+			std::cout << "json lib works and it got dt = " << dt << std::endl;
+		} else {
+			dt = 0.001;
+		}
+		if (params.contains("vertexMass")){
+			vertexMass = params["vertexMass"].template get<double>();
+		} else {
+			vertexMass = 1;
+		}
+		if (params.contains("EA")){
+			EA = params["EA"].template get<double>();
+		} else {
+			EA = 5e4;
+		}
+		if (params.contains("k_fold")){
+			k_fold = params["k_fold"].template get<double>();
+		} else {
+			k_fold = 1e3;
+		}
+		if (params.contains("k_facet")){
+			k_facet = params["k_facet"].template get<double>();
+		} else {
+			k_facet = 1e3;
+		}
+		if (params.contains("k_face")){
+			k_face = params["k_face"].template get<double>();
+		} else {
+			k_face = 2e2;
+		}
+		if (params.contains("zeta")){
+			zeta = params["zeta"].template get<double>();
+		} else {
+			zeta = 0.25;
+		}
+
+	} else {
+		if (filename == ""){
+			std::cout << "No params file specified, using default params" << std::endl;
+		} else{
+			std::cout <<"Params file no found" << std::endl;
+		}
+		dt = 0.001;          
+		vertexMass = 1;      
+		EA = 1.0 * 5e4;      
+		k_fold = 1e3;        
+		k_facet = 1e3;       
+		k_face = 2e2;        
+		zeta = 0.25;         
+	}
+}
 
 void setup(Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::VectorXd &x0, Eigen::SparseMatrix<double>& P, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &alpha0, Eigen::MatrixXi &E, Eigen::VectorXd& edge_theta, Eigen::VectorXd &l0, Eigen::VectorXd &k_axial, Eigen::VectorXd& k_crease, double& EA, double& k_fold, double& k_facet, std::vector<std::array<int, 4>>& edge_adjacent_vertices){
 	// Initial mesh (a square with diagonals)

@@ -39,13 +39,14 @@ Eigen::VectorXd k_crease;   // Per crease stiffness constant
 std::vector<std::array<int, 4>> edge_adjacent_vertices; // For each edge, stores the four vertices making up the two triangles which meet at the edge. The order is: Right vertex, Left Vertex, Start Vertex, End Vertex. It is {-1, -1, -1, -1} for border edges
 
 double t = 0;               // Simulation Time
-double dt = 0.001;          // Time Step
-double vertexMass = 1;      // Per vertex mass. Currently constant
-double EA = 1.0 * 5e4;      // Axial stiffness parameter, used in calculating axial stiffness
-double k_fold = 1e3;        // Stiffness for a mountain or valley crease (Should be much smaller than the axial stiffness)
-double k_facet = 1e3;       // Stiffness for a facet crease
-double k_face = 2e2;        // Stiffness for the face constraints
-double zeta = 0.25;         // Parameter in the damping ratio from the paper
+
+double dt;                  // Time Step
+double vertexMass;          // Per vertex mass. Currently constant
+double EA;                  // Axial stiffness parameter, used in calculating axial stiffness
+double k_fold;              // Stiffness for a mountain or valley crease (Should be much smaller than the axial stiffness)
+double k_facet;             // Stiffness for a facet crease
+double k_face;              // Stiffness for the face constraints
+double zeta;                // Parameter in the damping ratio from the paper
 
 // Working memory for integrator
 Eigen::SparseMatrix<double> tmp_stiffness;
@@ -147,6 +148,17 @@ void animated_angle(){
 
 int main(int argc, char *argv[])
 {   
+    // Read args into a vector
+    std::vector<std::string> args;
+    std::copy(argv + 1, argv + argc, std::back_inserter(args));
+
+    if (args.size() != 0){
+        setup_simulation_params(args[0], dt, vertexMass, EA, k_fold, k_facet, k_face, zeta);
+    } else {
+        setup_simulation_params("", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta);
+    }
+    
+    return 1;
     // Call setup to set up all the meshes and variables
     setup(q, qdot, x0, P, V, F, alpha0, E, edge_theta, l0, k_axial, k_crease, EA, k_fold, k_facet, edge_adjacent_vertices);
 

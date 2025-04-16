@@ -1,0 +1,21 @@
+
+double dt: Size of the time step. 	
+Default: 0.001
+
+double vertexMass: Mass of each Vertex. 
+Default: 1
+
+double EA: Axial stiffness parameter, used in calculating axial stiffness.
+Default: 5e4
+
+double k_fold: Stiffness for a mountain or valley crease (Should be much smaller than the axial stiffness)
+Default: 1e3
+
+double k_facet: Stiffness for a facet crease
+Default: 1e3
+
+double k_face: Stiffness for the face constraints
+Default: 2e2
+
+double zeta: Parameter in the damping ratio from the paper
+Default: 0.25

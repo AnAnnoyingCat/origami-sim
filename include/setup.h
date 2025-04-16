@@ -1,6 +1,8 @@
 #include <iostream>
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
+#include <json.hpp>
+#include <fstream>
 
 
  /**
@@ -24,3 +26,17 @@
   * @param edge_adjacent_vertices 	A vector of size 4 arrays storing for each fold the four relevant vertices in order RIGHT, LEFT, BEGIN, END.
   */
 void setup(Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::VectorXd &x0, Eigen::SparseMatrix<double>& P, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &alpha0, Eigen::MatrixXi &E, Eigen::VectorXd& edge_theta, Eigen::VectorXd &l0, Eigen::VectorXd &k_axial, Eigen::VectorXd& k_crease, double& EA, double& k_fold, double& k_facet, std::vector<std::array<int, 4>>& edge_adjacent_vertices);
+
+/**
+ * @brief Set the up simulation parameters by reading them from the specified json file
+ * 
+ * @param dt 
+ * @param vertexMass 
+ * @param EA 
+ * @param k_fold 
+ * @param k_facet 
+ * @param k_face 
+ * @param zeta 
+ */
+void setup_simulation_params(std::string filename, double& dt, double& vertexMass, double& EA, double& k_fold, double& k_facet, double& k_face, double& zeta);
+
