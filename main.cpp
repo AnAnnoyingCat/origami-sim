@@ -29,14 +29,13 @@ Eigen::VectorXd x0;                 // Fixed vertex indices
 Eigen::MatrixXd V;          // Vertices of the CP, nx3 matrix
 Eigen::MatrixXi F;          // Faces of the CP, mx3 matrix
 Eigen::MatrixXi E;          // Edges of the CP (Springs), ex2 matrix
-Eigen::VectorXd edge_theta; // Final Target fold angle for each edge
+Eigen::VectorXd edge_target_angle; // Final Target fold angle for each edge
 Eigen::VectorXd curr_theta; // Current Target fold angle for each edge (CURRENTLY UNUSED)
 Eigen::VectorXd l0;         // Original length of the Edges, size e vector
-Eigen::MatrixXd alpha0;     // Nominal angles in flat state of CP
+Eigen::MatrixXd alpha0;     // Nominal angles in flat state of CP, in same order as face vertices
 Eigen::VectorXd k_axial;    // Per edge stiffness constant
 Eigen::VectorXd k_crease;   // Per crease stiffness constant
-
-std::vector<std::array<int, 4>> edge_adjacent_vertices; // For each edge, stores the four vertices making up the two triangles which meet at the edge. The order is: Right vertex, Left Vertex, Start Vertex, End Vertex. It is {-1, -1, -1, -1} for border edges
+Eigen::MatrixXi edge_adjacent_vertices; // For each edge, stores the four vertices making up the two triangles which meet at the edge. The order is: Right vertex, Left Vertex, Start Vertex, End Vertex. It is {-1, -1, -1, -1} for border edges
 
 double t = 0;               // Simulation Time
 
@@ -57,7 +56,6 @@ igl::opengl::glfw::Viewer* viewer_ptr = nullptr;
 
 // Debug flags
 const bool PRINT_FORCE_INFO = true;
-const bool ANIMATE_ANGLE = true;
 
 /// @brief Prints to console the total energy of the system - should be constant with no new energy introduced
 void print_energy_status(){
@@ -110,7 +108,7 @@ void simulate(){
             f.resize(q.size());
             f.setZero();
             assemble_edge_forces(f, P.transpose() * q + x0, E, l0, k_axial);
-            assemble_crease_forces(f, P.transpose() * q + x0, edge_adjacent_vertices, k_crease, edge_theta);
+            assemble_crease_forces(f, P.transpose() * q + x0, edge_adjacent_vertices, k_crease, edge_target_angle);
 
             // TODO: assemble_face_forces()
 
@@ -137,30 +135,29 @@ void simulate(){
     }
 }
 
-void animated_angle(){
-    while (simulating){
-        edge_theta(4) = -90.0 * M_PI / 180;
-        std::this_thread::sleep_for(std::chrono::milliseconds(2500));
-        edge_theta(4) = 90.0 * M_PI / 180;
-        std::this_thread::sleep_for(std::chrono::milliseconds(2500));
-    }
-}
-
 int main(int argc, char *argv[])
 {   
     // Read args into a vector
     std::vector<std::string> args;
     std::copy(argv + 1, argv + argc, std::back_inserter(args));
 
-    if (args.size() != 0){
-        setup_simulation_params(args[0], dt, vertexMass, EA, k_fold, k_facet, k_face, zeta);
+    // Set up parameters
+    if (args.size() == 2){
+        setup_simulation_params(args[1], dt, vertexMass, EA, k_fold, k_facet, k_face, zeta);
+        setup_mesh(args[0], q, qdot, x0, P, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face);
+    } else if (args.size() == 1){
+        // Only crease pattern provided
+        setup_simulation_params("../data/simulation_params/default-params.json", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta);
+        setup_mesh(args[0], q, qdot, x0, P, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face);
     } else {
-        setup_simulation_params("", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta);
+        // No arguments provided, using default 
+        setup_simulation_params("../data/simulation_params/default-params.json", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta);
+        setup_mesh("../data/crease_patterns/defaultsquare.fold", q, qdot, x0, P, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face);
     }
     
     return 1;
-    // Call setup to set up all the meshes and variables
-    setup(q, qdot, x0, P, V, F, alpha0, E, edge_theta, l0, k_axial, k_crease, EA, k_fold, k_facet, edge_adjacent_vertices);
+    // Call setup to set up all the mesh related things
+    //setup(q, qdot, x0, P, V, F, alpha0, E, edge_target_angle, l0, k_axial, k_crease, EA, k_fold, k_facet, edge_adjacent_vertices);
 
     // Set up mass matrix
     make_mass_matrix(M, q, vertexMass);
@@ -189,12 +186,6 @@ int main(int argc, char *argv[])
         // Start the energy status in another thread if needed
         std::thread total_energy_thread(print_energy_status);
         total_energy_thread.detach();
-    }
-
-    if (ANIMATE_ANGLE){
-        // start the animation thread seperately. crude solution for now
-        std::thread animation(animated_angle);
-        animation.detach();
     }
 
     viewer.callback_pre_draw = [&](igl::opengl::glfw::Viewer&) -> bool {

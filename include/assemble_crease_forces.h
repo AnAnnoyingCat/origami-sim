@@ -11,4 +11,4 @@
  * @param k_Crease 						Size m vector of the stiffness of every crease, is -1 for border edges
  * @param curr_theta					Size m vector containing the current target theta for each crease
  */
-void assemble_crease_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, const std::vector<std::array<int, 4>>& edge_adjacent_vertices, Eigen::Ref<const Eigen::VectorXd> k_crease, Eigen::Ref<const Eigen::VectorXd> curr_theta);
+void assemble_crease_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::VectorXi> edge_adjacent_vertices, Eigen::Ref<const Eigen::VectorXd> k_crease, Eigen::Ref<const Eigen::VectorXd> curr_theta);
