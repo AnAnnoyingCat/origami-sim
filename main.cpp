@@ -55,7 +55,7 @@ Eigen::VectorXd tmp_force;
 igl::opengl::glfw::Viewer* viewer_ptr = nullptr;
 
 // Debug flags
-const bool PRINT_FORCE_INFO = true;
+const bool PRINT_FORCE_INFO = false;
 
 /// @brief Prints to console the total energy of the system - should be constant with no new energy introduced
 void print_energy_status(){
@@ -103,20 +103,19 @@ void updateV(Eigen::MatrixXd& V, Eigen::VectorXd q){
 void simulate(){
     while (simulating){
 
+
         auto forces = [&](Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::VectorXd> qdot){
             // Set f to zero and then add all the forces to it
             f.resize(q.size());
             f.setZero();
             assemble_edge_forces(f, P.transpose() * q + x0, E, l0, k_axial);
             assemble_crease_forces(f, P.transpose() * q + x0, edge_adjacent_vertices, k_crease, edge_target_angle);
-
             // TODO: assemble_face_forces()
 
             assemble_damping_forces(f, qdot, E, k_axial, zeta);
         };
 
         forward_euler(q, qdot, dt, forces, tmp_force);
-
         // update vertex positions from q and increment time
         updateV(V, P.transpose() * q + x0);
         
@@ -141,33 +140,32 @@ int main(int argc, char *argv[])
     std::vector<std::string> args;
     std::copy(argv + 1, argv + argc, std::back_inserter(args));
 
-    // Set up parameters
+    // Set up parameters and read CP
     if (args.size() == 2){
+        // Both CP and params provided
         setup_simulation_params(args[1], dt, vertexMass, EA, k_fold, k_facet, k_face, zeta);
         setup_mesh(args[0], q, qdot, x0, P, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face);
     } else if (args.size() == 1){
         // Only crease pattern provided
+        std::cout << "Using default parameters" << std::endl;
         setup_simulation_params("../data/simulation_params/default-params.json", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta);
         setup_mesh(args[0], q, qdot, x0, P, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face);
     } else {
         // No arguments provided, using default 
+        std::cout << "No arguments provided, using default" << std::endl;
         setup_simulation_params("../data/simulation_params/default-params.json", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta);
         setup_mesh("../data/crease_patterns/defaultsquare.fold", q, qdot, x0, P, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face);
     }
-    
-    return 1;
-    // Call setup to set up all the mesh related things
-    //setup(q, qdot, x0, P, V, F, alpha0, E, edge_target_angle, l0, k_axial, k_crease, EA, k_fold, k_facet, edge_adjacent_vertices);
+
+    std::cout << "V: " << V << std::endl;
+    std::cout << "E: " << E <<std::endl;
+    std::cout << "edge adj vert: " << edge_adjacent_vertices << std::endl;
+    // q(4) = 5;
+    // updateV(V, q);
 
     // Set up mass matrix
     make_mass_matrix(M, q, vertexMass);
     M = P*M*P.transpose();
-
-    // Introduce offset to check how forces react
-    // q(0) = -1;
-    // q(1) = -1;
-    // updateV(V, P.transpose() * q + x0);
-    
 
     // Create viewer
     igl::opengl::glfw::Viewer viewer;

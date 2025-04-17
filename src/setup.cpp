@@ -13,7 +13,6 @@ void setup_simulation_params(std::string filename, double& dt, double& vertexMas
 
 		if (params.contains("dt")){
 			dt = params["dt"].template get<double>();
-			std::cout << "json lib works and it got dt = " << dt << std::endl;
 		} else {
 			dt = 0.001;
 		}
@@ -53,123 +52,7 @@ void setup_simulation_params(std::string filename, double& dt, double& vertexMas
 	}
 }
 
-void setup(Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::VectorXd &x0, Eigen::SparseMatrix<double>& P, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &alpha0, Eigen::MatrixXi &E, Eigen::VectorXd& edge_target_angle, Eigen::VectorXd &l0, Eigen::VectorXd &k_axial, Eigen::VectorXd& k_crease, double& EA, double& k_fold, double& k_facet, std::vector<std::array<int, 4>>& edge_adjacent_vertices){
-	// Initial mesh (a square with diagonals)
-    V.resize(4, 3);
-    V << 0, 0, 0,
-         0, 1, 0,
-         1, 0, 0,
-         1, 1, 0;
-    
-	// Two triangle Faces
-    F.resize(2, 3);
-    F << 0, 1, 2,
-		 3, 2, 1;
-
-	alpha0.resize(2, 3);
-	alpha0 << 90 * M_PI / 180, 45 * M_PI / 180, 45 * M_PI / 180,
-			  90 * M_PI / 180, 45 * M_PI / 180, 45 * M_PI / 180;
-	
-	// Square with one diagonal Edge
-	E.resize(5, 2);
-	E << 0, 1,
-		 1, 3,
-		 3, 2,
-		 2, 0,
-		 2, 1;
-	
-	// Diagonal should be folded to 60 degrees
-	edge_target_angle.resize(5);
-	edge_target_angle << 0, 0, 0, 0, -90.0 * M_PI / 180;
-
-	//Type of each edge. "B" = Border, "M" = Mountain, "V" = Valley, "F" = Flat / Facet
-	std::vector<std::string> edge_type;
-	edge_type.resize(5);
-	edge_type[0] = "B";
-	edge_type[1] = "B";
-	edge_type[2] = "B";
-	edge_type[3] = "B";
-	edge_type[4] = "V";
-
-	
-
-	// Basic Edge Lengths and stiffnesses
-	l0.resize(E.rows());
-	k_axial.resize(E.rows());
-	k_crease.resize(E.rows());
-	for (int i = 0; i < E.rows(); i++){
-		int v0 = E(i, 0);
-		int v1 = E(i, 1);
-		Eigen::Vector3d difference = V.row(v0) - V.row(v1);
-
-		// Set up l0
-		l0(i) = difference.norm();
-
-		// Set up axial stiffness dependent on l0
-		k_axial(i) = EA / l0(i);
-
-		// Set up crease stiffness dependent on l0
-		if (edge_type[i] == "B"){
-			k_crease(i) = -1;
-		} else if (edge_type[i] == "F"){
-			k_crease(i) = k_facet * l0(i);
-		} else { // Edge type == "M" or "V"
-			k_crease(i) = k_fold * l0(i);
-		}
-	}
-
-	// Initialize q to vertex positions and qdot to zero
-	q.resize(V.rows() * V.cols());
-	qdot.resize(V.rows() * V.cols());
-
-	Eigen::MatrixXd Vt = V.transpose();
-	q = Eigen::Map<Eigen::VectorXd>(Vt.data(), Vt.rows() * Vt.cols());
-	qdot.setZero();
-
-	// Specify which vertices are fixed in space. fixedVerts(i) == 1 <=> Vertex i is fixed in space
-	Eigen::VectorXd fixedVerts;
-	fixedVerts.resize(4);
-	fixedVerts << 0, 1, 1, 0;
-
-	// Create the projection matrix P 
-	std::vector<Eigen::Triplet<double>> triplets;
-	triplets.resize(3 * fixedVerts.size());
-
-	int fixedCnt = 0;
-	int tripletCnt = 0;
-	for (int i = 0; i < q.size() / 3; i++){
-		if (fixedVerts(i) == 0){
-			// Current position is not fixed
-			int base = 3 * i;
-			triplets[tripletCnt++] = {base, base, 1.0};
-			triplets[tripletCnt++] = {base + 1, base + 1, 1.0};
-			triplets[tripletCnt++] = {base + 2, base + 2, 1.0};
-			fixedCnt++;
-		}
-	}
-
-	P.resize(q.size(), q.size());
-	P.setFromTriplets(triplets.begin(), triplets.end());
-
-	// Copied from the assignment a2
-	x0 = q - P.transpose()*P*q;
-	//correct q and qdot so they are the right size
-    q = P*q;
-    qdot = P*qdot;
-
-
-
-	// Add the edge adjacent vertices, used in the calculation for the crease constraints
-	edge_adjacent_vertices.resize(5);
-	edge_adjacent_vertices[0] = {-1, -1, -1, -1};
-	edge_adjacent_vertices[1] = {-1, -1, -1, -1};
-	edge_adjacent_vertices[2] = {-1, -1, -1, -1};
-	edge_adjacent_vertices[3] = {-1, -1, -1, -1};
-	edge_adjacent_vertices[4] = {0, 3, 2, 1};
-}
-
-void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::VectorXd &x0, Eigen::SparseMatrix<double>& P, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &alpha0, Eigen::MatrixXi &E, Eigen::VectorXd& edge_target_angle, Eigen::VectorXd &l0, Eigen::MatrixXi edge_adjacent_vertices, Eigen::VectorXd &k_axial, Eigen::VectorXd& k_crease, const double EA, const double k_fold, const double k_facet, const double k_face){
-	// TODO: import the mesh and fill all the relevant fields
+void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::VectorXd &x0, Eigen::SparseMatrix<double>& P, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &alpha0, Eigen::MatrixXi &E, Eigen::VectorXd& edge_target_angle, Eigen::VectorXd &l0, Eigen::MatrixXi& edge_adjacent_vertices, Eigen::VectorXd &k_axial, Eigen::VectorXd& k_crease, const double EA, const double k_fold, const double k_facet, const double k_face){
 	std::ifstream file(filename);
 
 	if (file){
@@ -228,12 +111,14 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 			throw std::runtime_error("Oh no...");
 		}
 
+
 		// Assign edge target angles
 		if (params.contains("edges_foldAngle")){
+			// TODO can be null
 			std::vector<double> angles = params["edges_foldAngle"].template get<std::vector<double>>();
 			edge_target_angle.resize(angles.size());
 			for (int i = 0; i < angles.size(); i++){
-				edge_target_angle(i) = angles[i];
+				edge_target_angle(i) = angles[i] * M_PI / 180;
 			}
 		} else {
 			std::cout << "Missing parameter \"edges_foldAngle\"" << std::endl;
@@ -290,6 +175,7 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 		// Only fix the first vertex in space so the simulation doesn't fly off or something
 		fixedVerts.setZero();
 		fixedVerts(0) = 1;
+		fixedVerts(2) = 1;
 
 		// Create the projection matrix P 
 		std::vector<Eigen::Triplet<double>> triplets;
@@ -317,15 +203,87 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 		q = P*q;
 		qdot = P*qdot;
 
-		// fill in edge_adjacent_vertices
-		if (params.contains("edges_faces")){
-			std::vector<std::vector<double>> edges_faces = params["edges_faces"].template get<std::vector<std::vector<double>>>();
-			edge_adjacent_vertices.resize(E.size(), 4);
-			for (int i = 0; i < E.rows(); i++){
-				// Die erste Face ist glaub immer die rechte -> unique nummer der ersten face ist die rechte, unique nummer der zweiten face die linke, anfang, ende. sollte passen. dokumentation anschauen
+		// fill in edge_adjacent_vertices using the help of faces_vertices and faces_edges
+		if (params.contains("faces_vertices") && params.contains("faces_edges") && params.contains("edges_assignment")){
+			std::vector<std::vector<double>> faces_vertices = params["faces_vertices"].template get<std::vector<std::vector<double>>>();
+			std::vector<std::vector<double>> faces_edges = params["faces_edges"].template get<std::vector<std::vector<double>>>();
+			std::vector<std::string> assignments = params["edges_assignment"].template get<std::vector<std::string>>();
+
+			edge_adjacent_vertices.resize(E.rows(), 4);
+			
+			// Iterate through all edges and for every non-border-edge figure out it's 4 defining vertices
+			for (int currentEdgeID = 0; currentEdgeID < E.rows(); currentEdgeID++){
+				if (assignments[currentEdgeID] == "B"){
+					edge_adjacent_vertices.row(currentEdgeID) << -1, -1, -1, -1;
+				} else {
+					int first_face_ID = -1;
+					int second_face_ID = -1;
+
+					// Iterate through all faces to find the (exactly) 2 faces which contain the current edge id
+					for (int facesIterator = 0; facesIterator < faces_edges.size(); facesIterator++){
+						if (std::find(faces_edges[facesIterator].begin(), faces_edges[facesIterator].end(), currentEdgeID) != faces_edges[facesIterator].end()){
+							if (first_face_ID == -1){
+								first_face_ID = facesIterator;
+							} else {
+								second_face_ID = facesIterator;
+							}
+						}
+					}
+
+					std::vector<double> first_face = faces_vertices[first_face_ID];
+					std::vector<double> second_face = faces_vertices[second_face_ID];
+
+					// Get start and end vertex of the edge
+					int v_start = E(currentEdgeID, 0);
+					int v_end = E(currentEdgeID, 1);
+
+					// Helper to get third vertex not part of edge
+					auto find_third_vertex = [&](const std::vector<double>& face) -> int {
+						for (double v : face) {
+							int vi = (int)v;
+							if (vi != v_start && vi != v_end) return vi;
+						}
+						return -1; // Should not happen
+					};
+
+					int third1 = find_third_vertex(first_face);
+					int third2 = find_third_vertex(second_face);
+
+					Eigen::Vector3d a = V.row(v_start);
+					Eigen::Vector3d b = V.row(v_end);
+					Eigen::Vector3d c1 = V.row(third1);
+					Eigen::Vector3d c2 = V.row(third2);
+
+					// Calculate normals to triangle (v_start, v_end, v_third)
+					Eigen::Vector3d edge_vec = b - a;
+					Eigen::Vector3d n1 = edge_vec.cross(c1 - a);
+					Eigen::Vector3d n2 = edge_vec.cross(c2 - a);
+
+					// Check which of them points up / down
+					Eigen::Vector3d Z_axis_normal(0, 0, 1);
+					bool n1_pos = n1.dot(Z_axis_normal) > 0;
+					bool n2_pos = n2.dot(Z_axis_normal) > 0;
+
+					int v_left, v_right;
+
+					// Assign left and right depending on up and down
+					if (n1_pos && !n2_pos) {
+						v_left = third1;
+						v_right = third2;
+					} else if (!n1_pos && n2_pos) {
+						v_left = third2;
+						v_right = third1;
+					} else {
+						std::cout << "something went wrong trying to deduce edce adjacent vertex ordering, defaulting..." << std::endl;
+						v_left = third1;
+						v_right = third2;
+					}
+
+					edge_adjacent_vertices.row(currentEdgeID) << v_right, v_left, v_start, v_end;	
+				}
 			}
 		} else {
-			std::cout << "Missing parameter \"edges_faces\"" << std::endl;
+			std::cout << "Missing parameter \"faces_vertices\"" << std::endl;
 			throw std::runtime_error("Oh no...");
 		}
 
@@ -447,10 +405,5 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 		edge_adjacent_vertices.row(3) << -1, -1, -1, -1;
 		edge_adjacent_vertices.row(4) << 0, 3, 2, 1;
 	}
-
-
-	// Thing to set up::
-	// Initial mesh (a square with diagonals)
-    
 
 }

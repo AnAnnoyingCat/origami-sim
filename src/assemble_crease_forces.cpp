@@ -2,11 +2,11 @@
 #include <iostream>
 #include <fstream>
 
-void assemble_crease_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::VectorXi> edge_adjacent_vertices, Eigen::Ref<const Eigen::VectorXd> k_crease, Eigen::Ref<const Eigen::VectorXd> curr_theta){
+void assemble_crease_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::MatrixXi> edge_adjacent_vertices, Eigen::Ref<const Eigen::VectorXd> k_crease, Eigen::Ref<const Eigen::VectorXd> curr_theta){
 	// Pre-allocate force and reuse the same memory for performance
 	Eigen::Matrix<double, 12, 1> force;
-
-	for (int currCrease = 0; currCrease < edge_adjacent_vertices.size(); currCrease++){
+	
+	for (int currCrease = 0; currCrease < edge_adjacent_vertices.rows(); currCrease++){
 		// Check if current edge is a border edge
 		if (edge_adjacent_vertices(currCrease, 0) == -1){
 			continue;
