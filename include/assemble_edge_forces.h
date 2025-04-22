@@ -5,7 +5,7 @@
 /**
  * @brief Calculate the size 3*n vector of forces acting on each vertex
  * 
- * @param f 		Resulting size 3*n vector
+ * @param f 		Force vector to be added to
  * @param q 		Generalized coordinates
  * @param E 		mx2 connectivity matrix containing the edges
  * @param l0 		Undeformed length of every (spring)edge
