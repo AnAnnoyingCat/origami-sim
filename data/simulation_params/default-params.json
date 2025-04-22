@@ -4,6 +4,6 @@
 	"EA": 5e4,
 	"k_fold": 1e3,
 	"k_facet": 1e3,
-	"k_face": 2e2,
-	"zeta": 0.25
+	"k_face": 1e3,
+	"zeta": 0.3
 }

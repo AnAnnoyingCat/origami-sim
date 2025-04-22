@@ -148,7 +148,7 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 				// Set up crease stiffness dependent on l0
 				if (assignments[i] == "B"){
 					k_crease(i) = -1;
-				} else if (assignments[i] == "F"){
+				} else if (assignments[i] == "F" || assignments[i] == "U"){
 					k_crease(i) = k_facet * l0(i);
 				} else { // Edge type == "M" or "V"
 					k_crease(i) = k_fold * l0(i);
@@ -174,8 +174,8 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 		fixedVerts.resize(q.size());
 		// Only fix the first vertex in space so the simulation doesn't fly off or something
 		fixedVerts.setZero();
-		fixedVerts(0) = 1;
-		fixedVerts(2) = 1;
+		fixedVerts(16) = 1;
+		fixedVerts(17) = 1;
 
 		// Create the projection matrix P 
 		std::vector<Eigen::Triplet<double>> triplets;
