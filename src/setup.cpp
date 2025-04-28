@@ -52,7 +52,7 @@ void setup_simulation_params(std::string filename, double& dt, double& vertexMas
 	}
 }
 
-void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::VectorXd &x0, Eigen::SparseMatrix<double>& P, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &alpha0, Eigen::MatrixXi &E, Eigen::VectorXd& edge_target_angle, Eigen::VectorXd &l0, Eigen::MatrixXi& edge_adjacent_vertices, Eigen::VectorXd &k_axial, Eigen::VectorXd& k_crease, const double EA, const double k_fold, const double k_facet, const double k_face){
+void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &alpha0, Eigen::MatrixXi &E, Eigen::VectorXd& edge_target_angle, Eigen::VectorXd &l0, Eigen::MatrixXi& edge_adjacent_vertices, Eigen::VectorXd &k_axial, Eigen::VectorXd& k_crease, const double EA, const double k_fold, const double k_facet, const double k_face){
 	std::ifstream file(filename);
 
 	if (file){
@@ -168,40 +168,6 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 		Eigen::MatrixXd Vt = V.transpose();
 		q = Eigen::Map<Eigen::VectorXd>(Vt.data(), Vt.rows() * Vt.cols());
 		qdot.setZero();
-
-		// Specify which vertices are fixed in space. fixedVerts(i) == 1 <=> Vertex i is fixed in space
-		Eigen::VectorXd fixedVerts;
-		fixedVerts.resize(q.size());
-		// Only fix the first vertex in space so the simulation doesn't fly off or something
-		fixedVerts.setZero();
-		fixedVerts(16) = 1;
-		fixedVerts(17) = 1;
-
-		// Create the projection matrix P 
-		std::vector<Eigen::Triplet<double>> triplets;
-		triplets.resize(3 * fixedVerts.size());
-
-		int fixedCnt = 0;
-		int tripletCnt = 0;
-		for (int i = 0; i < q.size() / 3; i++){
-			if (fixedVerts(i) == 0){
-				// Current position is not fixed
-				int base = 3 * i;
-				triplets[tripletCnt++] = {base, base, 1.0};
-				triplets[tripletCnt++] = {base + 1, base + 1, 1.0};
-				triplets[tripletCnt++] = {base + 2, base + 2, 1.0};
-				fixedCnt++;
-			}
-		}
-
-		P.resize(q.size(), q.size());
-		P.setFromTriplets(triplets.begin(), triplets.end());
-
-		// Copied from the assignment a2
-		x0 = q - P.transpose()*P*q;
-		//correct q and qdot so they are the right size
-		q = P*q;
-		qdot = P*qdot;
 
 		// fill in edge_adjacent_vertices using the help of faces_vertices and faces_edges
 		if (params.contains("faces_vertices") && params.contains("faces_edges") && params.contains("edges_assignment")){
@@ -365,37 +331,6 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 		Eigen::MatrixXd Vt = V.transpose();
 		q = Eigen::Map<Eigen::VectorXd>(Vt.data(), Vt.rows() * Vt.cols());
 		qdot.setZero();
-
-		// Specify which vertices are fixed in space. fixedVerts(i) == 1 <=> Vertex i is fixed in space
-		Eigen::VectorXd fixedVerts;
-		fixedVerts.resize(4);
-		fixedVerts << 0, 1, 1, 0;
-
-		// Create the projection matrix P 
-		std::vector<Eigen::Triplet<double>> triplets;
-		triplets.resize(3 * fixedVerts.size());
-
-		int fixedCnt = 0;
-		int tripletCnt = 0;
-		for (int i = 0; i < q.size() / 3; i++){
-			if (fixedVerts(i) == 0){
-				// Current position is not fixed
-				int base = 3 * i;
-				triplets[tripletCnt++] = {base, base, 1.0};
-				triplets[tripletCnt++] = {base + 1, base + 1, 1.0};
-				triplets[tripletCnt++] = {base + 2, base + 2, 1.0};
-				fixedCnt++;
-			}
-		}
-
-		P.resize(q.size(), q.size());
-		P.setFromTriplets(triplets.begin(), triplets.end());
-
-		// Copied from the assignment a2
-		x0 = q - P.transpose()*P*q;
-		//correct q and qdot so they are the right size
-		q = P*q;
-		qdot = P*qdot;
 
 		// Add the edge adjacent vertices, used in the calculation for the crease constraints
 		edge_adjacent_vertices.resize(5, 4);

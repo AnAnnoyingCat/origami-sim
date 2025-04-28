@@ -17,14 +17,13 @@
 #include <assemble_stiffness.h>
 #include <make_mass_matrix.h>
 #include <assemble_damping_forces.h>
+#include <assemble_face_forces.h>
 
 // Simulation state
 bool simulating = true;
 Eigen::VectorXd q;                  // Generalized Vertex Coordinates, size 3*x vector
 Eigen::VectorXd qdot;               // Generalized Vertex Velocities
 Eigen::SparseMatrix<double> M;      // Sparse Mass Matrix.
-Eigen::SparseMatrix<double> P;      // Fixed Point Constraints
-Eigen::VectorXd x0;                 // Fixed vertex indices
 
 Eigen::MatrixXd V;          // Vertices of the CP, nx3 matrix
 Eigen::MatrixXi F;          // Faces of the CP, mx3 matrix
@@ -66,7 +65,7 @@ void print_energy_status(){
         
         // Calculate per vertex kinetic energy
         for (int p = 0; p < V.rows(); p++) {
-            T_vert(T_vertex, (P.transpose() * qdot).segment<3>(3 * p), vertexMass);
+            T_vert(T_vertex, qdot.segment<3>(3 * p), vertexMass);
 
             KE += T_vertex;
         }
@@ -76,7 +75,7 @@ void print_energy_status(){
             int v0 = E(p, 0);
             int v1 = E(p, 1);
 
-            V_axial(V_edge, (P.transpose() * q + x0).segment<3>(3 * v0), (P.transpose() * q + x0).segment<3>(3 * v1), l0(p), k_axial(p));
+            V_axial(V_edge, (q).segment<3>(3 * v0), (q).segment<3>(3 * v1), l0(p), k_axial(p));
 
             PE += V_edge;
         }
@@ -103,21 +102,20 @@ void updateV(Eigen::MatrixXd& V, Eigen::VectorXd q){
 void simulate(){
     while (simulating){
 
-
         auto forces = [&](Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::VectorXd> qdot){
             // Set f to zero and then add all the forces to it
             f.resize(q.size());
             f.setZero();
-            assemble_edge_forces(f, P.transpose() * q + x0, E, l0, k_axial);
-            assemble_crease_forces(f, P.transpose() * q + x0, edge_adjacent_vertices, k_crease, edge_target_angle);
-            // TODO: assemble_face_forces()
-
+            assemble_edge_forces(f, q, E, l0, k_axial);
+            assemble_crease_forces(f, q, edge_adjacent_vertices, k_crease, edge_target_angle);
+            
+            assemble_face_forces(f, q, F, alpha0, k_face);
             assemble_damping_forces(f, qdot, E, k_axial, zeta);
         };
 
         forward_euler(q, qdot, dt, forces, tmp_force);
         // update vertex positions from q and increment time
-        updateV(V, P.transpose() * q + x0);
+        updateV(V, q);
         
 
         // Update the viewer's mesh
@@ -144,28 +142,21 @@ int main(int argc, char *argv[])
     if (args.size() == 2){
         // Both CP and params provided
         setup_simulation_params(args[1], dt, vertexMass, EA, k_fold, k_facet, k_face, zeta);
-        setup_mesh(args[0], q, qdot, x0, P, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face);
+        setup_mesh(args[0], q, qdot, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face);
     } else if (args.size() == 1){
         // Only crease pattern provided
         std::cout << "Using default parameters" << std::endl;
         setup_simulation_params("../data/simulation_params/default-params.json", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta);
-        setup_mesh(args[0], q, qdot, x0, P, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face);
+        setup_mesh(args[0], q, qdot, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face);
     } else {
         // No arguments provided, using default 
         std::cout << "No arguments provided, using default" << std::endl;
         setup_simulation_params("../data/simulation_params/default-params.json", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta);
-        setup_mesh("../data/crease_patterns/defaultsquare.fold", q, qdot, x0, P, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face);
+        setup_mesh("../data/crease_patterns/defaultsquare.fold", q, qdot, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face);
     }
-
-    std::cout << "V: " << V << std::endl;
-    std::cout << "E: " << E <<std::endl;
-    std::cout << "edge adj vert: " << edge_adjacent_vertices << std::endl;
-    // q(4) = 5;
-    // updateV(V, q);
 
     // Set up mass matrix
     make_mass_matrix(M, q, vertexMass);
-    M = P*M*P.transpose();
 
     // Create viewer
     igl::opengl::glfw::Viewer viewer;

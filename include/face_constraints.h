@@ -11,3 +11,5 @@
  * @param k_face	Stiffness for given face
  */
 void F_face(Eigen::Ref<Eigen::Matrix<double, 9, 1>> f, Eigen::Ref<const Eigen::Vector3d> q1,  Eigen::Ref<const Eigen::Vector3d> q2, Eigen::Ref<const Eigen::Vector3d> q3, Eigen::Ref<const Eigen::Vector3d> alpha0, double k_face);
+
+void calculateFfacealpha(Eigen::Ref<Eigen::Matrix<double, 9, 1>> f, Eigen::Ref<const Eigen::Vector3d> q1, Eigen::Ref<const Eigen::Vector3d> q2, Eigen::Ref<const Eigen::Vector3d> q3, double alpha0, double k_face);
