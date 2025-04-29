@@ -4,7 +4,7 @@
 
 using json = nlohmann::json;
 
-void setup_simulation_params(std::string filename, double& dt, double& vertexMass, double& EA, double& k_fold, double& k_facet, double& k_face, double& zeta){
+void setup_simulation_params(std::string filename, double& dt, double& vertexMass, double& EA, double& k_fold, double& k_facet, double& k_face, double& zeta, bool& ENABLE_STRAIN_VISUALIZATION){
 	// Use nlohmann JSON to grab the simulation parameters from the specified filename.
 	std::ifstream file(filename);
 
@@ -46,7 +46,12 @@ void setup_simulation_params(std::string filename, double& dt, double& vertexMas
 		} else {
 			zeta = 0.25;
 		}
-
+		if (params.contains("visualize_strain")){
+			ENABLE_STRAIN_VISUALIZATION = params["visualize_strain"].template get<bool>();
+		} else {
+			ENABLE_STRAIN_VISUALIZATION = false;
+		}
+		
 	} else {
 		std::cout << "error: params file not found" << std::endl;     
 	}
@@ -66,7 +71,11 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 			for (int i = 0; i < coords.size(); i++){
 				V(i, 0) = coords[i][0];
 				V(i, 1) = coords[i][1];
-				V(i, 2) = 0;
+				if (coords[i].size() == 3){
+					V(i, 2) = coords[i][2];
+				} else {
+					V(i, 2) = 0;
+				}
 			}
 		} else {
 			std::cout << "Missing parameter \"vertices_coords\"" << std::endl;
@@ -84,6 +93,7 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 			}
 		} else {
 			std::cout << "Missing parameter \"faces_vertices\"" << std::endl;
+			std::cout << "we do have vertices coords. proof: " << V << std::endl;
 			throw std::runtime_error("Oh no...");
 		}
 		
@@ -114,11 +124,16 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 
 		// Assign edge target angles
 		if (params.contains("edges_foldAngle")){
-			// TODO can be null
-			std::vector<double> angles = params["edges_foldAngle"].template get<std::vector<double>>();
-			edge_target_angle.resize(angles.size());
-			for (int i = 0; i < angles.size(); i++){
-				edge_target_angle(i) = angles[i] * M_PI / 180;
+			const auto& angles_json = params["edges_foldAngle"];
+			edge_target_angle.resize(angles_json.size());
+
+			for (int i = 0; i < angles_json.size(); i++){
+				if (angles_json[i].is_null()){
+					// null angle usually means border edge or facet crease. in any case, set 0.
+					edge_target_angle(i) = 0.0;
+				} else {
+					edge_target_angle(i) = angles_json[i].get<double>() * M_PI / 180.0;
+				}
 			}
 		} else {
 			std::cout << "Missing parameter \"edges_foldAngle\"" << std::endl;
@@ -249,7 +264,7 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 				}
 			}
 		} else {
-			std::cout << "Missing parameter \"faces_vertices\"" << std::endl;
+			std::cout << "Missing parameter \"faces_vertices\" or \"faces_edges\" or \"edges_assignment\"..." << std::endl;
 			throw std::runtime_error("Oh no...");
 		}
 

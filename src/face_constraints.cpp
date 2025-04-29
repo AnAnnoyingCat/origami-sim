@@ -35,5 +35,5 @@ void calculateFfacealpha(Eigen::Ref<Eigen::Matrix<double, 9, 1>> f, Eigen::Ref<c
 	f.segment<3>(6) = dq3;
 
 	f *= -k_face * (currentAlpha - alpha0);
-	std::cout << "currentAlpha: " << currentAlpha * 180 / M_PI << ", alpha0: " << alpha0 * 180 / M_PI << std::endl;
+	//std::cout << "currentAlpha: " << currentAlpha * 180 / M_PI << ", alpha0: " << alpha0 * 180 / M_PI << std::endl;
 }

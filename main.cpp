@@ -54,39 +54,12 @@ Eigen::VectorXd tmp_force;
 igl::opengl::glfw::Viewer* viewer_ptr = nullptr;
 
 // Debug flags
-const bool PRINT_FORCE_INFO = false;
+bool ENABLE_STRAIN_VISUALIZATION;
 
-/// @brief Prints to console the total energy of the system - should be constant with no new energy introduced
-void print_energy_status(){
+/// @brief If enabled in config, visualizes strain in the mesh using l0 or alpha0
+void visualizeStrain(){
     while(simulating){
-        double V_edge, T_vertex, KE, PE;
-        KE = 0;
-        PE = 0;
-        
-        // Calculate per vertex kinetic energy
-        for (int p = 0; p < V.rows(); p++) {
-            T_vert(T_vertex, qdot.segment<3>(3 * p), vertexMass);
 
-            KE += T_vertex;
-        }
-
-        // Calculate per axis potential energy
-        for (int p = 0; p < E.rows(); p++){
-            int v0 = E(p, 0);
-            int v1 = E(p, 1);
-
-            V_axial(V_edge, (q).segment<3>(3 * v0), (q).segment<3>(3 * v1), l0(p), k_axial(p));
-
-            PE += V_edge;
-        }
-
-        std::cout << "=====================================================" << std::endl;
-        std::cout << "Kinetic Energy of the system: " << KE << std::endl;
-        std::cout << "Potential Energy of the system: " << PE << std::endl;
-        std::cout << "Total Energy of the system: " << KE + PE << std::endl;
-
-        // Don't spam the console too much
-        std::this_thread::sleep_for(std::chrono::milliseconds(250));
     }
 }
 
@@ -96,6 +69,20 @@ void updateV(Eigen::MatrixXd& V, Eigen::VectorXd q){
 	for (int i = 0; i < n; i++){
 		V.row(i) = q.segment<3>(3 * i);
 	}
+}
+
+/// @brief Move the center of mass back to the middle of the screen
+void centerMesh(){
+    
+    Eigen::Vector3d center;
+    center.setZero();
+    for (int currVertex = 0; currVertex < V.rows(); currVertex++){
+        center += q.segment<3>(3 * currVertex);
+    }
+    center /= V.rows();
+    for (int currVertex = 0; currVertex < V.rows(); currVertex++){
+        q.segment<3>(3 * currVertex) -= center;
+    }
 }
 
 /// @brief Main simulation loop, running in a seperate thread
@@ -114,6 +101,9 @@ void simulate(){
         };
 
         forward_euler(q, qdot, dt, forces, tmp_force);
+
+        centerMesh();
+
         // update vertex positions from q and increment time
         updateV(V, q);
         
@@ -141,17 +131,17 @@ int main(int argc, char *argv[])
     // Set up parameters and read CP
     if (args.size() == 2){
         // Both CP and params provided
-        setup_simulation_params(args[1], dt, vertexMass, EA, k_fold, k_facet, k_face, zeta);
+        setup_simulation_params(args[1], dt, vertexMass, EA, k_fold, k_facet, k_face, zeta, ENABLE_STRAIN_VISUALIZATION);
         setup_mesh(args[0], q, qdot, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face);
     } else if (args.size() == 1){
         // Only crease pattern provided
         std::cout << "Using default parameters" << std::endl;
-        setup_simulation_params("../data/simulation_params/default-params.json", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta);
+        setup_simulation_params("../data/simulation_params/default-params.json", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta, ENABLE_STRAIN_VISUALIZATION);
         setup_mesh(args[0], q, qdot, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face);
     } else {
         // No arguments provided, using default 
         std::cout << "No arguments provided, using default" << std::endl;
-        setup_simulation_params("../data/simulation_params/default-params.json", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta);
+        setup_simulation_params("../data/simulation_params/default-params.json", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta, ENABLE_STRAIN_VISUALIZATION);
         setup_mesh("../data/crease_patterns/defaultsquare.fold", q, qdot, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face);
     }
 
@@ -171,10 +161,10 @@ int main(int argc, char *argv[])
     std::thread simulation_thread(simulate);
     simulation_thread.detach();
 
-    if (PRINT_FORCE_INFO){
+    if (ENABLE_STRAIN_VISUALIZATION){
         // Start the energy status in another thread if needed
-        std::thread total_energy_thread(print_energy_status);
-        total_energy_thread.detach();
+        std::thread strain_visualization(visualizeStrain);
+        strain_visualization.detach();
     }
 
     viewer.callback_pre_draw = [&](igl::opengl::glfw::Viewer&) -> bool {
