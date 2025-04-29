@@ -7,5 +7,5 @@
 	"k_face": 0.2,
 	"zeta": 0.45,
 
-	"visualize_strain": false
+	"visualize_strain": true
 }

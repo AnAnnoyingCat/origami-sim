@@ -18,6 +18,7 @@
 #include <make_mass_matrix.h>
 #include <assemble_damping_forces.h>
 #include <assemble_face_forces.h>
+#include <trig_helper_functions.h>
 
 // Simulation state
 bool simulating = true;
@@ -46,6 +47,8 @@ double k_facet;             // Stiffness for a facet crease
 double k_face;              // Stiffness for the face constraints
 double zeta;                // Parameter in the damping ratio from the paper
 
+Eigen::RowVector3d mesh_color(0.18, 0.78, 0.87);
+
 // Working memory for integrator
 Eigen::SparseMatrix<double> tmp_stiffness;
 Eigen::VectorXd tmp_force;
@@ -56,10 +59,37 @@ igl::opengl::glfw::Viewer* viewer_ptr = nullptr;
 // Debug flags
 bool ENABLE_STRAIN_VISUALIZATION;
 
+
 /// @brief If enabled in config, visualizes strain in the mesh using l0 or alpha0
 void visualizeStrain(){
     while(simulating){
+        if (viewer_ptr){
+            Eigen::MatrixXd C;
+            C.resize(F.rows(), 3);
+            
+            for (int currFace = 0; currFace < F.rows(); currFace++){
+                double currAlpha0, currAlpha1, currAlpha2;
+                Eigen::Vector3d q0, q1, q2;
+                q0 = q.segment<3>(3 * F(currFace, 0));
+                q1 = q.segment<3>(3 * F(currFace, 1));
+                q2 = q.segment<3>(3 * F(currFace, 2));
+                
+                getAngle(currAlpha0, q0, q1, q2);
+                getAngle(currAlpha1, q1, q2, q0);
+                getAngle(currAlpha2, q2, q0, q1);
 
+                double strain = (1.0/3.0) * (std::abs(currAlpha0 - alpha0(currFace, 0)) / alpha0(currFace, 0) + std::abs(currAlpha1 - alpha0(currFace, 1)) / alpha0(currFace, 1) + std::abs(currAlpha2 - alpha0(currFace, 2)) / alpha0(currFace, 2));
+                strain = std::min(strain, 1.0); // Safety check, unnecessary i think
+                double scaled_strain = 1.0 - std::exp(-5.0 * strain); 
+
+
+                Eigen::RowVector3d faceColor = (1 - scaled_strain) * mesh_color + scaled_strain * Eigen::RowVector3d(1.0, 0, 0);
+                C.row(currFace) = faceColor;
+            }
+
+            viewer_ptr->data().set_colors(C);
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
 
