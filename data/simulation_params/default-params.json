@@ -1,11 +1,12 @@
 {
-	"dt": 0.01,
+	"dt": 0.05,
 	"vertexMass": 1,
-	"EA": 20,
-	"k_fold": 0.7,
-	"k_facet": 0.7,
+	"EA": 15,
+	"k_fold": 1,
+	"k_facet": 1,
 	"k_face": 0.2,
 	"zeta": 0.45,
 
-	"visualize_strain": true
+	"visualize_strain": true,
+	"strain_type": "face"
 }

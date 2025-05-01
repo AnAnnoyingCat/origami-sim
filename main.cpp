@@ -58,6 +58,49 @@ igl::opengl::glfw::Viewer* viewer_ptr = nullptr;
 
 // Debug flags
 bool ENABLE_STRAIN_VISUALIZATION;
+std::string STRAIN_TYPE;
+
+/// @brief      Helper function to calculate per face strain based on internal angles
+/// @param C    Color matrix for each face
+void calculateFaceAngleStrain(Eigen::MatrixXd& C){
+    C.resize(F.rows(), 3);
+
+    for (int currFace = 0; currFace < F.rows(); currFace++){
+        double currAlpha0, currAlpha1, currAlpha2;
+        Eigen::Vector3d q0, q1, q2;
+        q0 = q.segment<3>(3 * F(currFace, 0));
+        q1 = q.segment<3>(3 * F(currFace, 1));
+        q2 = q.segment<3>(3 * F(currFace, 2));
+        
+        getAngle(currAlpha0, q0, q1, q2);
+        getAngle(currAlpha1, q1, q2, q0);
+        getAngle(currAlpha2, q2, q0, q1);
+
+        double strain = (1.0/3.0) * (std::abs(currAlpha0 - alpha0(currFace, 0)) / alpha0(currFace, 0) + std::abs(currAlpha1 - alpha0(currFace, 1)) / alpha0(currFace, 1) + std::abs(currAlpha2 - alpha0(currFace, 2)) / alpha0(currFace, 2));
+        strain = std::min(strain, 1.0); // Safety check, unnecessary i think
+        double scaled_strain = 1.0 - std::exp(-5.0 * strain); 
+
+
+        Eigen::RowVector3d faceColor = (1 - scaled_strain) * mesh_color + scaled_strain * Eigen::RowVector3d(1.0, 0, 0);
+        C.row(currFace) = faceColor;
+    }
+}
+
+void calculateAxialDeformationStrain(Eigen::MatrixXd& C){
+    C.resize(F.rows(), 3);
+
+    for (int currFace = 0; currFace < F.rows(); currFace++){
+        int v0, v1, v2, e0, e1, e2;
+        v0 = F(currFace, 0);
+        v1 = F(currFace, 1);
+        v2 = F(currFace, 2);
+
+        // TODO: Somehow find out which edges these three edges v0, v1; v1, v2 and v2, v3 are.
+
+        double strain = (1.0/3.0) * (std::abs((V.row(v0) - V.row(v1)).norm() - l0(e0))) / l0(e0); // and do the same for e1 and e2
+        
+    }
+}
 
 
 /// @brief If enabled in config, visualizes strain in the mesh using l0 or alpha0
@@ -65,26 +108,12 @@ void visualizeStrain(){
     while(simulating){
         if (viewer_ptr){
             Eigen::MatrixXd C;
-            C.resize(F.rows(), 3);
             
-            for (int currFace = 0; currFace < F.rows(); currFace++){
-                double currAlpha0, currAlpha1, currAlpha2;
-                Eigen::Vector3d q0, q1, q2;
-                q0 = q.segment<3>(3 * F(currFace, 0));
-                q1 = q.segment<3>(3 * F(currFace, 1));
-                q2 = q.segment<3>(3 * F(currFace, 2));
-                
-                getAngle(currAlpha0, q0, q1, q2);
-                getAngle(currAlpha1, q1, q2, q0);
-                getAngle(currAlpha2, q2, q0, q1);
-
-                double strain = (1.0/3.0) * (std::abs(currAlpha0 - alpha0(currFace, 0)) / alpha0(currFace, 0) + std::abs(currAlpha1 - alpha0(currFace, 1)) / alpha0(currFace, 1) + std::abs(currAlpha2 - alpha0(currFace, 2)) / alpha0(currFace, 2));
-                strain = std::min(strain, 1.0); // Safety check, unnecessary i think
-                double scaled_strain = 1.0 - std::exp(-5.0 * strain); 
-
-
-                Eigen::RowVector3d faceColor = (1 - scaled_strain) * mesh_color + scaled_strain * Eigen::RowVector3d(1.0, 0, 0);
-                C.row(currFace) = faceColor;
+            if (STRAIN_TYPE == "face"){
+                calculateFaceAngleStrain(C);
+            } else if (STRAIN_TYPE == "edge"){
+                std::cout << "[STILL TODO] AXIAL DEFORMATION STRAIN ISN'T IMPLEMENTED YET. TERMINATING PROGRAM" << std::endl;
+                simulating = false;
             }
 
             viewer_ptr->data().set_colors(C);
@@ -161,17 +190,17 @@ int main(int argc, char *argv[])
     // Set up parameters and read CP
     if (args.size() == 2){
         // Both CP and params provided
-        setup_simulation_params(args[1], dt, vertexMass, EA, k_fold, k_facet, k_face, zeta, ENABLE_STRAIN_VISUALIZATION);
+        setup_simulation_params(args[1], dt, vertexMass, EA, k_fold, k_facet, k_face, zeta, ENABLE_STRAIN_VISUALIZATION, STRAIN_TYPE);
         setup_mesh(args[0], q, qdot, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face);
     } else if (args.size() == 1){
         // Only crease pattern provided
         std::cout << "Using default parameters" << std::endl;
-        setup_simulation_params("../data/simulation_params/default-params.json", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta, ENABLE_STRAIN_VISUALIZATION);
+        setup_simulation_params("../data/simulation_params/default-params.json", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta, ENABLE_STRAIN_VISUALIZATION, STRAIN_TYPE);
         setup_mesh(args[0], q, qdot, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face);
     } else {
         // No arguments provided, using default 
         std::cout << "No arguments provided, using default" << std::endl;
-        setup_simulation_params("../data/simulation_params/default-params.json", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta, ENABLE_STRAIN_VISUALIZATION);
+        setup_simulation_params("../data/simulation_params/default-params.json", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta, ENABLE_STRAIN_VISUALIZATION, STRAIN_TYPE);
         setup_mesh("../data/crease_patterns/defaultsquare.fold", q, qdot, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face);
     }
 
