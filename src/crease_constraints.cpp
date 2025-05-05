@@ -27,7 +27,7 @@ void F_crease(Eigen::Ref<Eigen::Matrix<double, 12, 1>> f, Eigen::Ref<const Eigen
 		// once paper is close to fully folded force the sign to stay around there
 		current_theta = std::copysign(current_theta, theta_target);
 	} 
-	std::cout << "current angle: " << current_theta * 180 / M_PI << ", target angle: " << theta_target * 180 / M_PI << std::endl;
+	//std::cout << "current angle: " << current_theta * 180 / M_PI << ", target angle: " << theta_target * 180 / M_PI << std::endl;
 
 	// Precompute some values
 	Eigen::Vector3d n1h1 = n1 / h1;

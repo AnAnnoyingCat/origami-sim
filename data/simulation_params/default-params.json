@@ -4,8 +4,8 @@
 	"EA": 15,
 	"k_fold": 1,
 	"k_facet": 1,
-	"k_face": 0.2,
-	"zeta": 0.35,
+	"k_face": 0.5,
+	"zeta": 0.45,
 
 	"visualize_strain": true,
 	"strain_type": "face"
