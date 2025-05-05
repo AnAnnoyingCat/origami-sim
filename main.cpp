@@ -19,6 +19,7 @@
 #include <assemble_damping_forces.h>
 #include <assemble_face_forces.h>
 #include <trig_helper_functions.h>
+#include <strain_calculations.h>
 
 // Simulation state
 bool simulating = true;
@@ -47,9 +48,6 @@ double k_facet;             // Stiffness for a facet crease
 double k_face;              // Stiffness for the face constraints
 double zeta;                // Parameter in the damping ratio from the paper
 
-// Eigen::RowVector3d mesh_color(0.18, 0.78, 0.87);
-Eigen::RowVector3d mesh_color(0.0, 0.0, 1.0);
-
 // Working memory for integrator
 Eigen::SparseMatrix<double> tmp_stiffness;
 Eigen::VectorXd tmp_force;
@@ -61,53 +59,6 @@ igl::opengl::glfw::Viewer* viewer_ptr = nullptr;
 bool ENABLE_STRAIN_VISUALIZATION;
 std::string STRAIN_TYPE;
 
-/// @brief      Helper function to calculate per face strain based on internal angles. Strain scales linearly from 0% to 100% angle deformation (e.g. angle of 20 deg deformed to angle of 40 deg)
-/// @param C    Color matrix for each face
-void calculateFaceAngleStrain(Eigen::MatrixXd& C){
-    C.resize(F.rows(), 3);
-
-    for (int currFace = 0; currFace < F.rows(); currFace++){
-        double currAlpha0, currAlpha1, currAlpha2;
-        Eigen::Vector3d q0, q1, q2;
-        q0 = q.segment<3>(3 * F(currFace, 0));
-        q1 = q.segment<3>(3 * F(currFace, 1));
-        q2 = q.segment<3>(3 * F(currFace, 2));
-        
-        getAngle(currAlpha0, q0, q1, q2);
-        getAngle(currAlpha1, q1, q2, q0);
-        getAngle(currAlpha2, q2, q0, q1);
-
-        // Average strain of the angles
-        double strain = 5 * (1.0/3.0) * (std::abs(currAlpha0 - alpha0(currFace, 0)) / alpha0(currFace, 0) + std::abs(currAlpha1 - alpha0(currFace, 1)) / alpha0(currFace, 1) + std::abs(currAlpha2 - alpha0(currFace, 2)) / alpha0(currFace, 2));
-        
-        // Largest strain of the angles
-        // TODO
-
-        strain = std::min(strain, 1.0); // Safety check, unnecessary i think
-
-        Eigen::RowVector3d faceColor = (1 - strain) * mesh_color + strain * Eigen::RowVector3d(1.0, 0, 0);
-        C.row(currFace) = faceColor;
-    }
-}
-
-/// @brief      Helper function to calculate per axis strain, visualized by recoloring the faces of the mesh
-/// @param C    Color matrix for each face
-void calculateAxialDeformationStrain(Eigen::MatrixXd& C){
-    C.resize(F.rows(), 3);
-
-    for (int currFace = 0; currFace < F.rows(); currFace++){
-        int v0, v1, v2, e0, e1, e2;
-        v0 = F(currFace, 0);
-        v1 = F(currFace, 1);
-        v2 = F(currFace, 2);
-
-        // TODO: Somehow find out which edges these three edges v0, v1; v1, v2 and v2, v3 are.
-
-        double strain = (1.0/3.0) * (std::abs((V.row(v0) - V.row(v1)).norm() - l0(e0))) / l0(e0); // and do the same for e1 and e2
-        
-    }
-}
-
 /// @brief If enabled in config, visualizes strain in the mesh using l0 or alpha0
 void visualizeStrain(){
     while(simulating){
@@ -115,7 +66,7 @@ void visualizeStrain(){
             Eigen::MatrixXd C;
             
             if (STRAIN_TYPE == "face"){
-                calculateFaceAngleStrain(C);
+                calculateFaceAngleStrain(C, F, q, alpha0);
             } else if (STRAIN_TYPE == "edge"){
                 std::cout << "[STILL TODO] AXIAL DEFORMATION STRAIN ISN'T IMPLEMENTED YET. TERMINATING PROGRAM" << std::endl;
                 simulating = false;

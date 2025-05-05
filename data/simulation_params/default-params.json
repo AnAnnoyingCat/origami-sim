@@ -1,10 +1,10 @@
 {
 	"dt": 0.01,
 	"vertexMass": 1,
-	"EA": 15,
-	"k_fold": 1,
-	"k_facet": 1,
-	"k_face": 0.5,
+	"EA": 20,
+	"k_fold": 0.7,
+	"k_facet": 0.7,
+	"k_face": 0.3,
 	"zeta": 0.45,
 
 	"visualize_strain": true,
