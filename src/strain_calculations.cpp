@@ -48,7 +48,7 @@ void calculateFaceAngleStrain(Eigen::MatrixXd& C, Eigen::MatrixXi& F, Eigen::Vec
 		} else if (strain < 0.8){
 			linearlyInterpretColors(faceColor, mesh_color_3, mesh_color_4, (strain - 0.6) * 5);
 		} else {
-			linearlyInterpretColors(faceColor, mesh_color_4, mesh_color_5, (strain - 0.0) * 5);
+			linearlyInterpretColors(faceColor, mesh_color_4, mesh_color_5, (strain - 0.8) * 5);
 		}
 
         C.row(currFace) = faceColor;

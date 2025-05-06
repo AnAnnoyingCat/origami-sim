@@ -2,13 +2,12 @@
 #include <iostream>
 #include <fstream>
 
-void assemble_crease_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::MatrixXi> edge_adjacent_vertices, Eigen::Ref<const Eigen::VectorXd> k_crease, Eigen::Ref<const Eigen::VectorXd> curr_theta){
+void assemble_crease_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::MatrixXi> edge_adjacent_vertices, Eigen::Ref<const Eigen::VectorXd> k_crease, Eigen::Ref<const Eigen::VectorXd> edge_target_angle){
 	// Pre-allocate force and reuse the same memory for performance
 	Eigen::Matrix<double, 12, 1> force;
-	
-	for (int currCrease = 0; currCrease < edge_adjacent_vertices.rows(); currCrease++){
-		// Check if current edge is a border edge
-		if (edge_adjacent_vertices(currCrease, 0) == -1){
+	for (int currCrease = 0; currCrease < edge_target_angle.size(); currCrease++){
+		// Check if current edge is a border edge or an undriven crease
+		if (std::isnan(edge_target_angle(currCrease))){
 			continue;
 		}
 
@@ -24,7 +23,7 @@ void assemble_crease_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd
 		Eigen::Vector3d q3 = q.segment<3>(3 * v_begin);
 		Eigen::Vector3d q4 = q.segment<3>(3 * v_end);
 
-		F_crease(force, q1, q2, q3, q4, k_crease(currCrease), curr_theta(currCrease));
+		F_crease(force, q1, q2, q3, q4, k_crease(currCrease), edge_target_angle(currCrease), currCrease);
 		f.segment<3>(3 * v_right) += force.segment<3>(0);
 		f.segment<3>(3 * v_left) += force.segment<3>(3);
 		f.segment<3>(3 * v_begin) += force.segment<3>(6);

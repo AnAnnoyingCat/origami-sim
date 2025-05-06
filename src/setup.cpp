@@ -67,6 +67,22 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 
 	if (file){
 		json params = json::parse(file);
+		// Check for consistency of edge fields 
+		if (params.contains("edges_vertices") && params.contains("edges_assignment") && params.contains("edges_foldAngle")){
+			const auto& edges_vertices = params["edges_vertices"];
+			const auto& edges_assignment = params["edges_assignment"];
+			const auto& edges_foldAngle = params["edges_foldAngle"];
+			
+			if (!(edges_vertices.size() == edges_assignment.size() &&
+			edges_vertices.size() == edges_foldAngle.size())) {
+			std::cerr << "[ERROR] Mismatched edge data: "
+					<< "vertices=" << edges_vertices.size()
+					<< ", assignment=" << edges_assignment.size()
+					<< ", angle=" << edges_foldAngle.size()
+					<< std::endl;
+			exit(EXIT_FAILURE);
+			}
+		}
 
 		// Assign Vertices
 		if (params.contains("vertices_coords")){
@@ -127,17 +143,23 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 		}
 
 
-		// Assign edge target angles
-		if (params.contains("edges_foldAngle")){
+		// Assign edge target angles. If edge doesn't have a target angle the angle is set to nan.
+		if (params.contains("edges_foldAngle") && params.contains("edges_assignment")){
 			const auto& angles_json = params["edges_foldAngle"];
+			const auto& assignments = params["edges_assignment"];
+
 			edge_target_angle.resize(angles_json.size());
 
 			for (int i = 0; i < angles_json.size(); i++){
 				if (angles_json[i].is_null()){
 					// null angle usually means border edge or facet crease. in any case, set 0.
-					edge_target_angle(i) = 0.0;
+					edge_target_angle(i) = nan("");
 				} else {
-					edge_target_angle(i) = angles_json[i].get<double>() * M_PI / 180.0;
+					if (assignments[i].get<std::string>() == "U" || assignments[i].get<std::string>() == "B"){
+						edge_target_angle(i) = nan("");
+					} else {
+						edge_target_angle(i) = angles_json[i].get<double>() * M_PI / 180.0;
+					}
 				}
 			}
 		} else {

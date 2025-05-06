@@ -12,4 +12,8 @@
  * @param k_crease	Stiffness for given crease
  * @param theta_Target The target theta of the given crease
  */
-void F_crease(Eigen::Ref<Eigen::Matrix<double, 12, 1>> f, Eigen::Ref<const Eigen::Vector3d> q1,  Eigen::Ref<const Eigen::Vector3d> q2, Eigen::Ref<const Eigen::Vector3d> q3, Eigen::Ref<const Eigen::Vector3d> q4, double k_crease, double theta_target);
+void F_crease(Eigen::Ref<Eigen::Matrix<double, 12, 1>> f, Eigen::Ref<const Eigen::Vector3d> q1,  Eigen::Ref<const Eigen::Vector3d> q2, Eigen::Ref<const Eigen::Vector3d> q3, Eigen::Ref<const Eigen::Vector3d> q4, double k_crease, double theta_target, int creaseID);
+
+/// @brief Function to set up the previous angle tracking fields
+/// @param edge_target_angle 
+void setup_prev_angle(Eigen::VectorXd edge_target_angle);

@@ -162,6 +162,9 @@ int main(int argc, char *argv[])
     // Set up mass matrix
     make_mass_matrix(M, q, vertexMass);
 
+    // Set up previous angle tracking in crease constraints
+    setup_prev_angle(edge_target_angle);
+
     // Create viewer
     igl::opengl::glfw::Viewer viewer;
     viewer_ptr = &viewer;

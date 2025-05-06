@@ -509,8 +509,7 @@
     "U",
     "U",
     "U",
-    "U",
-    "M"
+    "U"
   ],
   "edges_foldAngle": [
     0,
@@ -720,8 +719,7 @@
     0,
     0,
     0,
-    0,
-    -75
+    0
   ],
   "cpedit:page": {"xMin":0,"yMin":0,"xMax":8,"yMax":8},
   "version": 1.2,
