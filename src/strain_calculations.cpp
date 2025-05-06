@@ -38,17 +38,17 @@ void calculateFaceAngleStrain(Eigen::MatrixXd& C, Eigen::MatrixXi& F, Eigen::Vec
 		
         Eigen::RowVector3d faceColor;
 		
-		if (strain < 0.2) {
+		if (strain < 0.05) {
 			// *5 is to scale the strain from a 0-20% range to a 0-100% range
-			linearlyInterpretColors(faceColor, mesh_color_0, mesh_color_1, strain * 5);
-		} else if (strain < 0.4) {
-			linearlyInterpretColors(faceColor, mesh_color_1, mesh_color_2, (strain - 0.2) * 5);
-		} else if (strain < 0.6){
-			linearlyInterpretColors(faceColor, mesh_color_2, mesh_color_3, (strain - 0.4) * 5);
-		} else if (strain < 0.8){
-			linearlyInterpretColors(faceColor, mesh_color_3, mesh_color_4, (strain - 0.6) * 5);
+			linearlyInterpretColors(faceColor, mesh_color_0, mesh_color_1, strain * 20);
+		} else if (strain < 0.10) {
+			linearlyInterpretColors(faceColor, mesh_color_1, mesh_color_2, (strain - 0.05) * 20);
+		} else if (strain < 0.15){
+			linearlyInterpretColors(faceColor, mesh_color_2, mesh_color_3, (strain - 0.10) * 20);
+		} else if (strain < 0.20){
+			linearlyInterpretColors(faceColor, mesh_color_3, mesh_color_4, (strain - 0.15) * 20);
 		} else {
-			linearlyInterpretColors(faceColor, mesh_color_4, mesh_color_5, (strain - 0.8) * 5);
+			linearlyInterpretColors(faceColor, mesh_color_4, mesh_color_5, (strain - 0.20) * 20);
 		}
 
         C.row(currFace) = faceColor;

@@ -58,6 +58,13 @@ igl::opengl::glfw::Viewer* viewer_ptr = nullptr;
 // Debug flags
 bool ENABLE_STRAIN_VISUALIZATION;
 std::string STRAIN_TYPE;
+bool ENABLE_DYNAMIC_SIMULATION;
+
+/// @brief If dynamic simulation is enabled this will calculate the current target angles based on some keyframes (TODO: IMPLEMENT KEYFRAMES)
+/// @param target_angle Return target angle in here
+void calculateDynamicTargetAngle(Eigen::VectorXd& target_angle){
+    target_angle = edge_target_angle * t; 
+}
 
 /// @brief If enabled in config, visualizes strain in the mesh using l0 or alpha0
 void visualizeStrain(){
@@ -103,14 +110,25 @@ void centerMesh(){
 /// @brief Main simulation loop, running in a seperate thread
 void simulate(){
     while (simulating){
-
+        
         auto forces = [&](Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::VectorXd> qdot){
             // Set f to zero and then add all the forces to it
             f.resize(q.size());
             f.setZero();
             assemble_edge_forces(f, q, E, l0, k_axial);
-            assemble_crease_forces(f, q, edge_adjacent_vertices, k_crease, edge_target_angle);
-            
+
+            if (ENABLE_DYNAMIC_SIMULATION){
+                // Scale curr angle according to time
+                Eigen::VectorXd edge_curr_angle;
+                calculateDynamicTargetAngle(edge_curr_angle);
+                assemble_crease_forces(f, q, edge_adjacent_vertices, k_crease, edge_curr_angle);
+                if (t >= 1.0) {
+                    simulating = false;
+                }
+                std::cout << "\rtime: " << t << std::endl;
+            } else {
+                assemble_crease_forces(f, q, edge_adjacent_vertices, k_crease, edge_target_angle);
+            }
             assemble_face_forces(f, q, F, alpha0, k_face);
             assemble_damping_forces(f, qdot, E, k_axial, zeta);
         };
@@ -132,7 +150,9 @@ void simulate(){
         t += dt;
 
         // Small delay to make the animation visible
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        //std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        
+        
     }
 }
 
@@ -145,17 +165,17 @@ int main(int argc, char *argv[])
     // Set up parameters and read CP
     if (args.size() == 2){
         // Both CP and params provided
-        setup_simulation_params(args[1], dt, vertexMass, EA, k_fold, k_facet, k_face, zeta, ENABLE_STRAIN_VISUALIZATION, STRAIN_TYPE);
+        setup_simulation_params(args[1], dt, vertexMass, EA, k_fold, k_facet, k_face, zeta, ENABLE_STRAIN_VISUALIZATION, STRAIN_TYPE, ENABLE_DYNAMIC_SIMULATION);
         setup_mesh(args[0], q, qdot, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face);
     } else if (args.size() == 1){
         // Only crease pattern provided
         std::cout << "Using default parameters" << std::endl;
-        setup_simulation_params("../data/simulation_params/default-params.json", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta, ENABLE_STRAIN_VISUALIZATION, STRAIN_TYPE);
+        setup_simulation_params("../data/simulation_params/default-params.json", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta, ENABLE_STRAIN_VISUALIZATION, STRAIN_TYPE, ENABLE_DYNAMIC_SIMULATION);
         setup_mesh(args[0], q, qdot, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face);
     } else {
         // No arguments provided, using default 
         std::cout << "No arguments provided, using default" << std::endl;
-        setup_simulation_params("../data/simulation_params/default-params.json", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta, ENABLE_STRAIN_VISUALIZATION, STRAIN_TYPE);
+        setup_simulation_params("../data/simulation_params/default-params.json", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta, ENABLE_STRAIN_VISUALIZATION, STRAIN_TYPE, ENABLE_DYNAMIC_SIMULATION);
         setup_mesh("../data/crease_patterns/defaultsquare.fold", q, qdot, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face);
     }
 

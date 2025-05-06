@@ -30,9 +30,6 @@ void F_crease(Eigen::Ref<Eigen::Matrix<double, 12, 1>> f, Eigen::Ref<const Eigen
 	// Calculate current fold angle theta 
     Eigen::Vector3d crease_dir = (q4 - q3).normalized();
 	double current_theta = std::atan2((n1.cross(n2)).dot(crease_dir), n1.dot(n2));
-	// char sign1 = n1(2) > 0 ? '+' : '-';
-	// char sign2 = n2(2) > 0 ? '+' : '-';
-	// std::cout << "current angle: " << current_theta * 180 / M_PI << ", target angle: " << theta_target * 180 / M_PI << ", normal signs: " << sign1 << ", " << sign2 << std::endl;
 
 	// Unwrap the angle
 	double delta = current_theta - edge_angle_prev(creaseID);
@@ -43,7 +40,7 @@ void F_crease(Eigen::Ref<Eigen::Matrix<double, 12, 1>> f, Eigen::Ref<const Eigen
 	}
 	edge_angle_prev(creaseID) = current_theta;
 
-	//std::cout << "unwrapped angle: " << current_theta * 180.0 / M_PI << std::endl;
+	//std::cout << "current angle: " << current_theta * 180.0 / M_PI << std::endl;
 
 	// Precompute some values
 	Eigen::Vector3d n1h1 = n1 / h1;

@@ -4,7 +4,7 @@
 
 using json = nlohmann::json;
 
-void setup_simulation_params(std::string filename, double& dt, double& vertexMass, double& EA, double& k_fold, double& k_facet, double& k_face, double& zeta, bool& ENABLE_STRAIN_VISUALIZATION, std::string& STRAIN_TYPE){
+void setup_simulation_params(std::string filename, double& dt, double& vertexMass, double& EA, double& k_fold, double& k_facet, double& k_face, double& zeta, bool& ENABLE_STRAIN_VISUALIZATION, std::string& STRAIN_TYPE, bool& ENABLE_DYNAMIC_SIMULATION){
 	// Use nlohmann JSON to grab the simulation parameters from the specified filename.
 	std::ifstream file(filename);
 
@@ -55,6 +55,11 @@ void setup_simulation_params(std::string filename, double& dt, double& vertexMas
 			STRAIN_TYPE = params["strain_type"].template get<std::string>();
 		} else {
 			STRAIN_TYPE = "face";
+		}
+		if (params.contains("enable_dynamic_simulation")){
+			ENABLE_DYNAMIC_SIMULATION = params["enable_dynamic_simulation"].template get<bool>();
+		} else {
+			ENABLE_DYNAMIC_SIMULATION = true;
 		}
 		
 	} else {

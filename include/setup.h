@@ -14,7 +14,7 @@
  * @param k_face 
  * @param zeta 
  */
-void setup_simulation_params(std::string filename, double& dt, double& vertexMass, double& EA, double& k_fold, double& k_facet, double& k_face, double& zeta, bool& ENABLE_STRAIN_VISUALIZATION, std::string& STRAIN_TYPE);
+void setup_simulation_params(std::string filename, double& dt, double& vertexMass, double& EA, double& k_fold, double& k_facet, double& k_face, double& zeta, bool& ENABLE_STRAIN_VISUALIZATION, std::string& STRAIN_TYPE, bool& ENABLE_DYNAMIC_SIMULATION);
 
     /**
     * @brief 						    Sets up simulation with a simple square with one diagonal fold. Will support reading meshes in the future.
