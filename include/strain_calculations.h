@@ -6,4 +6,4 @@ void calculateFaceAngleStrain(Eigen::MatrixXd& C, Eigen::MatrixXi& F, Eigen::Vec
 
 /// @brief      Helper function to calculate per axis strain, visualized by recoloring the faces of the mesh. TODO this isn't implemented yet
 /// @param C    Color matrix for each face
-void calculateAxialDeformationStrain(Eigen::MatrixXd& C);
+void calculateAxialDeformationStrain(Eigen::MatrixXd& C, Eigen::MatrixXi& F, Eigen::MatrixXi E, Eigen::VectorXd& q, Eigen::VectorXd& l0, Eigen::MatrixXi& face_adjacent_edges);

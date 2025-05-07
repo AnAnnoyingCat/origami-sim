@@ -27,16 +27,17 @@ Eigen::VectorXd q;                  // Generalized Vertex Coordinates, size 3*x 
 Eigen::VectorXd qdot;               // Generalized Vertex Velocities
 Eigen::SparseMatrix<double> M;      // Sparse Mass Matrix.
 
-Eigen::MatrixXd V;          // Vertices of the CP, nx3 matrix
-Eigen::MatrixXi F;          // Faces of the CP, mx3 matrix
-Eigen::MatrixXi E;          // Edges of the CP (Springs), ex2 matrix
-Eigen::VectorXd edge_target_angle; // Final Target fold angle for each edge
-Eigen::VectorXd curr_theta; // Current Target fold angle for each edge (CURRENTLY UNUSED)
-Eigen::VectorXd l0;         // Original length of the Edges, size e vector
-Eigen::MatrixXd alpha0;     // Nominal angles in flat state of CP, in same order as face vertices
-Eigen::VectorXd k_axial;    // Per edge stiffness constant
-Eigen::VectorXd k_crease;   // Per crease stiffness constant
-Eigen::MatrixXi edge_adjacent_vertices; // For each edge, stores the four vertices making up the two triangles which meet at the edge. The order is: Right vertex, Left Vertex, Start Vertex, End Vertex. It is {-1, -1, -1, -1} for border edges
+Eigen::MatrixXd V;                              // Vertices of the CP, nx3 matrix
+Eigen::MatrixXi F;                              // Faces of the CP, mx3 matrix
+Eigen::MatrixXi E;                              // Edges of the CP (Springs), ex2 matrix
+Eigen::VectorXd edge_target_angle;              // Final Target fold angle for each edge
+Eigen::VectorXd curr_theta;                     // Current Target fold angle for each edge (CURRENTLY UNUSED)
+Eigen::VectorXd l0;                             // Original length of the Edges, size e vector
+Eigen::MatrixXd alpha0;                         // Nominal angles in flat state of CP, in same order as face vertices
+Eigen::VectorXd k_axial;                        // Per edge stiffness constant
+Eigen::VectorXd k_crease;                       // Per crease stiffness constant
+Eigen::MatrixXi edge_adjacent_vertices;         // For each edge, stores the four vertices making up the two triangles which meet at the edge. The order is: Right vertex, Left Vertex, Start Vertex, End Vertex. It is {-1, -1, -1, -1} for border edges
+Eigen::MatrixXi face_adjacent_edges;            // For each face stores the three face adjacent edges as provided by the .fold field faces_edges
 
 double t = 0;               // Simulation Time
 
@@ -75,13 +76,12 @@ void visualizeStrain(){
             if (STRAIN_TYPE == "face"){
                 calculateFaceAngleStrain(C, F, q, alpha0);
             } else if (STRAIN_TYPE == "edge"){
-                std::cout << "[STILL TODO] AXIAL DEFORMATION STRAIN ISN'T IMPLEMENTED YET. TERMINATING PROGRAM" << std::endl;
-                simulating = false;
+                calculateAxialDeformationStrain(C, F, E, q, l0, face_adjacent_edges);
             }
 
             viewer_ptr->data().set_colors(C);
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 }
 
@@ -115,8 +115,12 @@ void simulate(){
             // Set f to zero and then add all the forces to it
             f.resize(q.size());
             f.setZero();
+            // Get the basic forces
             assemble_edge_forces(f, q, E, l0, k_axial);
+            assemble_face_forces(f, q, F, alpha0, k_face);
+            assemble_damping_forces(f, qdot, E, k_axial, zeta);
 
+            // Get crease forces depending on simulation type
             if (ENABLE_DYNAMIC_SIMULATION){
                 // Scale curr angle according to time
                 Eigen::VectorXd edge_curr_angle;
@@ -129,8 +133,6 @@ void simulate(){
             } else {
                 assemble_crease_forces(f, q, edge_adjacent_vertices, k_crease, edge_target_angle);
             }
-            assemble_face_forces(f, q, F, alpha0, k_face);
-            assemble_damping_forces(f, qdot, E, k_axial, zeta);
         };
 
         forward_euler(q, qdot, dt, forces, tmp_force);
@@ -149,10 +151,6 @@ void simulate(){
         // Next time step
         t += dt;
 
-        // Small delay to make the animation visible
-        //std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        
-        
     }
 }
 
@@ -166,17 +164,17 @@ int main(int argc, char *argv[])
     if (args.size() == 2){
         // Both CP and params provided
         setup_simulation_params(args[1], dt, vertexMass, EA, k_fold, k_facet, k_face, zeta, ENABLE_STRAIN_VISUALIZATION, STRAIN_TYPE, ENABLE_DYNAMIC_SIMULATION);
-        setup_mesh(args[0], q, qdot, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face);
+        setup_mesh(args[0], q, qdot, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face, face_adjacent_edges);
     } else if (args.size() == 1){
         // Only crease pattern provided
         std::cout << "Using default parameters" << std::endl;
         setup_simulation_params("../data/simulation_params/default-params.json", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta, ENABLE_STRAIN_VISUALIZATION, STRAIN_TYPE, ENABLE_DYNAMIC_SIMULATION);
-        setup_mesh(args[0], q, qdot, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face);
+        setup_mesh(args[0], q, qdot, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face, face_adjacent_edges);
     } else {
         // No arguments provided, using default 
         std::cout << "No arguments provided, using default" << std::endl;
         setup_simulation_params("../data/simulation_params/default-params.json", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta, ENABLE_STRAIN_VISUALIZATION, STRAIN_TYPE, ENABLE_DYNAMIC_SIMULATION);
-        setup_mesh("../data/crease_patterns/defaultsquare.fold", q, qdot, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face);
+        setup_mesh("../data/crease_patterns/defaultsquare.fold", q, qdot, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face, face_adjacent_edges);
     }
 
     // Set up mass matrix

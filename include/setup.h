@@ -38,4 +38,4 @@ void setup_simulation_params(std::string filename, double& dt, double& vertexMas
     * @param k_face                     Face stiffness constant
   */
 
- void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &alpha0, Eigen::MatrixXi &E, Eigen::VectorXd& edge_target_angle, Eigen::VectorXd &l0, Eigen::MatrixXi& edge_adjacent_vertices, Eigen::VectorXd &k_axial, Eigen::VectorXd& k_crease, const double EA, const double k_fold, const double k_facet, const double k_face);
+ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &alpha0, Eigen::MatrixXi &E, Eigen::VectorXd& edge_target_angle, Eigen::VectorXd &l0, Eigen::MatrixXi& edge_adjacent_vertices, Eigen::VectorXd &k_axial, Eigen::VectorXd& k_crease, const double EA, const double k_fold, const double k_facet, const double k_face, Eigen::MatrixXi& face_adjacent_edges);

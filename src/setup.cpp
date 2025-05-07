@@ -67,7 +67,7 @@ void setup_simulation_params(std::string filename, double& dt, double& vertexMas
 	}
 }
 
-void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &alpha0, Eigen::MatrixXi &E, Eigen::VectorXd& edge_target_angle, Eigen::VectorXd &l0, Eigen::MatrixXi& edge_adjacent_vertices, Eigen::VectorXd &k_axial, Eigen::VectorXd& k_crease, const double EA, const double k_fold, const double k_facet, const double k_face){
+void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &alpha0, Eigen::MatrixXi &E, Eigen::VectorXd& edge_target_angle, Eigen::VectorXd &l0, Eigen::MatrixXi& edge_adjacent_vertices, Eigen::VectorXd &k_axial, Eigen::VectorXd& k_crease, const double EA, const double k_fold, const double k_facet, const double k_face, Eigen::MatrixXi& face_adjacent_edges){
 	std::ifstream file(filename);
 
 	if (file){
@@ -141,6 +141,20 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 			for (int i = 0; i < edges.size(); i++){
 				E(i, 0) = edges[i][0];
 				E(i, 1) = edges[i][1];
+			}
+		} else {
+			std::cout << "Missing parameter \"edges_vertices\"" << std::endl;
+			throw std::runtime_error("Oh no...");
+		}
+
+		// Set up faces → edges
+		if (params.contains("faces_edges")){
+			std::vector<std::vector<double>> faces_edges = params["faces_edges"].template get<std::vector<std::vector<double>>>();
+			face_adjacent_edges.resize(faces_edges.size(), 3);
+			for (int i = 0; i < faces_edges.size(); i++){
+				face_adjacent_edges(i, 0) = faces_edges[i][0];
+				face_adjacent_edges(i, 1) = faces_edges[i][1];
+				face_adjacent_edges(i, 2) = faces_edges[i][2];
 			}
 		} else {
 			std::cout << "Missing parameter \"edges_vertices\"" << std::endl;
