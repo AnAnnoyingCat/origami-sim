@@ -1,6 +1,6 @@
-#include "assemble_stiffness.h"
+#include "assemble_edge_stiffness.h"
 
-void assemble_stiffness(Eigen::SparseMatrix<double> &K, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::VectorXd> qdot, Eigen::Ref<const Eigen::MatrixXd> V, Eigen::Ref<const Eigen::MatrixXi> E, Eigen::Ref<const Eigen::VectorXd> l0, Eigen::Ref<const Eigen::VectorXd> k){
+void assemble_edge_stiffness(Eigen::SparseMatrix<double> &K, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::MatrixXd> V, Eigen::Ref<const Eigen::MatrixXi> E, Eigen::Ref<const Eigen::VectorXd> l0, Eigen::Ref<const Eigen::VectorXd> k_axial){
 	int numEdges = E.rows();
 	
 	K.resize(V.rows() * 3, V.rows() * 3);
@@ -10,15 +10,15 @@ void assemble_stiffness(Eigen::SparseMatrix<double> &K, Eigen::Ref<const Eigen::
 	triplets.resize(numEdges * 36);
 	int tripletcnt = 0;
 
-	for (int i = 0; i < numEdges; i++){
-		int v0 = E(i, 0); 
-		int v1 = E(i, 1);
+	for (int currEdge = 0; currEdge < numEdges; currEdge++){
+		int v0 = E(currEdge, 0); 
+		int v1 = E(currEdge, 1);
 
 		Eigen::Vector3d q0 = q.segment<3>(3 * v0);
 		Eigen::Vector3d q1 = q.segment<3>(3 * v1);
 
 		Eigen::Matrix<double, 6, 6> H;
-		d2V_axial_dq2(H, q0, q1, l0(i), k(i));
+		dF_axial(H, q0, q1, l0(currEdge), k_axial(currEdge));
 		H = -1 * H;
 
 		// Iterate over all four stiffness blocks and fill in the triplets
@@ -29,7 +29,7 @@ void assemble_stiffness(Eigen::SparseMatrix<double> &K, Eigen::Ref<const Eigen::
 				// Iterate through the entire block
 				for (int row = 0; row < 3; row++){
 					for (int col = 0; col < 3; col++){
-						triplets[tripletcnt++] = {3 * E(i, b1) + row, 3 * E(i, b2) + col, block(row, col)};
+						triplets[tripletcnt++] = {3 * E(currEdge, b1) + row, 3 * E(currEdge, b2) + col, block(row, col)};
 					}
 				}
 			}
