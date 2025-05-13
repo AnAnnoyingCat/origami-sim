@@ -1,6 +1,8 @@
 #include "axial_hessian.h"
 
 void dF_axial(Eigen::Ref<Eigen::Matrix<double, 6, 6>> Hessian, Eigen::Ref<const Eigen::Vector3d> q0, Eigen::Ref<const Eigen::Vector3d> q1, double l0, double stiffness) {
+	Hessian.setZero();
+
 	// Handwritten
 	double q01 = q0(0);
 	double q02 = q0(1);

@@ -14,7 +14,7 @@
 #include <V_axial.h>
 #include <T_vert.h>
 #include <linearly_implicit_euler.h>
-#include <assemble_stiffness.h>
+#include <assemble_edge_stiffness.h>
 #include <make_mass_matrix.h>
 #include <assemble_damping_forces.h>
 #include <assemble_face_forces.h>
@@ -133,6 +133,16 @@ void simulate(){
             } else {
                 assemble_crease_forces(f, q, edge_adjacent_vertices, k_crease, edge_target_angle);
             }
+        };
+
+        auto stiffness = [&](Eigen::SparseMatrix<double> &K, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::VectorXd> qdot){
+            // TODO : all the stiffnessess.
+            K.resize(q.size(), q.size());
+            K.setZero();
+
+            // Get all the basic stiffnessess
+
+            // get crease force stiffness depending on simulation type
         };
 
         forward_euler(q, qdot, dt, forces, tmp_force);

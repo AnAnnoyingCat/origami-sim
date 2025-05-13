@@ -9,6 +9,8 @@ void assemble_edge_stiffness(Eigen::SparseMatrix<double> &K, Eigen::Ref<const Ei
 	std::vector<Eigen::Triplet<double>> triplets;
 	triplets.resize(numEdges * 36);
 	int tripletcnt = 0;
+	// Reuse H
+	Eigen::Matrix<double, 6, 6> H;
 
 	for (int currEdge = 0; currEdge < numEdges; currEdge++){
 		int v0 = E(currEdge, 0); 
@@ -17,7 +19,7 @@ void assemble_edge_stiffness(Eigen::SparseMatrix<double> &K, Eigen::Ref<const Ei
 		Eigen::Vector3d q0 = q.segment<3>(3 * v0);
 		Eigen::Vector3d q1 = q.segment<3>(3 * v1);
 
-		Eigen::Matrix<double, 6, 6> H;
+		
 		dF_axial(H, q0, q1, l0(currEdge), k_axial(currEdge));
 		H = -1 * H;
 
