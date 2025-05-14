@@ -11,8 +11,6 @@
 #include <d2V_axial_dq2.h>
 #include <axial_constraints.h>
 #include <forward_Euler.h>
-#include <V_axial.h>
-#include <T_vert.h>
 #include <linearly_implicit_euler.h>
 #include <assemble_edge_stiffness.h>
 #include <make_mass_matrix.h>
@@ -94,8 +92,7 @@ void updateV(Eigen::MatrixXd& V, Eigen::VectorXd q){
 }
 
 /// @brief Move the center of mass back to the middle of the screen
-void centerMesh(){
-    
+void centerMesh(){ 
     Eigen::Vector3d center;
     center.setZero();
     for (int currVertex = 0; currVertex < V.rows(); currVertex++){
@@ -117,22 +114,22 @@ void simulate(){
             f.setZero();
             // Get the basic forces
             assemble_edge_forces(f, q, E, l0, k_axial);
-            assemble_face_forces(f, q, F, alpha0, k_face);
-            assemble_damping_forces(f, qdot, E, k_axial, zeta);
+            //assemble_face_forces(f, q, F, alpha0, k_face);
+            //assemble_damping_forces(f, qdot, E, k_axial, zeta);
 
             // Get crease forces depending on simulation type
-            if (ENABLE_DYNAMIC_SIMULATION){
-                // Scale curr angle according to time
-                Eigen::VectorXd edge_curr_angle;
-                calculateDynamicTargetAngle(edge_curr_angle);
-                assemble_crease_forces(f, q, edge_adjacent_vertices, k_crease, edge_curr_angle);
-                if (t >= 1.0) {
-                    simulating = false;
-                }
-                std::cout << "\rtime: " << t << std::endl;
-            } else {
-                assemble_crease_forces(f, q, edge_adjacent_vertices, k_crease, edge_target_angle);
-            }
+            // if (ENABLE_DYNAMIC_SIMULATION){
+            //     // Scale curr angle according to time
+            //     Eigen::VectorXd edge_curr_angle;
+            //     calculateDynamicTargetAngle(edge_curr_angle);
+            //     assemble_crease_forces(f, q, edge_adjacent_vertices, k_crease, edge_curr_angle);
+            //     if (t >= 1.0) {
+            //         simulating = false;
+            //     }
+            //     std::cout << "\rtime: " << t << std::endl;
+            // } else {
+            //     assemble_crease_forces(f, q, edge_adjacent_vertices, k_crease, edge_target_angle);
+            // }
         };
 
         auto stiffness = [&](Eigen::SparseMatrix<double> &K, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::VectorXd> qdot){
@@ -141,11 +138,14 @@ void simulate(){
             K.setZero();
 
             // Get all the basic stiffnessess
+            assemble_edge_stiffness(K, q, V, E, l0, k_axial);
 
             // get crease force stiffness depending on simulation type
         };
 
-        forward_euler(q, qdot, dt, forces, tmp_force);
+        // forward_euler(q, qdot, dt, forces, tmp_force);
+
+        linearly_implicit_euler(q, qdot, dt, M, forces, stiffness, tmp_force, tmp_stiffness);
 
         centerMesh();
 
@@ -186,6 +186,9 @@ int main(int argc, char *argv[])
         setup_simulation_params("../data/simulation_params/default-params.json", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta, ENABLE_STRAIN_VISUALIZATION, STRAIN_TYPE, ENABLE_DYNAMIC_SIMULATION);
         setup_mesh("../data/crease_patterns/defaultsquare.fold", q, qdot, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face, face_adjacent_edges);
     }
+
+    q(0) = -0.5;
+    updateV(V, q);
 
     // Set up mass matrix
     make_mass_matrix(M, q, vertexMass);

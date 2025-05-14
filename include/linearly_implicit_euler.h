@@ -2,6 +2,7 @@
 #include <Eigen/Sparse>
 #include <Eigen/SparseCholesky>
 
+// Skeleton taken from https://github.com/dilevin/CSC417-a2-mass-spring-3d
 // Input:
 //  q - generalized coordinates for the mass-spring system
 //  qdot - generalized velocity for the mass-spring system
@@ -15,9 +16,7 @@
 //  q - set q to the updated generalized coordinate using linearly implicit time integration
 //  qdot - set qdot to the updated generalized velocity using linearly implicit time integration
 template<typename FORCE, typename STIFFNESS>
-inline void linearly_implicit_euler(Eigen::VectorXd &q, Eigen::VectorXd &qdot, double dt,
-                                   const Eigen::SparseMatrix<double> &mass, FORCE &force, STIFFNESS &stiffness,
-                                   Eigen::VectorXd &tmp_force, Eigen::SparseMatrix<double> &tmp_stiffness) {
+inline void linearly_implicit_euler(Eigen::VectorXd &q, Eigen::VectorXd &qdot, double dt, const Eigen::SparseMatrix<double> &mass, FORCE &force, STIFFNESS &stiffness, Eigen::VectorXd &tmp_force, Eigen::SparseMatrix<double> &tmp_stiffness) {
     // Compute the stiffness Matrix
     stiffness(tmp_stiffness, q, qdot);
 

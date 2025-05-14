@@ -18,10 +18,8 @@ void assemble_edge_stiffness(Eigen::SparseMatrix<double> &K, Eigen::Ref<const Ei
 
 		Eigen::Vector3d q0 = q.segment<3>(3 * v0);
 		Eigen::Vector3d q1 = q.segment<3>(3 * v1);
-
 		
 		dF_axial(H, q0, q1, l0(currEdge), k_axial(currEdge));
-		H = -1 * H;
 
 		// Iterate over all four stiffness blocks and fill in the triplets
 		for (int b1 = 0; b1 < 2; b1++){
