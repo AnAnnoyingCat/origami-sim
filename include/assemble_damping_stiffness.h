@@ -10,4 +10,4 @@
  * @param k_Axial 	Per edge axial stiffness
  * @param zeta 		Parameter in the viscous damping coefficient
  */
-void assemble_damping_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> qdot, Eigen::Ref<const Eigen::MatrixXi> E, Eigen::Ref<const Eigen::VectorXd> k_Axial, double zeta);
+void assemble_damping_stiffness(Eigen::SparseMatrix<double> &K, Eigen::Ref<const Eigen::VectorXd> qdot, Eigen::Ref<const Eigen::MatrixXi> E, Eigen::Ref<const Eigen::VectorXd> k_Axial, double zeta);

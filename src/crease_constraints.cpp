@@ -3,8 +3,8 @@
 
 static Eigen::VectorXd edge_angle_prev;
 
-void setup_prev_angle(Eigen::VectorXd edge_target_angle){
-	edge_angle_prev.resize(edge_target_angle.size());
+void setup_prev_angle(int size){
+	edge_angle_prev.resize(size);
 	edge_angle_prev.setZero();
 }
 
@@ -39,8 +39,6 @@ void F_crease(Eigen::Ref<Eigen::Matrix<double, 12, 1>> f, Eigen::Ref<const Eigen
 		current_theta += 2 * M_PI;
 	}
 	edge_angle_prev(creaseID) = current_theta;
-
-	//std::cout << "current angle: " << current_theta * 180.0 / M_PI << std::endl;
 
 	// Precompute some values
 	Eigen::Vector3d n1h1 = n1 / h1;

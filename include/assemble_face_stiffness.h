@@ -1,6 +1,6 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
-#include <face_constraints.h>
+#include <face_hessian.h>
 
 /**
  * @brief Assembles the forces that each face exerts on its vertices in trying to keep its original angle

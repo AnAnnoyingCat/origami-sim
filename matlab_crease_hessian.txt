@@ -1,0 +1,80 @@
+q1 = sym('q1', [3,1])   % Vertex 1 position
+assume(q1, 'real')
+q2 = sym('q2', [3,1])   % Vertex 2 position
+assume(q2, 'real')
+q3 = sym('q3', [3,1])   % Vertex 3 position
+assume(q3, 'real')
+q4 = sym('q4', [3,1])   % Vertex 4 position
+assume(q4, 'real')
+syms k_crease   % Crease stiffness
+assume(k_crease, 'real')
+syms theta_target % Target angle
+assume(theta_target, 'real')
+syms current_theta % Current angle
+
+
+% Cross product function
+cross_prod = @(a, b) [a(2)*b(3)-a(3)*b(2); a(3)*b(1)-a(1)*b(3); a(1)*b(2)-a(2)*b(1)];
+
+% Normal vector calculation (normalized)
+getNormal = @(a, b, c) cross_prod(b-a, c-a)/norm(cross_prod(b-a, c-a));
+
+% Height calculation (area of triangle / base length)
+geth = @(a, b, c) norm(cross_prod(b-a, c-a)) / norm(b-a);
+
+% Angle calculation between vectors ba and bc
+getAngle = @(a, b, c) acos(dot(a-b, c-b)/(norm(a-b)*norm(c-b)));
+
+% Cot
+cot = @(x) cot(x);
+
+% Compute normals
+n1 = getNormal(q1, q4, q3);
+n2 = getNormal(q2, q3, q4);
+
+% crease dir analogously to the code
+crease_dir = (q4 - q3)/norm(q4 - q3);
+
+% get current angle theta
+current_theta = atan2(dot(cross_prod(n1, n2), crease_dir), dot(n1, n2));
+
+% Compute heights
+h1 = geth(q3, q4, q1);
+h2 = geth(q3, q4, q2);
+
+% Compute angles and their cotangents
+alpha4_31 = getAngle(q4, q3, q1);
+alpha3_14 = getAngle(q3, q1, q4);
+alpha4_23 = getAngle(q4, q2, q3);
+alpha3_42 = getAngle(q3, q4, q2);
+cotalpha4_31 = cot(alpha4_31);
+cotalpha3_14 = cot(alpha3_14);
+cotalpha4_23 = cot(alpha4_23);
+cotalpha3_42 = cot(alpha3_42);
+
+
+% Precompute some values
+n1h1 = n1 / h1;
+n2h2 = n2 / h2;
+
+% The force scaling factor
+kdtheta = -k_crease * (current_theta - theta_target);
+
+% set up f
+f = sym(zeros(12,1));
+
+f(1:3) = kdtheta * n1h1; 
+
+f(4:6) = kdtheta * n2h2;
+
+f(7:9) = kdtheta * (-cotalpha4_31/(cotalpha3_14+cotalpha4_31) * n1h1 + (-cotalpha4_23/(cotalpha3_42+cotalpha4_23) * n2h2));
+
+f(10:12) = kdtheta * (-cotalpha3_14/(cotalpha3_14+cotalpha4_31) * n1h1 + (-cotalpha3_42/(cotalpha3_42+cotalpha4_23) * n2h2));
+
+q_all = [q1; q2; q3; q4];
+
+H = jacobian(f, q_all);
+
+% H_simplified = simplify(H, 'Steps', 50);
+
+ccode(H, 'File', 'crease_hessian.c');

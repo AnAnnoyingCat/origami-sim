@@ -19,6 +19,8 @@
 #include <trig_helper_functions.h>
 #include <strain_calculations.h>
 
+#include <finite_difference_tester.h>
+
 // Simulation state
 bool simulating = true;
 Eigen::VectorXd q;                  // Generalized Vertex Coordinates, size 3*x vector
@@ -165,7 +167,11 @@ void simulate(){
 }
 
 int main(int argc, char *argv[])
-{   
+{    
+    test_axial_hessian();
+    test_crease_hessian();
+    return 1;
+
     // Read args into a vector
     std::vector<std::string> args;
     std::copy(argv + 1, argv + argc, std::back_inserter(args));
@@ -194,7 +200,7 @@ int main(int argc, char *argv[])
     make_mass_matrix(M, q, vertexMass);
 
     // Set up previous angle tracking in crease constraints
-    setup_prev_angle(edge_target_angle);
+    setup_prev_angle(edge_target_angle.size());
 
     // Create viewer
     igl::opengl::glfw::Viewer viewer;
