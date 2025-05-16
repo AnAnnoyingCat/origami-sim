@@ -168,8 +168,9 @@ void simulate(){
 
 int main(int argc, char *argv[])
 {    
-    test_axial_hessian();
-    test_crease_hessian();
+    // test_axial_hessian();
+    // test_crease_hessian();
+    test_crease_energy();
     return 1;
 
     // Read args into a vector

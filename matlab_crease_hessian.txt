@@ -25,8 +25,6 @@ geth = @(a, b, c) norm(cross_prod(b-a, c-a)) / norm(b-a);
 % Angle calculation between vectors ba and bc
 getAngle = @(a, b, c) acos(dot(a-b, c-b)/(norm(a-b)*norm(c-b)));
 
-% Cot
-cot = @(x) cot(x);
 
 % Compute normals
 n1 = getNormal(q1, q4, q3);
@@ -75,6 +73,10 @@ q_all = [q1; q2; q3; q4];
 
 H = jacobian(f, q_all);
 
-% H_simplified = simplify(H, 'Steps', 50);
+% H_simplified = simplify(H, 'Steps', 50);  DOESN'T TERMINATE AND FILLS UP RAM COMPLETELY INSTEAD
 
 ccode(H, 'File', 'crease_hessian.c');
+
+
+Energy function: -1/2 k_Crease (theta - theta_target) ^ 2
+Force is derivative of energy function

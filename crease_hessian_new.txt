@@ -1,0 +1,47 @@
+%% 1) Declare symbols
+q1 = sym('q1', [3,1])   % Vertex 1 position
+assume(q1, 'real')
+q2 = sym('q2', [3,1])   % Vertex 2 position
+assume(q2, 'real')
+q3 = sym('q3', [3,1])   % Vertex 3 position
+assume(q3, 'real')
+q4 = sym('q4', [3,1])   % Vertex 4 position
+assume(q4, 'real')
+syms k_crease   % Crease stiffness
+assume(k_crease, 'real')
+syms theta_target % Target angle
+assume(theta_target, 'real')
+syms current_theta % Current angle
+
+% Pack positions into a vector p for later
+q_all = [q1; q2; q3; q4];
+
+
+%% 2) Define the current crease angle curr_theta
+% n1 is normal of triangle q1, q4, q3
+n1_raw = cross(q4 - q1, q3 - q1);
+n1 = n1_raw / norm(n1_raw);
+
+% n2 is normal of triangle q2, q3, q4
+n2_raw = cross(q3 - q2, q4 - q2);
+n2 = n2_raw / norm(n2_raw)
+
+% define current angle in terms of normals and vertices
+crease_dir = (q4 - q3) / norm(q4 - q3);
+current_theta = atan2(dot(cross(n1, n2), crease_dir), dot(n1, n2));
+
+
+%% 3) define the energy V_crease = (1/2) kC (θ - θ0)^2
+V_crease = 1/2 * k_crease * (current_theta - theta_target)^2;
+
+
+%% 4) first derivative will be the force vector
+F_crease = jacobian(V_crease, q_all);  
+% F_crease should be size 12 x 1
+
+%% 5) second derivative will be the 12 x 12 stiffness matrix
+K_crease = hessian(V_crease, q_all); 
+
+%% 6) Emit C code
+ccode(F_crease, 'File', 'F_crease.c');
+ccode(K_crease, 'File', 'K_crease.c');
