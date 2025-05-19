@@ -1,6 +1,8 @@
 #include <setup.h>
 #include <iostream>
 #include <trig_helper_functions.h>
+#include <dynamic_target_angle.h>
+#include <vector>
 
 using json = nlohmann::json;
 
@@ -402,4 +404,59 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 		edge_adjacent_vertices.row(4) << 0, 3, 2, 1;
 	}
 
+}
+
+void setup_dynamic_target_angles(std::string filename, Eigen::VectorXd& edge_target_angle){
+	std::ifstream file(filename);
+	// save all the fold information in a custom struct
+	std::vector<FoldInstruction> foldTimeline;
+
+	if (file){
+		json params = json::parse(file);
+		std::cout << "Found file! " << std::endl;
+		std::map<int, double> last_timestamp;
+
+		// Store the last angle of each crease for future use
+		std::map<int, double> lastAngle;
+		for (int i = 0; i < edge_target_angle.size(); i++){
+			lastAngle[i] = 0.0;
+			last_timestamp[i] = 0.0;
+		}
+
+		// Iterate through all the keyframes and add them to the datastructure
+		for (auto& [key, value] : params.items()){
+			double timestamp = std::stod(key);
+			std::cout << "Key (double) : " << timestamp << std::endl;
+			for (const auto& pair : value){
+				int creaseNr = pair[0];
+
+				double targetAngle;
+				if (pair[1].is_null()){
+					targetAngle = nan("");
+				} else {
+					targetAngle = pair[1];
+				}
+
+				std::cout << "  Pair: (" << creaseNr << ", " << targetAngle << ")" << std::endl;
+				foldTimeline.push_back({Interval(last_timestamp[creaseNr], timestamp), creaseNr, lastAngle[creaseNr], targetAngle});
+				
+				lastAngle[creaseNr] = targetAngle;
+				last_timestamp[creaseNr] = timestamp;
+			}
+		}
+	} else {
+		std::cout << "No activation profile provided. Using default: Fully folded at t = 1" << std::endl;
+		
+		for (int i = 0; i < edge_target_angle.size(); i++){
+			foldTimeline.push_back({Interval(0, 1), i, 0, edge_target_angle(i)});
+		}
+	}
+
+	for (const auto& instruction : foldTimeline) {
+        std::cout << "Fold " << instruction.fold_number 
+                  << ": From " << instruction.start_angle << "° to " << instruction.end_angle << "°"
+                  << " during [" << instruction.time.begin << " - " << instruction.time.end << "]\n";
+    }
+
+	setupTimeDependantTargetAngle(foldTimeline, edge_target_angle.size());
 }

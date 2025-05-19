@@ -3,26 +3,6 @@
 #include <trig_helper_functions.h>
 #include <map>
 #include <iostream>
-
-
-class Interval {
-    public:
-    double begin;
-    double end;
-
-    Interval(double begin, double end) : begin(begin), end(end) {}
-
-    // Define operator< for map key comparison
-    bool operator<(const Interval& other) const {
-        if (begin != other.begin)
-            return begin < other.begin;
-        return end < other.end;
-    }
-
-    bool contains(double query) const{
-        return begin <= query && query < end;
-    }
-};
     
 std::map<Interval, Eigen::Matrix<double, 6, 1>> colorMap{
     {Interval(0.00, 0.17), (Eigen::Matrix<double, 6, 1>() << 14,14,120, 62,117,207).finished()}, 

@@ -18,6 +18,7 @@
 #include <assemble_face_forces.h>
 #include <trig_helper_functions.h>
 #include <strain_calculations.h>
+#include <dynamic_target_angle.h>
 
 #include <finite_difference_tester.h>
 
@@ -61,24 +62,16 @@ bool ENABLE_STRAIN_VISUALIZATION;
 std::string STRAIN_TYPE;
 bool ENABLE_DYNAMIC_SIMULATION;
 
-/// @brief If dynamic simulation is enabled this will calculate the current target angles based on some keyframes (TODO: IMPLEMENT KEYFRAMES)
-/// @param target_angle Return target angle in here
-void calculateDynamicTargetAngle(Eigen::VectorXd& target_angle){
-    target_angle = edge_target_angle * t; 
-}
-
 /// @brief If enabled in config, visualizes strain in the mesh using l0 or alpha0
 void visualizeStrain(){
     while(simulating){
         if (viewer_ptr){
             Eigen::MatrixXd C;
-            
             if (STRAIN_TYPE == "face"){
                 calculateFaceAngleStrain(C, F, q, alpha0);
             } else if (STRAIN_TYPE == "edge"){
                 calculateAxialDeformationStrain(C, F, E, q, l0, face_adjacent_edges);
             }
-
             viewer_ptr->data().set_colors(C);
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -116,22 +109,15 @@ void simulate(){
             f.setZero();
             // Get the basic forces
             assemble_edge_forces(f, q, E, l0, k_axial);
-            //assemble_face_forces(f, q, F, alpha0, k_face);
-            //assemble_damping_forces(f, qdot, E, k_axial, zeta);
+            assemble_face_forces(f, q, F, alpha0, k_face);
+            assemble_damping_forces(f, qdot, E, k_axial, zeta);
 
-            // Get crease forces depending on simulation type
-            // if (ENABLE_DYNAMIC_SIMULATION){
-            //     // Scale curr angle according to time
-            //     Eigen::VectorXd edge_curr_angle;
-            //     calculateDynamicTargetAngle(edge_curr_angle);
-            //     assemble_crease_forces(f, q, edge_adjacent_vertices, k_crease, edge_curr_angle);
-            //     if (t >= 1.0) {
-            //         simulating = false;
-            //     }
-            //     std::cout << "\rtime: " << t << std::endl;
-            // } else {
-            //     assemble_crease_forces(f, q, edge_adjacent_vertices, k_crease, edge_target_angle);
-            // }
+            // If simulation type is dynamic, update edge target angle according to t
+            if (ENABLE_DYNAMIC_SIMULATION){
+                calculateDynamicTargetAngle(edge_target_angle, t);
+            }
+
+            assemble_crease_forces(f, q, edge_adjacent_vertices, k_crease, edge_target_angle);
         };
 
         auto stiffness = [&](Eigen::SparseMatrix<double> &K, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::VectorXd> qdot){
@@ -145,9 +131,9 @@ void simulate(){
             // get crease force stiffness depending on simulation type
         };
 
-        // forward_euler(q, qdot, dt, forces, tmp_force);
+        forward_euler(q, qdot, dt, forces, tmp_force);
 
-        linearly_implicit_euler(q, qdot, dt, M, forces, stiffness, tmp_force, tmp_stiffness);
+        // linearly_implicit_euler(q, qdot, dt, M, forces, stiffness, tmp_force, tmp_stiffness);
 
         centerMesh();
 
@@ -170,8 +156,8 @@ int main(int argc, char *argv[])
 {    
     // test_axial_hessian();
     // test_crease_hessian();
-    test_crease_energy();
-    return 1;
+    // test_crease_energy();
+    // return 1;
 
     // Read args into a vector
     std::vector<std::string> args;
@@ -182,16 +168,28 @@ int main(int argc, char *argv[])
         // Both CP and params provided
         setup_simulation_params(args[1], dt, vertexMass, EA, k_fold, k_facet, k_face, zeta, ENABLE_STRAIN_VISUALIZATION, STRAIN_TYPE, ENABLE_DYNAMIC_SIMULATION);
         setup_mesh(args[0], q, qdot, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face, face_adjacent_edges);
+
+        // Get path to activation profiles
+        args[0].replace(args[0].find("crease_patterns"), std::string("crease_patterns").length(), "activation_profiles");
+        args[0].replace(args[0].find(".fold"), 5, ".json");
+        setup_dynamic_target_angles(args[0], edge_target_angle);
+
     } else if (args.size() == 1){
         // Only crease pattern provided
         std::cout << "Using default parameters" << std::endl;
         setup_simulation_params("../data/simulation_params/default-params.json", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta, ENABLE_STRAIN_VISUALIZATION, STRAIN_TYPE, ENABLE_DYNAMIC_SIMULATION);
         setup_mesh(args[0], q, qdot, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face, face_adjacent_edges);
+
+        // Get path to activation profiles
+        args[0].replace(args[0].find("crease_patterns"), std::string("crease_patterns").length(), "activation_profiles");
+        args[0].replace(args[0].find(".fold"), 5, ".json");
+        setup_dynamic_target_angles(args[0], edge_target_angle);
     } else {
         // No arguments provided, using default 
         std::cout << "No arguments provided, using default" << std::endl;
         setup_simulation_params("../data/simulation_params/default-params.json", dt, vertexMass, EA, k_fold, k_facet, k_face, zeta, ENABLE_STRAIN_VISUALIZATION, STRAIN_TYPE, ENABLE_DYNAMIC_SIMULATION);
         setup_mesh("../data/crease_patterns/defaultsquare.fold", q, qdot, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face, face_adjacent_edges);
+        setup_dynamic_target_angles("../data/activation_profiles/defaultsquare.json", edge_target_angle);
     }
 
     q(0) = -0.5;
