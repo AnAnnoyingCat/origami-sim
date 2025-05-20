@@ -114,7 +114,7 @@ void simulate(){
 
             // If simulation type is dynamic, update edge target angle according to t
             if (ENABLE_DYNAMIC_SIMULATION){
-                calculateDynamicTargetAngle(edge_target_angle, t);
+                calculateDynamicTargetAngle(edge_target_angle, t, q, edge_adjacent_vertices);
             }
 
             assemble_crease_forces(f, q, edge_adjacent_vertices, k_crease, edge_target_angle);
@@ -191,9 +191,6 @@ int main(int argc, char *argv[])
         setup_mesh("../data/crease_patterns/defaultsquare.fold", q, qdot, V, F, alpha0, E, edge_target_angle, l0, edge_adjacent_vertices, k_axial, k_crease, EA, k_fold, k_facet, k_face, face_adjacent_edges);
         setup_dynamic_target_angles("../data/activation_profiles/defaultsquare.json", edge_target_angle);
     }
-
-    q(0) = -0.5;
-    updateV(V, q);
 
     // Set up mass matrix
     make_mass_matrix(M, q, vertexMass);

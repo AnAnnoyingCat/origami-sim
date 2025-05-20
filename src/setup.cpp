@@ -423,9 +423,15 @@ void setup_dynamic_target_angles(std::string filename, Eigen::VectorXd& edge_tar
 			last_timestamp[i] = 0.0;
 		}
 
+		// Store the keys as doubles so they're sorted correctly
+		std::map<double, nlohmann::json> sorted_params;
+
+		for (auto& [key, value] : params.items()) {
+			sorted_params[std::stod(key)] = value;
+		}
+
 		// Iterate through all the keyframes and add them to the datastructure
-		for (auto& [key, value] : params.items()){
-			double timestamp = std::stod(key);
+		for (auto& [timestamp, value] : sorted_params){
 			std::cout << "Key (double) : " << timestamp << std::endl;
 			for (const auto& pair : value){
 				int creaseNr = pair[0];
@@ -458,5 +464,5 @@ void setup_dynamic_target_angles(std::string filename, Eigen::VectorXd& edge_tar
                   << " during [" << instruction.time.begin << " - " << instruction.time.end << "]\n";
     }
 
-	setupTimeDependantTargetAngle(foldTimeline, edge_target_angle.size());
+	setupFoldTimeline(foldTimeline, edge_target_angle.size());
 }

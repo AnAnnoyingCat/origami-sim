@@ -1,5 +1,6 @@
 #include <Eigen/Dense>
 #include <trig_helper_functions.h>
+#include <iostream>
 
 /**
  * @brief Calculate the per fold force
