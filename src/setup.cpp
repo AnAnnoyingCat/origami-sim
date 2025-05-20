@@ -211,7 +211,7 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 				// Set up crease stiffness dependent on l0
 				if (assignments[i] == "B"){
 					k_crease(i) = -1;
-				} else if (assignments[i] == "F" || assignments[i] == "U"){
+				} else if (assignments[i] == "F"){
 					k_crease(i) = k_facet * l0(i);
 				} else { // Edge type == "M" or "V"
 					k_crease(i) = k_fold * l0(i);

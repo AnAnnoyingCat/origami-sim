@@ -60,8 +60,9 @@ void calculateDynamicTargetAngle(Eigen::VectorXd &edge_target_angle, double t, E
 			Eigen::Vector3d crease_dir = (q4 - q3).normalized();
 			double current_theta = std::atan2((n1.cross(n2)).dot(crease_dir), n1.dot(n2));
 			fold_timeline[per_fold_position_in_timeline[currEdge]].start_angle = current_theta;
-			std::cout << "calculating start angle...it's: " << current_theta * 180 / M_PI << std::endl;
-			start_angle = current_theta;
+			start_angle = current_theta * 180 / M_PI;
+			std::cout << "had to calculate starting angle of a nan. Start angle is: " << start_angle << ", which is saved in the timeline as " << fold_timeline[per_fold_position_in_timeline[currEdge]].start_angle << std::endl;
+			
 
 		} else if (std::isnan(end_angle) && !std::isnan(start_angle)){
 			// Fold starts to swing freely and should freely swing for the entire interval
@@ -73,7 +74,8 @@ void calculateDynamicTargetAngle(Eigen::VectorXd &edge_target_angle, double t, E
 		double target_in_degrees = start_angle + (end_angle - start_angle) * ((t - time.begin) / (time.end - time.begin));
 		edge_target_angle(currEdge) = target_in_degrees * M_PI / 180;
 		if (!std::isnan(edge_target_angle(currEdge))){
-			//std::cout << "t: " << t << ", target angle: " << end_angle << ", start angle: " << start_angle << ", time interval: " << time.begin <<", " << time.end <<  std::endl;
+			//std::cout << "t: " << t << ", target angle deg: " << end_angle << ", start angle deg: " << start_angle << ", time interval: " << time.begin <<", " << time.end << "target angle rad: " << edge_target_angle(currEdge) << ", target angle deg: " << edge_target_angle(currEdge) * 180 / M_PI << std::endl;
+			//std::cout << "all target angles:" << edge_target_angle.transpose() << std::endl;
 		}
 	}
 }
