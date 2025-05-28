@@ -103,22 +103,22 @@ void centerMesh(){
 void simulate(){
     while (simulating){
         
+        // If simulation type is dynamic, recalculate the target angle for the curren frame
+        if (ENABLE_DYNAMIC_SIMULATION){
+            calculateDynamicTargetAngle(edge_target_angle, t, q, edge_adjacent_vertices);
+            //std::cout << "t: " << t << ", edge target angle: " << edge_target_angle.transpose() << std::endl;
+        }
+
         auto forces = [&](Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::VectorXd> qdot){
             // Set f to zero and then add all the forces to it
             f.resize(q.size());
             f.setZero();
+
             // Get the basic forces
-            assemble_edge_forces(f, q, E, l0, k_axial);
-            assemble_face_forces(f, q, F, alpha0, k_face);
-            assemble_damping_forces(f, qdot, E, k_axial, zeta);
-
-            // If simulation type is dynamic, update edge target angle according to t
-            if (ENABLE_DYNAMIC_SIMULATION){
-                calculateDynamicTargetAngle(edge_target_angle, t, q, edge_adjacent_vertices);
-                //std::cout << "t: " << t << ", edge target angle: " << edge_target_angle.transpose() << std::endl;
-            }
-
-            assemble_crease_forces(f, q, edge_adjacent_vertices, k_crease, edge_target_angle);
+            assemble_edge_forces(f, q, E, l0, k_axial);                                         // Keep edge lengths constant
+            assemble_face_forces(f, q, F, alpha0, k_face);                                      // Stop faces from shearing
+            assemble_damping_forces(f, qdot, E, k_axial, zeta);                                 // Apply viscous dampening
+            assemble_crease_forces(f, q, edge_adjacent_vertices, k_crease, edge_target_angle);  // Calculate crease driving force
         };
 
         auto stiffness = [&](Eigen::SparseMatrix<double> &K, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::VectorXd> qdot){
@@ -128,8 +128,8 @@ void simulate(){
 
             // Get all the basic stiffnessess
             assemble_edge_stiffness(K, q, V, E, l0, k_axial);
-
-            // get crease force stiffness depending on simulation type
+            
+ 
         };
 
         forward_euler(q, qdot, dt, forces, tmp_force);
@@ -149,15 +149,15 @@ void simulate(){
 
         // Next time step
         t += dt;
-        std::cout << "t: " << t << std::endl;
+        //std::cout << "t: " << t << std::endl;
     }
 }
 
 int main(int argc, char *argv[])
 {    
     // test_axial_hessian();
+    // test_crease_force();
     // test_crease_hessian();
-    // test_crease_energy();
     // return 1;
 
     // Read args into a vector
@@ -207,6 +207,8 @@ int main(int argc, char *argv[])
     viewer.data().set_mesh(V, F);
     viewer.data().set_face_based(true);
     viewer.core().is_animating = true; 
+    viewer.data().double_sided = true;
+    viewer.core().lighting_factor = 0.0f;
 
     // Start the simulation in a seperate thread
     std::thread simulation_thread(simulate);

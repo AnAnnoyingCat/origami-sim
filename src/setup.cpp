@@ -9,7 +9,6 @@ using json = nlohmann::json;
 void setup_simulation_params(std::string filename, double& dt, double& vertexMass, double& EA, double& k_fold, double& k_facet, double& k_face, double& zeta, bool& ENABLE_STRAIN_VISUALIZATION, std::string& STRAIN_TYPE, bool& ENABLE_DYNAMIC_SIMULATION){
 	// Use nlohmann JSON to grab the simulation parameters from the specified filename.
 	std::ifstream file(filename);
-
 	if (file){
 		json params = json::parse(file);
 

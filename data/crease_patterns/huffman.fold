@@ -6,7 +6,7 @@
   ],
   "frame_classes": [
     "creasePattern",
-    "noCuts"
+    "noCFts"
   ],
   "vertices_coords": [
     [0,0],
@@ -497,19 +497,19 @@
     "M",
     "M",
     "M",
-    "U",
-    "U",
-    "U",
-    "U",
-    "U",
-    "U",
-    "U",
-    "U",
-    "U",
-    "U",
-    "U",
-    "U",
-    "U"
+    "F",
+    "F",
+    "F",
+    "F",
+    "F",
+    "F",
+    "F",
+    "F",
+    "F",
+    "F",
+    "F",
+    "F",
+    "F"
   ],
   "edges_foldAngle": [
     0,

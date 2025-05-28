@@ -3,9 +3,6 @@
 void assemble_edge_stiffness(Eigen::SparseMatrix<double> &K, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::MatrixXd> V, Eigen::Ref<const Eigen::MatrixXi> E, Eigen::Ref<const Eigen::VectorXd> l0, Eigen::Ref<const Eigen::VectorXd> k_axial){
 
 	int numEdges = E.rows();
-	
-	K.resize(V.rows() * 3, V.rows() * 3);
-	K.setZero();
 
 	std::vector<Eigen::Triplet<double>> triplets;
 	triplets.resize(numEdges * 36);

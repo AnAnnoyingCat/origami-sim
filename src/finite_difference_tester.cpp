@@ -121,7 +121,7 @@ void test_crease_hessian(){
 	std::cout << "========================================================================\n" << std::endl;
 }
 
-void test_crease_energy(){
+void test_crease_force(){
     double epsilon = 1e-6;
     Eigen::Vector3d q1(0, 0, 0);
     Eigen::Vector3d q2(1, 1, 0);
@@ -140,18 +140,18 @@ void test_crease_energy(){
     F_crease(F_crease_by_me, q1, q2, q3, q4, k_crease, theta_target, 0);
 
     // Storage for numerical derivative
-    Eigen::Matrix<double, 12, 1> F_crease_matlab_res;
-    F_crease_matlab_res.setZero();
-    F_crease_matlab(F_crease_matlab_res, q1, q2, q3, q4, k_crease, theta_target);
+    Eigen::Matrix<double, 12, 1> F_crease_maple_res;
+    F_crease_maple_res.setZero();
+    F_crease_maple(F_crease_maple_res, q1, q2, q3, q4, k_crease, theta_target);
 
     // Compute and print the difference
-    Eigen::Matrix<double, 12, 1> diff = F_crease_by_me - F_crease_matlab_res;
+    Eigen::Matrix<double, 12, 1> diff = F_crease_by_me - F_crease_maple_res;
     double error = diff.norm();
 
-    std::cout << "============== Testing crease energy and comparing matlab ============\n" << std::endl;
+    std::cout << "============== Testing crease force and comparing maple ============\n" << std::endl;
     std::cout << "My force:\n" << F_crease_by_me << std::endl;
-    std::cout << "Matlab force:\n" << F_crease_matlab_res << std::endl;
-    std::cout << "Difference (mine - matlab):\n" << diff << std::endl;
+    std::cout << "Maple force:\n" << F_crease_maple_res << std::endl;
+    std::cout << "Difference (mine - maple):\n" << diff << std::endl;
     std::cout << "Frobenius norm of difference: " << error << std::endl;
     std::cout << "========================================================================\n" << std::endl;
 }
