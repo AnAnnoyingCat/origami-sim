@@ -231,6 +231,7 @@ int main(int argc, char *argv[])
     // Clean up
     viewer_ptr = nullptr;
     simulating = false;
+    writeAverageStrainDuringSimulation();
     
     return 0;
 }

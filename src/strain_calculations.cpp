@@ -3,7 +3,9 @@
 #include <trig_helper_functions.h>
 #include <map>
 #include <iostream>
-    
+#include <fstream>
+
+std::vector<double> frameStrains;
 std::map<Interval, Eigen::Matrix<double, 6, 1>> colorMap{
     {Interval(0.00, 0.17), (Eigen::Matrix<double, 6, 1>() << 14,14,120, 62,117,207).finished()}, 
     {Interval(0.17, 0.30), (Eigen::Matrix<double, 6, 1>() << 62,117,207, 91,190,243).finished()},
@@ -45,6 +47,7 @@ void getColor(Eigen::RowVector3d &C, double x){
 void calculateFaceAngleStrain(Eigen::MatrixXd& C, Eigen::MatrixXi& F, Eigen::VectorXd& q, Eigen::MatrixXd& alpha0){
 	C.resize(F.rows(), 3);
 
+    double frameStrain = 0.0;
     for (int currFace = 0; currFace < F.rows(); currFace++){
         double currAlpha0, currAlpha1, currAlpha2;
         Eigen::Vector3d q0, q1, q2;
@@ -61,13 +64,15 @@ void calculateFaceAngleStrain(Eigen::MatrixXd& C, Eigen::MatrixXi& F, Eigen::Vec
 
         // By multiplying by 5 we effectively scale the strain from the interval 0 - 0.2 to the full interval 0 - 1
         strain = std::min(strain * 5, 1.0); // Safety check, unnecessary i think
-		
+		frameStrain += strain;
         Eigen::RowVector3d faceColor;
 
         getColor(faceColor, strain);
 		
         C.row(currFace) = faceColor;
     }
+    frameStrain /= F.rows();
+    frameStrains.push_back(frameStrain);
 }
 
 
@@ -98,5 +103,22 @@ void calculateAxialDeformationStrain(Eigen::MatrixXd& C, Eigen::MatrixXi& F, Eig
         
         getColor(faceColor, strain);
         C.row(currFace) = faceColor;
+    }
+    frameStrains.push_back(edgeStrains.cwiseAbs().mean());
+}
+
+void writeAverageStrainDuringSimulation(){
+    double averageStrain = 0.0;
+    for (double s : frameStrains) {
+        averageStrain += s;
+    }
+    averageStrain /= frameStrains.size();
+
+    std::ofstream outFile("../average_strain.txt");
+    if (outFile.is_open()) {
+        outFile << "Average strain over simulation: " << averageStrain << std::endl;
+        outFile.close();
+    } else {
+        std::cerr << "Failed to open output file.\n";
     }
 }

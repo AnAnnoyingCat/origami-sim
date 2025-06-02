@@ -1,5 +1,5 @@
 {
-	"dt": 0.01,
+	"dt": 0.001,
 	"vertexMass": 1,
 	"EA": 30,
 	"k_fold": 2,
@@ -7,7 +7,7 @@
 	"k_face": 0.5,
 	"zeta": 3.5,
 
-	"visualize_strain": false,
+	"visualize_strain": true,
 	"strain_type": "edge",
 	"enable_dynamic_simulation": false
 }
