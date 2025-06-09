@@ -149,7 +149,7 @@ void simulate(){
 
         // Next time step
         t += dt;
-        //std::cout << "t: " << t << std::endl;
+        std::cout << "t: " << t << std::endl;
     }
 }
 
