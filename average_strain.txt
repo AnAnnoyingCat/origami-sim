@@ -1,1 +1,1 @@
-Average strain over simulation: 0.08289
+Average strain over simulation: 0.0431694
