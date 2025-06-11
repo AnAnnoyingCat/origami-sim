@@ -4,6 +4,7 @@
 #include <map>
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 
 std::vector<double> frameStrains;
 std::map<Interval, Eigen::Matrix<double, 6, 1>> colorMap{
@@ -107,16 +108,26 @@ void calculateAxialDeformationStrain(Eigen::MatrixXd& C, Eigen::MatrixXi& F, Eig
     frameStrains.push_back(edgeStrains.cwiseAbs().mean());
 }
 
-void writeAverageStrainDuringSimulation(){
+std::string extractBaseName(const std::string& path) {
+    std::filesystem::path p(path);
+    return p.stem().string(); 
+}
+
+void writeAverageStrainDuringSimulation(std::string filename){
     double averageStrain = 0.0;
     for (double s : frameStrains) {
         averageStrain += s;
     }
     averageStrain /= frameStrains.size();
 
-    std::ofstream outFile("../average_strain.txt");
+    std::string outPath = "../data/simulation_strains/" + extractBaseName(filename) + "_strain.txt";
+    std::ofstream outFile(outPath);
     if (outFile.is_open()) {
-        outFile << "Average strain over simulation: " << averageStrain << std::endl;
+        outFile << "# Average strain over simulation: " << averageStrain << "\n";
+        outFile << "# Frame\tStrain\n";
+        for (size_t i = 0; i < frameStrains.size(); ++i) {
+            outFile << i << "\t" << frameStrains[i] << "\n";
+        }
         outFile.close();
     } else {
         std::cerr << "Failed to open output file.\n";

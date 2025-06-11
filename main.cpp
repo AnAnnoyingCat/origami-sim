@@ -220,7 +220,16 @@ int main(int argc, char *argv[])
         strain_visualization.detach();
     }
 
-    viewer.callback_pre_draw = [&](igl::opengl::glfw::Viewer&) -> bool {
+    bool first_frame = true;
+    viewer.callback_pre_draw = [&](igl::opengl::glfw::Viewer& v) -> bool {
+
+        // the first frame needs to maximise the window. comment this out to disable automatic fullscreen
+        if (first_frame){
+            glfwMaximizeWindow(v.window);
+            first_frame = false;
+        }
+
+
         // This forces a redraw every frame
         return false;
     };
@@ -231,7 +240,13 @@ int main(int argc, char *argv[])
     // Clean up
     viewer_ptr = nullptr;
     simulating = false;
-    writeAverageStrainDuringSimulation();
+
+    if (args.size() >= 1){
+        writeAverageStrainDuringSimulation(args[0]);
+    } else {
+        writeAverageStrainDuringSimulation("defaultsquare");
+    }
+    
     
     return 0;
 }

@@ -9,8 +9,8 @@ void calculateFaceAngleStrain(Eigen::MatrixXd& C, Eigen::MatrixXi& F, Eigen::Vec
 /// @param C    Color matrix for each face
 void calculateAxialDeformationStrain(Eigen::MatrixXd& C, Eigen::MatrixXi& F, Eigen::MatrixXi E, Eigen::VectorXd& q, Eigen::VectorXd& l0, Eigen::MatrixXi& face_adjacent_edges);
 
-/// @brief      Helper function to save the average strain of the entire execution to a file
-void writeAverageStrainDuringSimulation();
+/// @brief      Helper function to save the average strain of the entire execution to a file, as well as the strain over time
+void writeAverageStrainDuringSimulation(std::string filename);
 
 /// @brief Helper class to describe an interval
 class Interval {

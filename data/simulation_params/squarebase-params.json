@@ -1,0 +1,13 @@
+{
+	"dt": 0.005,
+	"vertexMass": 1,
+	"EA": 80,
+	"k_fold": 2,
+	"k_facet": 40,
+	"k_face": 0.5,
+	"zeta": 3.5,
+
+	"visualize_strain": true,
+	"strain_type": "edge",
+	"enable_dynamic_simulation": false
+}
