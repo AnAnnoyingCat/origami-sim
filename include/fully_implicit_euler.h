@@ -1,0 +1,28 @@
+#include <Eigen/Dense>
+#include <Eigen/Sparse>
+#include <Eigen/SparseCholesky>
+
+/**
+ * @brief Fully implicit Euler time integration scheme. 
+ * 
+ * @tparam FORCE 			
+ * @tparam STIFFNESS 		
+ * @param q 				Vertex coordinates
+ * @param qdot 				Vertex velocities
+ * @param dt 				Timestep size
+ * @param mass 				Sparse mass matrix
+ * @param force 			Function to calculate forces. Takes as input the vector to store the result, q and qdot.
+ * @param stiffness 		Function to calculate stiffness. Takes as input the vector to store the result, q and qdot.
+ * @param tmp_force 		Scratch space to calculate forces in
+ * @param tmp_stiffness 	Scratch space to calculate stiffness in
+ */
+template<typename FORCE, typename STIFFNESS>
+inline void implicit_euler(Eigen::VectorXd &q, Eigen::VectorXd &qdot, double dt, const Eigen::SparseMatrix<double> &mass, FORCE &force, STIFFNESS &stiffness, Eigen::VectorXd &tmp_force, Eigen::SparseMatrix<double> &tmp_stiffness) {
+    // Compute the stiffness Matrix
+    stiffness(tmp_stiffness, q, qdot);
+
+    // Compute the force vector
+    force(tmp_force, q, qdot);
+
+    // TODO: fully implicit euler
+}

@@ -19,6 +19,8 @@
 #include <trig_helper_functions.h>
 #include <strain_calculations.h>
 #include <dynamic_target_angle.h>
+#include <assemble_crease_stiffness.h>
+#include <assemble_damping_stiffness.h>
 
 #include <finite_difference_tester.h>
 
@@ -106,7 +108,6 @@ void simulate(){
         // If simulation type is dynamic, recalculate the target angle for the curren frame
         if (ENABLE_DYNAMIC_SIMULATION){
             calculateDynamicTargetAngle(edge_target_angle, t, q, edge_adjacent_vertices);
-            //std::cout << "t: " << t << ", edge target angle: " << edge_target_angle.transpose() << std::endl;
         }
 
         auto forces = [&](Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::VectorXd> qdot){
@@ -116,20 +117,18 @@ void simulate(){
 
             // Get the basic forces
             assemble_edge_forces(f, q, E, l0, k_axial);                                         // Keep edge lengths constant
-            assemble_face_forces(f, q, F, alpha0, k_face);                                      // Stop faces from shearing
             assemble_damping_forces(f, qdot, E, k_axial, zeta);                                 // Apply viscous dampening
             assemble_crease_forces(f, q, edge_adjacent_vertices, k_crease, edge_target_angle);  // Calculate crease driving force
         };
 
         auto stiffness = [&](Eigen::SparseMatrix<double> &K, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::VectorXd> qdot){
-            // TODO : all the stiffnessess.
             K.resize(q.size(), q.size());
             K.setZero();
 
             // Get all the basic stiffnessess
             assemble_edge_stiffness(K, q, V, E, l0, k_axial);
-            
- 
+            assemble_crease_stiffness(K, q, edge_adjacent_vertices, k_crease, curr_theta);
+            assemble_damping_stiffness(K, qdot, E, k_axial, zeta);
         };
 
         forward_euler(q, qdot, dt, forces, tmp_force);
@@ -155,10 +154,6 @@ void simulate(){
 
 int main(int argc, char *argv[])
 {    
-    // test_axial_hessian();
-    // test_crease_force();
-    // test_crease_hessian();
-    // return 1;
 
     // Read args into a vector
     std::vector<std::string> args;

@@ -5,6 +5,8 @@
 #include <crease_constraints.h>
 #include <crease_hessian.h>
 #include <finite_difference_tester.h>
+#include <assemble_damping_forces.h>
+#include <assemble_damping_stiffness.h>
 
 void test_axial_hessian(){
     double epsilon = 1e-6;
@@ -56,7 +58,6 @@ void test_axial_hessian(){
     std::cout << "Frobenius norm of difference: " << error << std::endl;
 	std::cout << "========================================================================\n" << std::endl;
 }
-
 
 void test_crease_hessian(){
     double epsilon = 1e-6;
@@ -152,6 +153,77 @@ void test_crease_force(){
     std::cout << "My force:\n" << F_crease_by_me << std::endl;
     std::cout << "Maple force:\n" << F_crease_maple_res << std::endl;
     std::cout << "Difference (mine - maple):\n" << diff << std::endl;
+    std::cout << "Frobenius norm of difference: " << error << std::endl;
+    std::cout << "========================================================================\n" << std::endl;
+}
+
+void test_damping_stiffness(){
+    double epsilon = 1e-6;
+    Eigen::Vector3d qdot1(0, 0, 0);
+    Eigen::Vector3d qdot2(1, 1, 0);
+
+    Eigen::Matrix<double, 6,1> qdot;
+    qdot << qdot1, qdot2;
+
+    Eigen::Matrix<int,1,2> E;
+    E << 0,1;
+
+    Eigen::VectorXd k_axial;
+    k_axial.resize(1);
+    k_axial << 1.0;
+    double zeta = 4.5;
+
+    
+
+    // Storage for analytical derivative
+    Eigen::SparseMatrix<double> stiffness_by_me;
+    stiffness_by_me.setZero();
+    stiffness_by_me.resize(6,6);
+    assemble_damping_stiffness(stiffness_by_me, qdot, E, k_axial, zeta);
+
+    // Storage for numerical derivative
+    Eigen::Matrix<double, 6, 6> stiffness_numerical;
+    stiffness_numerical.setZero();
+
+    // Central difference approximation
+    for (int i = 0; i < 6; i++) {
+        Eigen::Matrix<double, 6, 1> qdot_perturbed_p = qdot;
+        Eigen::Matrix<double, 6, 1> qdot_perturbed_n = qdot;
+
+        qdot_perturbed_p(i) += epsilon;
+        qdot_perturbed_n(i) -= epsilon;
+
+        Eigen::VectorXd f_p, f_n;
+        f_p.resize(6);
+        f_n.resize(6);
+        f_p.setZero();
+        f_n.setZero();
+		
+		assemble_damping_forces(f_p, qdot_perturbed_p, E, k_axial, zeta);
+        assemble_damping_forces(f_n, qdot_perturbed_n, E, k_axial, zeta);
+
+        // Central difference: (f(x+e) - f(x-e)) / (2e)
+        stiffness_numerical.col(i) = (f_p - f_n) / (2 * epsilon);
+
+        // Debug prints
+        std::cout << "Perturbation index: " << i << std::endl;
+        std::cout << "qdot_perturbed_p:\n" << qdot_perturbed_p.transpose() << std::endl;
+        std::cout << "qdot_perturbed_n:\n" << qdot_perturbed_n.transpose() << std::endl;
+        std::cout << "f(q+ε): " << f_p.transpose() << std::endl;
+        std::cout << "f(q-ε): " << f_n.transpose() << std::endl;
+        std::cout << "Column " << i << " of numerical stiffness:\n" << stiffness_numerical.col(i).transpose() << "\n\n";
+		
+    }
+
+
+    // Compute and print the difference
+    Eigen::Matrix<double, 6, 6> diff = stiffness_by_me - stiffness_numerical;
+    double error = diff.norm();
+
+    std::cout << "============== Testing crease force and comparing maple ============\n" << std::endl;
+    std::cout << "My force:\n" << stiffness_by_me << std::endl;
+    std::cout << "Numerical force:\n" << stiffness_numerical << std::endl;
+    std::cout << "Difference (mine - Numerical):\n" << diff << std::endl;
     std::cout << "Frobenius norm of difference: " << error << std::endl;
     std::cout << "========================================================================\n" << std::endl;
 }
