@@ -18,11 +18,45 @@
  */
 template<typename FORCE, typename STIFFNESS>
 inline void implicit_euler(Eigen::VectorXd &q, Eigen::VectorXd &qdot, double dt, const Eigen::SparseMatrix<double> &mass, FORCE &force, STIFFNESS &stiffness, Eigen::VectorXd &tmp_force, Eigen::SparseMatrix<double> &tmp_stiffness) {
-    // Compute the stiffness Matrix
-    stiffness(tmp_stiffness, q, qdot);
+    
+    const int MAX_ITERATIONS = 20;
+    const double TOLERANCE = 1e-6;
+    
+    Eigen::VectorXd q_prev = q;
+    Eigen::VectorXd qdot_prev = qdot;
 
-    // Compute the force vector
-    force(tmp_force, q, qdot);
+    // Reuse the same vectors
+    Eigen::VectorXd G(q.size());
+    Eigen::VectorXd dq(q.size());
 
-    // TODO: fully implicit euler
+    for (int i = 0; i < MAX_ITERATIONS; i++){
+        
+        force(tmp_force, q, qdot);
+        stiffness(tmp_stiffness, q, qdot);
+
+        // Calculate vector G
+        G = mass * (q - q_prev - qdot_prev*dt) - tmp_force * dt * dt;
+
+        if (G.norm() < TOLERANCE){
+            break;
+        }
+
+        Eigen::SparseMatrix<double> J = mass - dt * dt * tmp_stiffness;
+
+        // solve J * dq = -G
+        Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
+        solver.compute(J);
+        if (solver.info() != Eigen::Success) {
+            throw std::runtime_error("Matrix decomposition failed");
+        }
+
+        dq = solver.solve(-G);
+
+        // Update q
+        q += dq;
+
+    }
+
+    // Update velocity
+    qdot = (q - q_prev) / dt;
 }

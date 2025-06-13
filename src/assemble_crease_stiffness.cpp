@@ -10,8 +10,12 @@ void assemble_crease_stiffness(Eigen::SparseMatrix<double> &K, Eigen::Ref<const 
 	
 	// Reuse H
 	Eigen::Matrix<double, 12, 12> H;
-
 	for (int currCrease = 0; currCrease < numCreases; currCrease++){
+		// Check if current edge is a border edge or an undriven crease
+		if (std::isnan(theta_target(currCrease))){
+			continue;
+		}
+
 		int v0 = edge_adjacent_vertices(currCrease, 0); 
 		int v1 = edge_adjacent_vertices(currCrease, 1); 
 		int v2 = edge_adjacent_vertices(currCrease, 2); 

@@ -11,7 +11,7 @@
 #include <d2V_axial_dq2.h>
 #include <axial_constraints.h>
 #include <forward_Euler.h>
-#include <linearly_implicit_euler.h>
+#include <fully_implicit_euler.h>
 #include <assemble_edge_stiffness.h>
 #include <make_mass_matrix.h>
 #include <assemble_damping_forces.h>
@@ -127,13 +127,13 @@ void simulate(){
 
             // Get all the basic stiffnessess
             assemble_edge_stiffness(K, q, V, E, l0, k_axial);
-            assemble_crease_stiffness(K, q, edge_adjacent_vertices, k_crease, curr_theta);
+            assemble_crease_stiffness(K, q, edge_adjacent_vertices, k_crease, edge_target_angle);
             assemble_damping_stiffness(K, qdot, E, k_axial, zeta);
         };
 
-        forward_euler(q, qdot, dt, forces, tmp_force);
+        //forward_euler(q, qdot, dt, forces, tmp_force);
 
-        // linearly_implicit_euler(q, qdot, dt, M, forces, stiffness, tmp_force, tmp_stiffness);
+        implicit_euler(q, qdot, dt, M, forces, stiffness, tmp_force, tmp_stiffness);
 
         centerMesh();
 
