@@ -3,12 +3,14 @@
 #include <map>
 #include <trig_helper_functions.h>
 #include <iostream>
+#include <optional>
 
 struct FoldInstruction {
     Interval time;    
     int fold_number;      
     double start_angle; 
     double end_angle;
+    std::optional<std::string> mode; 
 };
 
 // Given a time t, updates edge_target_angle to that t

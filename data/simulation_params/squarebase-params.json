@@ -1,13 +1,16 @@
 {
-	"dt": 0.005,
+	"dt": 0.0001,
 	"vertexMass": 1,
-	"EA": 80,
-	"k_fold": 2,
-	"k_facet": 40,
+	"EA": 1000,
+	"k_fold": 750,
+	"k_facet": 750,
 	"k_face": 0.5,
 	"zeta": 3.5,
+	"gravity": [0,0,-9.81],
 
 	"visualize_strain": true,
 	"strain_type": "edge",
-	"enable_dynamic_simulation": false
+	"enable_dynamic_simulation": true,
+	"enable_gravity": false,
+	"use_implicit_euler": false
 }

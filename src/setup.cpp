@@ -6,7 +6,7 @@
 
 using json = nlohmann::json;
 
-void setup_simulation_params(std::string filename, double& dt, double& vertexMass, double& EA, double& k_fold, double& k_facet, double& k_face, double& zeta, bool& ENABLE_STRAIN_VISUALIZATION, std::string& STRAIN_TYPE, bool& ENABLE_DYNAMIC_SIMULATION){
+void setup_simulation_params(std::string filename, double& dt, double& vertexMass, double& EA, double& k_fold, double& k_facet, double& k_face, double& zeta, bool& ENABLE_STRAIN_VISUALIZATION, std::string& STRAIN_TYPE, bool& ENABLE_DYNAMIC_SIMULATION, bool& ENABLE_GRAVITY, Eigen::Vector3d& gravity, bool& USE_IMPLICIT_EULER){
 	// Use nlohmann JSON to grab the simulation parameters from the specified filename.
 	std::ifstream file(filename);
 	if (file){
@@ -61,6 +61,23 @@ void setup_simulation_params(std::string filename, double& dt, double& vertexMas
 			ENABLE_DYNAMIC_SIMULATION = params["enable_dynamic_simulation"].template get<bool>();
 		} else {
 			ENABLE_DYNAMIC_SIMULATION = true;
+		}
+		if (params.contains("enable_gravity")){
+			
+		} else {
+			ENABLE_GRAVITY = true;
+		}
+		if (params.contains("gravity")){
+			for (int i = 0; i < 3; ++i){
+				gravity(i) = params["gravity"][i].get<double>();
+			}
+		} else {
+			gravity = Eigen::Vector3d(0, 0, -9.81); // default gravity
+		}
+		if (params.contains("use_implicit_euler")){
+			USE_IMPLICIT_EULER = params["use_implicit_euler"].template get<bool>();
+		} else {
+			USE_IMPLICIT_EULER = true;
 		}
 		
 	} else {
@@ -412,7 +429,7 @@ void setup_dynamic_target_angles(std::string filename, Eigen::VectorXd& edge_tar
 
 	if (file){
 		json params = json::parse(file);
-		std::cout << "Found file! " << std::endl;
+		//std::cout << "Found file! " << std::endl;
 		std::map<int, double> last_timestamp;
 
 		// Store the last angle of each crease for future use
@@ -431,19 +448,37 @@ void setup_dynamic_target_angles(std::string filename, Eigen::VectorXd& edge_tar
 
 		// Iterate through all the keyframes and add them to the datastructure
 		for (auto& [timestamp, value] : sorted_params){
-			std::cout << "Key (double) : " << timestamp << std::endl;
+			//std::cout << "Key (double) : " << timestamp << std::endl;
 			for (const auto& pair : value){
 				int creaseNr = pair[0];
 
 				double targetAngle;
+				std::optional<std::string> mode;
 				if (pair[1].is_null()){
 					targetAngle = nan("");
+				} else if (pair[1].is_number()) {
+					targetAngle = pair[1].get<double>();
+				} else if (pair[1].is_string()){
+					std::string val = pair[1].get<std::string>();
+					if (val == "glued" || val == "free") {
+						targetAngle = nan("");
+						mode = val;
+					} else {
+						std::cerr << "Warning: Unknown mode string '" << val << "' for fold " << creaseNr << "\n";
+					}
 				} else {
-					targetAngle = pair[1];
+					std::cerr << "Warning: unknown fold instruction" << std::endl;
 				}
 
-				std::cout << "  Pair: (" << creaseNr << ", " << targetAngle << ")" << std::endl;
-				foldTimeline.push_back({Interval(last_timestamp[creaseNr], timestamp), creaseNr, lastAngle[creaseNr], targetAngle});
+				FoldInstruction instr = {
+					Interval(last_timestamp[creaseNr], timestamp),
+					creaseNr,
+					lastAngle[creaseNr],
+					targetAngle,
+					mode
+				};
+				//std::cout << "  Pair: (" << creaseNr << ", " << targetAngle << ")" << std::endl;
+				foldTimeline.push_back(instr);
 				
 				lastAngle[creaseNr] = targetAngle;
 				last_timestamp[creaseNr] = timestamp;

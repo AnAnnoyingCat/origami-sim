@@ -6,8 +6,11 @@
 	"k_facet": 40,
 	"k_face": 0.5,
 	"zeta": 3.5,
+	"gravity": [0,0,-9.81],
 
 	"visualize_strain": true,
 	"strain_type": "edge",
-	"enable_dynamic_simulation": false
+	"enable_dynamic_simulation": false,
+	"enable_gravity": true,
+	"use_implicit_euler": true
 }

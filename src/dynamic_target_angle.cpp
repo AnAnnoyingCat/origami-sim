@@ -41,11 +41,35 @@ void calculateDynamicTargetAngle(Eigen::VectorXd &edge_target_angle, double t, E
 				continue;
 			}
 		}
-
+		
 		FoldInstruction currentInstructions = fold_timeline[per_fold_position_in_timeline[currEdge]];
 		Interval time = currentInstructions.time;      
 		double start_angle = currentInstructions.start_angle; 
 		double end_angle = currentInstructions.end_angle;
+
+		if (currentInstructions.mode.has_value()){
+			if (currentInstructions.mode == "glued"){
+				// Fold is now glued. Calculate current angle and set it as start AND target angle
+				Eigen::Vector3d n1, n2;
+				Eigen::Vector3d q1 = q.segment<3>(3 * edge_adjacent_vertices(currEdge, 0));
+				Eigen::Vector3d q2 = q.segment<3>(3 * edge_adjacent_vertices(currEdge, 1));
+				Eigen::Vector3d q3 = q.segment<3>(3 * edge_adjacent_vertices(currEdge, 2));
+				Eigen::Vector3d q4 = q.segment<3>(3 * edge_adjacent_vertices(currEdge, 3));
+				getNormal(n1, q1, q4, q3);
+				getNormal(n2, q2, q3, q4);
+				Eigen::Vector3d crease_dir = (q4 - q3).normalized();
+				double current_theta = std::atan2((n1.cross(n2)).dot(crease_dir), n1.dot(n2));
+				fold_timeline[per_fold_position_in_timeline[currEdge]].start_angle = current_theta;
+				fold_timeline[per_fold_position_in_timeline[currEdge]].end_angle = current_theta;
+				start_angle = current_theta * 180 / M_PI;
+				end_angle = current_theta * 180 / M_PI;
+
+			} else if (currentInstructions.mode == "free"){
+				fold_timeline[per_fold_position_in_timeline[currEdge]].end_angle = nan("");
+			} else {
+				std::cerr << "unknown fold mode in fold instruction" << std::endl;
+			}
+		}
 
 		if (std::isnan(start_angle) && !std::isnan(end_angle)){
 			// Fold stops swinging freely and should lerp to target angle
