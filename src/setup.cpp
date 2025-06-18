@@ -6,78 +6,78 @@
 
 using json = nlohmann::json;
 
-void setup_simulation_params(std::string filename, double& dt, double& vertexMass, double& EA, double& k_fold, double& k_facet, double& k_face, double& zeta, bool& ENABLE_STRAIN_VISUALIZATION, std::string& STRAIN_TYPE, bool& ENABLE_DYNAMIC_SIMULATION, bool& ENABLE_GRAVITY, Eigen::Vector3d& gravity, bool& USE_IMPLICIT_EULER){
+void setup_simulation_params(std::string filename, SimulationParams& simulationParams){
 	// Use nlohmann JSON to grab the simulation parameters from the specified filename.
 	std::ifstream file(filename);
 	if (file){
 		json params = json::parse(file);
 
 		if (params.contains("dt")){
-			dt = params["dt"].template get<double>();
+			simulationParams.dt = params["dt"].template get<double>();
 		} else {
-			dt = 0.001;
+			simulationParams.dt = 0.001;
 		}
 		if (params.contains("vertexMass")){
-			vertexMass = params["vertexMass"].template get<double>();
+			simulationParams.vertexMass = params["vertexMass"].template get<double>();
 		} else {
-			vertexMass = 1;
+			simulationParams.vertexMass = 1;
 		}
 		if (params.contains("EA")){
-			EA = params["EA"].template get<double>();
+			simulationParams.EA = params["EA"].template get<double>();
 		} else {
-			EA = 5e4;
+			simulationParams.EA = 5e4;
 		}
 		if (params.contains("k_fold")){
-			k_fold = params["k_fold"].template get<double>();
+			simulationParams.k_fold = params["k_fold"].template get<double>();
 		} else {
-			k_fold = 1e3;
+			simulationParams.k_fold = 1e3;
 		}
 		if (params.contains("k_facet")){
-			k_facet = params["k_facet"].template get<double>();
+			simulationParams.k_facet = params["k_facet"].template get<double>();
 		} else {
-			k_facet = 1e3;
+			simulationParams.k_facet = 1e3;
 		}
 		if (params.contains("k_face")){
-			k_face = params["k_face"].template get<double>();
+			simulationParams.k_face = params["k_face"].template get<double>();
 		} else {
-			k_face = 2e2;
+			simulationParams.k_face = 2e2;
 		}
 		if (params.contains("zeta")){
-			zeta = params["zeta"].template get<double>();
+			simulationParams.zeta = params["zeta"].template get<double>();
 		} else {
-			zeta = 0.25;
+			simulationParams.zeta = 0.25;
 		}
 		if (params.contains("visualize_strain")){
-			ENABLE_STRAIN_VISUALIZATION = params["visualize_strain"].template get<bool>();
+			simulationParams.ENABLE_STRAIN_VISUALIZATION = params["visualize_strain"].template get<bool>();
 		} else {
-			ENABLE_STRAIN_VISUALIZATION = false;
+			simulationParams.ENABLE_STRAIN_VISUALIZATION = false;
 		}
 		if (params.contains("strain_type")){
-			STRAIN_TYPE = params["strain_type"].template get<std::string>();
+			simulationParams.STRAIN_TYPE = params["strain_type"].template get<std::string>();
 		} else {
-			STRAIN_TYPE = "face";
+			simulationParams.STRAIN_TYPE = "face";
 		}
 		if (params.contains("enable_dynamic_simulation")){
-			ENABLE_DYNAMIC_SIMULATION = params["enable_dynamic_simulation"].template get<bool>();
+			simulationParams.ENABLE_DYNAMIC_SIMULATION = params["enable_dynamic_simulation"].template get<bool>();
 		} else {
-			ENABLE_DYNAMIC_SIMULATION = true;
+			simulationParams.ENABLE_DYNAMIC_SIMULATION = true;
 		}
 		if (params.contains("enable_gravity")){
 			
 		} else {
-			ENABLE_GRAVITY = true;
+			simulationParams.ENABLE_GRAVITY = true;
 		}
 		if (params.contains("gravity")){
 			for (int i = 0; i < 3; ++i){
-				gravity(i) = params["gravity"][i].get<double>();
+				simulationParams.g(i) = params["gravity"][i].get<double>();
 			}
 		} else {
-			gravity = Eigen::Vector3d(0, 0, -9.81); // default gravity
+			simulationParams.g = Eigen::Vector3d(0, 0, -9.81); // default gravity
 		}
 		if (params.contains("use_implicit_euler")){
-			USE_IMPLICIT_EULER = params["use_implicit_euler"].template get<bool>();
+			simulationParams.USE_IMPLICIT_EULER = params["use_implicit_euler"].template get<bool>();
 		} else {
-			USE_IMPLICIT_EULER = true;
+			simulationParams.USE_IMPLICIT_EULER = true;
 		}
 		
 	} else {
@@ -85,7 +85,7 @@ void setup_simulation_params(std::string filename, double& dt, double& vertexMas
 	}
 }
 
-void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd &alpha0, Eigen::MatrixXi &E, Eigen::VectorXd& edge_target_angle, Eigen::VectorXd &l0, Eigen::MatrixXi& edge_adjacent_vertices, Eigen::VectorXd &k_axial, Eigen::VectorXd& k_crease, const double EA, const double k_fold, const double k_facet, const double k_face, Eigen::MatrixXi& face_adjacent_edges){
+void setup_mesh(std::string filename, SimulationParams& simulationParams, SimulationData& simulationData){
 	std::ifstream file(filename);
 
 	if (file){
@@ -111,14 +111,14 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 		if (params.contains("vertices_coords")){
 			std::vector<std::vector<double>> coords = params["vertices_coords"].template get<std::vector<std::vector<double>>>();
 
-			V.resize(coords.size(), 3);
+			simulationData.V.resize(coords.size(), 3);
 			for (int i = 0; i < coords.size(); i++){
-				V(i, 0) = coords[i][0];
-				V(i, 1) = coords[i][1];
+				simulationData.V(i, 0) = coords[i][0];
+				simulationData.V(i, 1) = coords[i][1];
 				if (coords[i].size() == 3){
-					V(i, 2) = coords[i][2];
+					simulationData.V(i, 2) = coords[i][2];
 				} else {
-					V(i, 2) = 0;
+					simulationData.V(i, 2) = 0;
 				}
 			}
 		} else {
@@ -129,36 +129,36 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 		// Assign faces
 		if (params.contains("faces_vertices")){
 			std::vector<std::vector<double>> faces = params["faces_vertices"].template get<std::vector<std::vector<double>>>();
-			F.resize(faces.size(), 3);
+			simulationData.F.resize(faces.size(), 3);
 			for (int i = 0; i < faces.size(); i++){
-				F(i, 0) = faces[i][0];
-				F(i, 1) = faces[i][1];
-				F(i, 2) = faces[i][2];
+				simulationData.F(i, 0) = faces[i][0];
+				simulationData.F(i, 1) = faces[i][1];
+				simulationData.F(i, 2) = faces[i][2];
 			}
 		} else {
 			std::cout << "Missing parameter \"faces_vertices\"" << std::endl;
-			std::cout << "we do have vertices coords. proof: " << V << std::endl;
+			std::cout << "we do have vertices coords. proof: " << simulationData.V << std::endl;
 			throw std::runtime_error("Oh no...");
 		}
 		
 		// Assign resting face angles
-		alpha0.resize(F.rows(), 3);
-		for (int i = 0; i < F.rows(); i++){
+		simulationData.alpha0.resize(simulationData.F.rows(), 3);
+		for (int i = 0; i < simulationData.F.rows(); i++){
 			// Angle 1 of ith face is the angle at the first vertex, between the second and third
-			getAngle(alpha0(i, 0), V.row(F(i, 0)), V.row(F(i, 1)), V.row(F(i, 2)));
+			getAngle(simulationData.alpha0(i, 0), simulationData.V.row(simulationData.F(i, 0)), simulationData.V.row(simulationData.F(i, 1)), simulationData.V.row(simulationData.F(i, 2)));
 			// Angle 2 is at the second vertex, between the third and the first
-			getAngle(alpha0(i, 1), V.row(F(i, 1)), V.row(F(i, 2)), V.row(F(i, 0)));
+			getAngle(simulationData.alpha0(i, 1), simulationData.V.row(simulationData.F(i, 1)), simulationData.V.row(simulationData.F(i, 2)), simulationData.V.row(simulationData.F(i, 0)));
 			// Angle 3 is at the third vertex between the first and the second
-			getAngle(alpha0(i, 2), V.row(F(i, 2)), V.row(F(i, 0)), V.row(F(i, 1)));
+			getAngle(simulationData.alpha0(i, 2), simulationData.V.row(simulationData.F(i, 2)), simulationData.V.row(simulationData.F(i, 0)), simulationData.V.row(simulationData.F(i, 1)));
 		}
 
 		// Assign edges
 		if (params.contains("edges_vertices")){
 			std::vector<std::vector<double>> edges = params["edges_vertices"].template get<std::vector<std::vector<double>>>();
-			E.resize(edges.size(), 2);
+			simulationData.E.resize(edges.size(), 2);
 			for (int i = 0; i < edges.size(); i++){
-				E(i, 0) = edges[i][0];
-				E(i, 1) = edges[i][1];
+				simulationData.E(i, 0) = edges[i][0];
+				simulationData.E(i, 1) = edges[i][1];
 			}
 		} else {
 			std::cout << "Missing parameter \"edges_vertices\"" << std::endl;
@@ -168,11 +168,11 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 		// Set up faces → edges
 		if (params.contains("faces_edges")){
 			std::vector<std::vector<double>> faces_edges = params["faces_edges"].template get<std::vector<std::vector<double>>>();
-			face_adjacent_edges.resize(faces_edges.size(), 3);
+			simulationData.face_adjacent_edges.resize(faces_edges.size(), 3);
 			for (int i = 0; i < faces_edges.size(); i++){
-				face_adjacent_edges(i, 0) = faces_edges[i][0];
-				face_adjacent_edges(i, 1) = faces_edges[i][1];
-				face_adjacent_edges(i, 2) = faces_edges[i][2];
+				simulationData.face_adjacent_edges(i, 0) = faces_edges[i][0];
+				simulationData.face_adjacent_edges(i, 1) = faces_edges[i][1];
+				simulationData.face_adjacent_edges(i, 2) = faces_edges[i][2];
 			}
 		} else {
 			std::cout << "Missing parameter \"edges_vertices\"" << std::endl;
@@ -185,17 +185,17 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 			const auto& angles_json = params["edges_foldAngle"];
 			const auto& assignments = params["edges_assignment"];
 
-			edge_target_angle.resize(angles_json.size());
+			simulationData.edge_target_angle.resize(angles_json.size());
 
 			for (int i = 0; i < angles_json.size(); i++){
 				if (angles_json[i].is_null()){
 					// null angle usually means border edge or facet crease. in any case, set 0.
-					edge_target_angle(i) = nan("");
+					simulationData.edge_target_angle(i) = nan("");
 				} else {
 					if (assignments[i].get<std::string>() == "U" || assignments[i].get<std::string>() == "B"){
-						edge_target_angle(i) = nan("");
+						simulationData.edge_target_angle(i) = nan("");
 					} else {
-						edge_target_angle(i) = angles_json[i].get<double>() * M_PI / 180.0;
+						simulationData.edge_target_angle(i) = angles_json[i].get<double>() * M_PI / 180.0;
 					}
 				}
 			}
@@ -210,27 +210,27 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 			std::vector<std::string> assignments = params["edges_assignment"].template get<std::vector<std::string>>();
 
 			// For each edge calculate l0, k_axial and k_crease
-			l0.resize(E.rows());
-			k_axial.resize(E.rows());
-			k_crease.resize(E.rows());
-			for (int i = 0; i < E.rows(); i++){
-				int v0 = E(i, 0);
-				int v1 = E(i, 1);
-				Eigen::Vector3d difference = V.row(v0) - V.row(v1);
+			simulationData.l0.resize(simulationData.E.rows());
+			simulationData.k_axial.resize(simulationData.E.rows());
+			simulationData.k_crease.resize(simulationData.E.rows());
+			for (int i = 0; i < simulationData.E.rows(); i++){
+				int v0 = simulationData.E(i, 0);
+				int v1 = simulationData.E(i, 1);
+				Eigen::Vector3d difference = simulationData.V.row(v0) - simulationData.V.row(v1);
 
 				// Set up l0
-				l0(i) = difference.norm();
+				simulationData.l0(i) = difference.norm();
 
 				// Set up axial stiffness dependent on l0
-				k_axial(i) = EA / l0(i);
+				simulationData.k_axial(i) = simulationParams.EA / simulationData.l0(i);
 
 				// Set up crease stiffness dependent on l0
 				if (assignments[i] == "B"){
-					k_crease(i) = -1;
+					simulationData.k_crease(i) = -1;
 				} else if (assignments[i] == "F"){
-					k_crease(i) = k_facet * l0(i);
+					simulationData.k_crease(i) = simulationParams.k_facet * simulationData.l0(i);
 				} else { // Edge type == "M" or "V"
-					k_crease(i) = k_fold * l0(i);
+					simulationData.k_crease(i) = simulationParams.k_fold * simulationData.l0(i);
 				}
 			}
 			
@@ -241,12 +241,12 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 		
 
 		// Initialize q and qdot
-		q.resize(V.rows() * V.cols());
-		qdot.resize(V.rows() * V.cols());
+		simulationData.q.resize(simulationData.V.rows() * simulationData.V.cols());
+		simulationData.qdot.resize(simulationData.V.rows() * simulationData.V.cols());
 
-		Eigen::MatrixXd Vt = V.transpose();
-		q = Eigen::Map<Eigen::VectorXd>(Vt.data(), Vt.rows() * Vt.cols());
-		qdot.setZero();
+		Eigen::MatrixXd Vt = simulationData.V.transpose();
+		simulationData.q = Eigen::Map<Eigen::VectorXd>(Vt.data(), Vt.rows() * Vt.cols());
+		simulationData.qdot.setZero();
 
 		// fill in edge_adjacent_vertices using the help of faces_vertices and faces_edges
 		if (params.contains("faces_vertices") && params.contains("faces_edges") && params.contains("edges_assignment")){
@@ -254,12 +254,12 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 			std::vector<std::vector<double>> faces_edges = params["faces_edges"].template get<std::vector<std::vector<double>>>();
 			std::vector<std::string> assignments = params["edges_assignment"].template get<std::vector<std::string>>();
 
-			edge_adjacent_vertices.resize(E.rows(), 4);
+			simulationData.edge_adjacent_vertices.resize(simulationData.E.rows(), 4);
 			
 			// Iterate through all edges and for every non-border-edge figure out it's 4 defining vertices
-			for (int currentEdgeID = 0; currentEdgeID < E.rows(); currentEdgeID++){
+			for (int currentEdgeID = 0; currentEdgeID < simulationData.E.rows(); currentEdgeID++){
 				if (assignments[currentEdgeID] == "B"){
-					edge_adjacent_vertices.row(currentEdgeID) << -1, -1, -1, -1;
+					simulationData.edge_adjacent_vertices.row(currentEdgeID) << -1, -1, -1, -1;
 				} else {
 					int first_face_ID = -1;
 					int second_face_ID = -1;
@@ -279,8 +279,8 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 					std::vector<double> second_face = faces_vertices[second_face_ID];
 
 					// Get start and end vertex of the edge
-					int v_start = E(currentEdgeID, 0);
-					int v_end = E(currentEdgeID, 1);
+					int v_start = simulationData.E(currentEdgeID, 0);
+					int v_end = simulationData.E(currentEdgeID, 1);
 
 					// Helper to get third vertex not part of edge
 					auto find_third_vertex = [&](const std::vector<double>& face) -> int {
@@ -294,10 +294,10 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 					int third1 = find_third_vertex(first_face);
 					int third2 = find_third_vertex(second_face);
 
-					Eigen::Vector3d a = V.row(v_start);
-					Eigen::Vector3d b = V.row(v_end);
-					Eigen::Vector3d c1 = V.row(third1);
-					Eigen::Vector3d c2 = V.row(third2);
+					Eigen::Vector3d a = simulationData.V.row(v_start);
+					Eigen::Vector3d b = simulationData.V.row(v_end);
+					Eigen::Vector3d c1 = simulationData.V.row(third1);
+					Eigen::Vector3d c2 = simulationData.V.row(third2);
 
 					// Calculate normals to triangle (v_start, v_end, v_third)
 					Eigen::Vector3d edge_vec = b - a;
@@ -324,7 +324,7 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 						v_right = third2;
 					}
 
-					edge_adjacent_vertices.row(currentEdgeID) << v_right, v_left, v_start, v_end;	
+					simulationData.edge_adjacent_vertices.row(currentEdgeID) << v_right, v_left, v_start, v_end;	
 				}
 			}
 		} else {
@@ -335,91 +335,8 @@ void setup_mesh(std::string filename, Eigen::VectorXd &q, Eigen::VectorXd &qdot,
 
 
 	} else {
-		std::cout << "There was an error reading your file!" << std::endl;
-		if (filename == ""){
-			std::cout << "No fold file specified, rendering default square" << std::endl;
-		} else {
-			std::cout << "fold file not found, rendering default square" << std::endl;
-		}
-		// If no file is specified, load default square
-		V.resize(4, 3);
-		V << 0, 0, 0,
-			0, 1, 0,
-			1, 0, 0,
-			1, 1, 0;
-		
-		// Two triangle Faces
-		F.resize(2, 3);
-		F << 0, 1, 2,
-			3, 2, 1;
-
-		alpha0.resize(2, 3);
-		alpha0 << 90 * M_PI / 180, 45 * M_PI / 180, 45 * M_PI / 180,
-				90 * M_PI / 180, 45 * M_PI / 180, 45 * M_PI / 180;
-		
-		// Square with one diagonal Edge
-		E.resize(5, 2);
-		E << 0, 1,
-			1, 3,
-			3, 2,
-			2, 0,
-			2, 1;
-		
-		// Diagonal should be folded to 60 degrees
-		edge_target_angle.resize(5);
-		edge_target_angle << 0, 0, 0, 0, -90.0 * M_PI / 180;
-
-		//Type of each edge. "B" = Border, "M" = Mountain, "V" = Valley, "F" = Flat / Facet
-		std::vector<std::string> edge_type;
-		edge_type.resize(5);
-		edge_type[0] = "B";
-		edge_type[1] = "B";
-		edge_type[2] = "B";
-		edge_type[3] = "B";
-		edge_type[4] = "V";
-
-		// Basic Edge Lengths and stiffnesses
-		l0.resize(E.rows());
-		k_axial.resize(E.rows());
-		k_crease.resize(E.rows());
-		for (int i = 0; i < E.rows(); i++){
-			int v0 = E(i, 0);
-			int v1 = E(i, 1);
-			Eigen::Vector3d difference = V.row(v0) - V.row(v1);
-
-			// Set up l0
-			l0(i) = difference.norm();
-
-			// Set up axial stiffness dependent on l0
-			k_axial(i) = EA / l0(i);
-
-			// Set up crease stiffness dependent on l0
-			if (edge_type[i] == "B"){
-				k_crease(i) = -1;
-			} else if (edge_type[i] == "F"){
-				k_crease(i) = k_facet * l0(i);
-			} else { // Edge type == "M" or "V"
-				k_crease(i) = k_fold * l0(i);
-			}
-		}
-
-		// Initialize q to vertex positions and qdot to zero
-		q.resize(V.rows() * V.cols());
-		qdot.resize(V.rows() * V.cols());
-
-		Eigen::MatrixXd Vt = V.transpose();
-		q = Eigen::Map<Eigen::VectorXd>(Vt.data(), Vt.rows() * Vt.cols());
-		qdot.setZero();
-
-		// Add the edge adjacent vertices, used in the calculation for the crease constraints
-		edge_adjacent_vertices.resize(5, 4);
-		edge_adjacent_vertices.row(0) << -1, -1, -1, -1;
-		edge_adjacent_vertices.row(1) << -1, -1, -1, -1;
-		edge_adjacent_vertices.row(2) << -1, -1, -1, -1;
-		edge_adjacent_vertices.row(3) << -1, -1, -1, -1;
-		edge_adjacent_vertices.row(4) << 0, 3, 2, 1;
+		std::cerr << "There was an error reading your .fold file!" << std::endl;
 	}
-
 }
 
 void setup_dynamic_target_angles(std::string filename, Eigen::VectorXd& edge_target_angle){
