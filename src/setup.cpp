@@ -79,6 +79,16 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 		} else {
 			simulationParams.USE_IMPLICIT_EULER = true;
 		}
+		if (params.contains("glue_factor")){
+			simulationParams.gluefactor = params["glue_factor"].template get<double>();
+		} else {
+			simulationParams.gluefactor = 1;
+		}
+		if (params.contains("log_simulation_time")){
+			simulationParams.LOG_SIMULATION_TIME = params["log_simulation_time"].template get<bool>();
+		} else {
+			simulationParams.LOG_SIMULATION_TIME = false;
+		}
 		
 	} else {
 		std::cout << "error: params file not found" << std::endl;     

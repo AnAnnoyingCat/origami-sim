@@ -1,10 +1,11 @@
 {
-	"dt": 0.0001,
+	"dt": 0.0003,
 	"vertexMass": 1,
-	"EA": 1000,
+	"EA": 10000,
 	"k_fold": 750,
 	"k_facet": 750,
 	"k_face": 0.5,
+	"glue_factor": 50,
 	"zeta": 3.5,
 	"gravity": [0,0,-9.81],
 
@@ -12,5 +13,6 @@
 	"strain_type": "edge",
 	"enable_dynamic_simulation": true,
 	"enable_gravity": false,
-	"use_implicit_euler": false
+	"use_implicit_euler": false,
+	"log_simulation_time": false
 }

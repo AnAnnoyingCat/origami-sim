@@ -23,7 +23,7 @@
 #include <assemble_damping_stiffness.h>
 #include <assemble_gravity_forces.h>
 #include <assemble_gravity_stiffness.h>
-
+#include <parameters.h>
 #include <finite_difference_tester.h>
 
 // Set this to false to immediately stop all processes to do with simulation
@@ -85,7 +85,7 @@ void simulate(){
         
         // If simulation type is dynamic, recalculate the target angle for the curren frame
         if (simulationParams.ENABLE_DYNAMIC_SIMULATION){
-            calculateDynamicTargetAngle(simulationData.edge_target_angle, simulationData.t, simulationData.q, simulationData.edge_adjacent_vertices);
+            calculateDynamicTargetAngle(simulationData, simulationParams);
         }
 
         auto forces = [&](Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::VectorXd> qdot){
@@ -112,12 +112,6 @@ void simulate(){
             assemble_edge_stiffness(K, q, simulationData.V, simulationData.E, simulationData.l0, simulationData.k_axial);
             assemble_crease_stiffness(K, q, simulationData.edge_adjacent_vertices, simulationData.k_crease, simulationData.edge_target_angle);
             assemble_damping_stiffness(K, qdot, simulationData.E, simulationData.k_axial, simulationParams.zeta);
-
-            /* If gravity is enabled, and uses a more complicated than normal computation, get that too
-            if (ENABLE_GRAVITY){
-                assemble_gravity_stiffness(K);
-            }
-            */
             
         };
 
@@ -145,7 +139,9 @@ void simulate(){
 
         // Next time step
         simulationData.t += simulationParams.dt;
-        std::cout << "t: " << simulationData.t << std::endl;
+        if (simulationParams.LOG_SIMULATION_TIME){
+            std::cout << "t: " << simulationData.t << std::endl;
+        }
     }
 }
 
@@ -215,11 +211,11 @@ int main(int argc, char *argv[])
     bool first_frame = true;
     viewer.callback_pre_draw = [&](igl::opengl::glfw::Viewer& v) -> bool {
 
-        // the first frame needs to maximise the window. comment this out to disable automatic fullscreen
-        if (first_frame){
-            glfwMaximizeWindow(v.window);
-            first_frame = false;
-        }
+        // // the first frame needs to maximise the window. comment this out to disable automatic fullscreen
+        // if (first_frame){
+        //     glfwMaximizeWindow(v.window);
+        //     first_frame = false;
+        // }
 
 
         // This forces a redraw every frame

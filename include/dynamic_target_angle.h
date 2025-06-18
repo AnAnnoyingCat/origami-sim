@@ -4,6 +4,7 @@
 #include <trig_helper_functions.h>
 #include <iostream>
 #include <optional>
+#include <parameters.h>
 
 struct FoldInstruction {
     Interval time;    
@@ -14,7 +15,7 @@ struct FoldInstruction {
 };
 
 // Given a time t, updates edge_target_angle to that t
-void calculateDynamicTargetAngle(Eigen::VectorXd &edge_target_angle, double t, Eigen::VectorXd q, Eigen::MatrixXi edge_adjacent_vertices);
+void calculateDynamicTargetAngle(SimulationData& simulationData, SimulationParams& simulationParams);
 
 /// @brief Passes all the time dependant target angle information to the function
 void setupFoldTimeline(std::vector<FoldInstruction> in, double numEdges);
