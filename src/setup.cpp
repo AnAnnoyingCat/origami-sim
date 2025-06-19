@@ -47,6 +47,11 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 		} else {
 			simulationParams.zeta = 0.25;
 		}
+		if (params.contains("min_barrier_distance")){
+			simulationParams.min_barrier_distance = params["min_barrier_distance"].template get<double>();
+		} else {
+			simulationParams.min_barrier_distance = 0.1;
+		}
 		if (params.contains("visualize_strain")){
 			simulationParams.ENABLE_STRAIN_VISUALIZATION = params["visualize_strain"].template get<bool>();
 		} else {
@@ -88,6 +93,11 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 			simulationParams.LOG_SIMULATION_TIME = params["log_simulation_time"].template get<bool>();
 		} else {
 			simulationParams.LOG_SIMULATION_TIME = false;
+		}
+		if (params.contains("use_snapping_glue_mode")){
+			simulationParams.USE_SNAPPING_GLUE_MODE = params["use_snapping_glue_mode"].template get<bool>();
+		} else {
+			simulationParams.USE_SNAPPING_GLUE_MODE = true;
 		}
 		
 	} else {

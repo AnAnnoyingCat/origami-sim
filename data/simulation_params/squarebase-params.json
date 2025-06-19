@@ -8,11 +8,13 @@
 	"glue_factor": 50,
 	"zeta": 3.5,
 	"gravity": [0,0,-9.81],
+	"min_barrier_distance": 0.1,
 
 	"visualize_strain": true,
 	"strain_type": "edge",
 	"enable_dynamic_simulation": true,
 	"enable_gravity": false,
 	"use_implicit_euler": false,
-	"log_simulation_time": false
+	"log_simulation_time": false,
+	"use_snapping_glue_mode": false
 }

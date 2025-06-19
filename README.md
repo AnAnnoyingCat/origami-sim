@@ -13,3 +13,5 @@ This is a physics based Origami simulation aimed at simulating the behaviour of 
  <li><b>F</b>: Facet creases. These are used in triangulation. They are very stiff and try to stay flat. </li>
 
 </ul>
+
+-> Call the program with ./origami-sim (Crease pattern) (Parameter) (actuation profile)

@@ -55,15 +55,37 @@ void calculateDynamicTargetAngle(SimulationData& simulationData, SimulationParam
 		if (currentInstructions.mode.has_value()){
 			if (currentInstructions.mode == "glued"){
 				// Fold is now glued. 
-				fold_timeline[per_fold_position_in_timeline[currEdge]].end_angle = start_angle;
-				end_angle = start_angle;
 
-				//std::cout << "Fold " << currEdge << " is now glued. Current angle is: " << start_angle << ", old stiffness is: " << simulationData.k_crease(currEdge);
+				if (simulationParams.USE_SNAPPING_GLUE_MODE){
+					// Set the target angles to be the percise expected target angle (what we *should* have reached up to here)
+					fold_timeline[per_fold_position_in_timeline[currEdge]].end_angle = start_angle;
+					end_angle = start_angle;
+				} else {
+					// Calculate what angle we actually currently have and glue that angle to be fix
+					Eigen::Vector3d n1, n2;
+					Eigen::Vector3d q1 = q.segment<3>(3 * edge_adjacent_vertices(currEdge, 0));
+					Eigen::Vector3d q2 = q.segment<3>(3 * edge_adjacent_vertices(currEdge, 1));
+					Eigen::Vector3d q3 = q.segment<3>(3 * edge_adjacent_vertices(currEdge, 2));
+					Eigen::Vector3d q4 = q.segment<3>(3 * edge_adjacent_vertices(currEdge, 3));
+					getNormal(n1, q1, q4, q3);
+					getNormal(n2, q2, q3, q4);
+					Eigen::Vector3d crease_dir = (q4 - q3).normalized();
+					double current_theta = std::atan2((n1.cross(n2)).dot(crease_dir), n1.dot(n2));
+
+					fold_timeline[per_fold_position_in_timeline[currEdge]].start_angle = current_theta * 180 / M_PI;
+					fold_timeline[per_fold_position_in_timeline[currEdge]].end_angle = current_theta * 180 / M_PI;
+					start_angle = fold_timeline[per_fold_position_in_timeline[currEdge]].start_angle;
+					end_angle = start_angle;
+				}
+				
+				// Update the fold stiffness to the glued stiffness
 				simulationData.k_crease(currEdge) = simulationParams.k_fold * simulationParams.gluefactor;
-				//std::cout << ", new stiffness is: " << simulationData.k_crease(currEdge) << ", start and end angles are: " << start_angle << ", " << end_angle << std::endl;
+
+				// Remove the glued keyword so this code only gets applied once (which it needs to)
 				fold_timeline[per_fold_position_in_timeline[currEdge]].mode.reset();
 				
 			} else if (currentInstructions.mode == "free"){
+				// Freely swinging creases have a target angle of NaN, which nicely propagates through all equations
 				fold_timeline[per_fold_position_in_timeline[currEdge]].end_angle = nan("");
 			} else {
 				std::cerr << "unknown fold mode in fold instruction" << std::endl;

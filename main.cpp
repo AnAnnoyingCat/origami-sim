@@ -153,8 +153,15 @@ int main(int argc, char *argv[])
     std::copy(argv + 1, argv + argc, std::back_inserter(args));
 
     // Set up parameters and read CP
-    if (args.size() == 2){
+    if (args.size() == 3){
         // Both CP and params provided
+        setup_simulation_params(args[1], simulationParams);
+        setup_mesh(args[0], simulationParams, simulationData);
+
+        // Get path to activation profiles
+        setup_dynamic_target_angles(args[2], simulationData.edge_target_angle);
+    } else if (args.size() == 2){
+        // Both CP and params provided, checking for actuation profiles at default path and name
         setup_simulation_params(args[1], simulationParams);
         setup_mesh(args[0], simulationParams, simulationData);
 
