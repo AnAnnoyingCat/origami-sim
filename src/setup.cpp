@@ -68,7 +68,7 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 			simulationParams.ENABLE_DYNAMIC_SIMULATION = true;
 		}
 		if (params.contains("enable_gravity")){
-			
+			simulationParams.ENABLE_GRAVITY = params["enable_gravity"].template get<bool>();
 		} else {
 			simulationParams.ENABLE_GRAVITY = true;
 		}
@@ -98,6 +98,11 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 			simulationParams.USE_SNAPPING_GLUE_MODE = params["use_snapping_glue_mode"].template get<bool>();
 		} else {
 			simulationParams.USE_SNAPPING_GLUE_MODE = true;
+		}
+		if (params.contains("spawn_height")){
+			simulationParams.spawn_height = params["spawn_height"].template get<double>();
+		} else {
+			simulationParams.spawn_height = 1;
 		}
 		
 	} else {
@@ -138,7 +143,7 @@ void setup_mesh(std::string filename, SimulationParams& simulationParams, Simula
 				if (coords[i].size() == 3){
 					simulationData.V(i, 2) = coords[i][2];
 				} else {
-					simulationData.V(i, 2) = 0;
+					simulationData.V(i, 2) = simulationParams.spawn_height;
 				}
 			}
 		} else {

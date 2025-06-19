@@ -25,6 +25,8 @@
 #include <assemble_gravity_stiffness.h>
 #include <parameters.h>
 #include <finite_difference_tester.h>
+#include <assemble_ground_barrier_forces.h>
+#include <assemble_ground_barrier_stiffness.h>
 
 // Set this to false to immediately stop all processes to do with simulation
 bool simulating = true;              
@@ -94,13 +96,19 @@ void simulate(){
             f.setZero();
 
             // Get the basic forces
-            assemble_edge_forces(f, q, simulationData.E, simulationData.l0, simulationData.k_axial);                                         // Keep edge lengths constant
-            assemble_damping_forces(f, qdot, simulationData.E, simulationData.k_axial, simulationParams.zeta);                                 // Apply viscous dampening
-            assemble_crease_forces(f, q, simulationData.edge_adjacent_vertices, simulationData.k_crease, simulationData.edge_target_angle);  // Calculate crease driving force
-
+            assemble_edge_forces(f, q, simulationData.E, simulationData.l0, simulationData.k_axial);                                        
+                                             
+            assemble_crease_forces(f, q, simulationData.edge_adjacent_vertices, simulationData.k_crease, simulationData.edge_target_angle);  
+            
+            
+            assemble_damping_forces(f, qdot, simulationData.E, simulationData.k_axial, simulationParams.zeta);
+            
             // If graivty is enabled, get that too
             if (simulationParams.ENABLE_GRAVITY){
+                
                 assemble_gravity_forces(f, simulationParams.g, simulationParams.vertexMass);
+                // Ground only needs to do collision if we got gravity
+                assemble_ground_barrier_forces(f, q, simulationParams.min_barrier_distance);
             }
         };
 
@@ -112,6 +120,7 @@ void simulate(){
             assemble_edge_stiffness(K, q, simulationData.V, simulationData.E, simulationData.l0, simulationData.k_axial);
             assemble_crease_stiffness(K, q, simulationData.edge_adjacent_vertices, simulationData.k_crease, simulationData.edge_target_angle);
             assemble_damping_stiffness(K, qdot, simulationData.E, simulationData.k_axial, simulationParams.zeta);
+            assemble_ground_barrier_stiffness(K, q, simulationParams.min_barrier_distance);
             
         };
 

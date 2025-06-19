@@ -32,6 +32,7 @@ struct SimulationParams {
     double gluefactor;          // Glued edge i will have stiffness edge_stiffness(i) * gluefactor
     double zeta;                // Parameter in the damping ratio from the paper
     double min_barrier_distance;// Parameter which determines how close origami can get to the gorund before barrier forces engage
+    double spawn_height;        // Controls how high up the flat paper spawns before falling to the ground. 
     Eigen::Vector3d g;          // Gravity force vector
 
     // This controls broader simulation parameters. Self explanatory (I hope)

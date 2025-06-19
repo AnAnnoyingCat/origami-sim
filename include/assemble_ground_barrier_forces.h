@@ -1,6 +1,7 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include <axial_constraints.h>
+#include <iostream>
 
 /**
  * @brief Calculate the size 3*n vector of forces acting from collision with the ground
@@ -10,3 +11,5 @@
  * @param min_barrier_distance 
  */
 void assemble_ground_barrier_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, double min_barrier_distance);
+
+void get_barrier_force_for_vertex(Eigen::Vector3d &f, const Eigen::Vector3d q0, double d);

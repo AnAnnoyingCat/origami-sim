@@ -1,5 +1,5 @@
 {
-	"dt": 0.005,
+	"dt": 0.0001,
 	"vertexMass": 1,
 	"EA": 50,
 	"k_fold": 2,
@@ -8,13 +8,14 @@
 	"glue_factor": 10,
 	"zeta": 3.5,
 	"gravity": [0,0,-9.81],
-	"min_barrier_distance": 0.1,
+	"min_barrier_distance": 0.5,
+	"spawn_height": 1,
 
-	"visualize_strain": true,
+	"visualize_strain": false,
 	"strain_type": "edge",
 	"enable_dynamic_simulation": false,
 	"enable_gravity": true,
-	"use_implicit_euler": false,
+	"use_implicit_euler": true,
 	"log_simulation_time": false,
 	"use_snapping_glue_mode": false
 }
