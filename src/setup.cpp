@@ -104,6 +104,7 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 		} else {
 			simulationParams.spawn_height = 1;
 		}
+		simulationParams.simulating = true;
 		
 	} else {
 		std::cout << "error: params file not found" << std::endl;     
@@ -402,7 +403,7 @@ void setup_dynamic_target_angles(std::string filename, Eigen::VectorXd& edge_tar
 					targetAngle = pair[1].get<double>();
 				} else if (pair[1].is_string()){
 					std::string val = pair[1].get<std::string>();
-					if (val == "glued" || val == "free") {
+					if (val == "glued" || val == "free" || val == "toggle_gravity") {
 						targetAngle = nan("");
 						mode = val;
 					} else {

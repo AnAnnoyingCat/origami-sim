@@ -1,15 +1,15 @@
 {
-	"dt": 0.0001,
+	"dt": 0.0005,
 	"vertexMass": 1,
-	"EA": 50,
-	"k_fold": 2,
-	"k_facet": 40,
+	"EA": 500,
+	"k_fold": 500,
+	"k_facet": 500,
 	"k_face": 0.5,
-	"glue_factor": 10,
-	"zeta": 3.5,
+	"glue_factor": 5,
+	"zeta": 4,
 	"gravity": [0,0,-9.81],
-	"min_barrier_distance": 0.5,
-	"spawn_height": 1,
+	"min_barrier_distance": 2,
+	"spawn_height": 3,
 
 	"visualize_strain": false,
 	"strain_type": "edge",
@@ -17,5 +17,5 @@
 	"enable_gravity": true,
 	"use_implicit_euler": true,
 	"log_simulation_time": false,
-	"use_snapping_glue_mode": false
+	"use_snapping_glue_mode": true
 }

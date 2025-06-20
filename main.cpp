@@ -26,10 +26,7 @@
 #include <parameters.h>
 #include <finite_difference_tester.h>
 #include <assemble_ground_barrier_forces.h>
-#include <assemble_ground_barrier_stiffness.h>
-
-// Set this to false to immediately stop all processes to do with simulation
-bool simulating = true;              
+#include <assemble_ground_barrier_stiffness.h>    
 
 // This keeps track of all data of the simulation
 SimulationData simulationData;
@@ -46,7 +43,7 @@ igl::opengl::glfw::Viewer* viewer_ptr = nullptr;
 
 /// @brief If enabled in config, visualizes strain in the mesh using l0 or alpha0
 void visualizeStrain(){
-    while(simulating){
+    while(simulationParams.simulating){
         if (viewer_ptr){
             Eigen::MatrixXd C;
             if (simulationParams.STRAIN_TYPE == "face"){
@@ -72,6 +69,7 @@ void updateV(Eigen::MatrixXd& V, Eigen::VectorXd q){
 void centerMesh(){ 
     Eigen::Vector3d center;
     center.setZero();
+    center(2) = simulationParams.spawn_height;
     for (int currVertex = 0; currVertex < simulationData.V.rows(); currVertex++){
         center += simulationData.q.segment<3>(3 * currVertex);
     }
@@ -83,7 +81,7 @@ void centerMesh(){
 
 /// @brief Main simulation loop, running in a seperate thread
 void simulate(){
-    while (simulating){
+    while (simulationParams.simulating){
         
         // If simulation type is dynamic, recalculate the target angle for the curren frame
         if (simulationParams.ENABLE_DYNAMIC_SIMULATION){
@@ -96,20 +94,23 @@ void simulate(){
             f.setZero();
 
             // Get the basic forces
+            std::cout << std::fixed;
+            std::cout << std::setprecision(3);
             assemble_edge_forces(f, q, simulationData.E, simulationData.l0, simulationData.k_axial);                                        
-                                             
+            std::cout << "Edge force: " << f(2);                  
             assemble_crease_forces(f, q, simulationData.edge_adjacent_vertices, simulationData.k_crease, simulationData.edge_target_angle);  
-            
-            
+            std::cout << " + Crease force: " << f(2);
             assemble_damping_forces(f, qdot, simulationData.E, simulationData.k_axial, simulationParams.zeta);
-            
+            std::cout << " + damping force: " << f(2);
             // If graivty is enabled, get that too
             if (simulationParams.ENABLE_GRAVITY){
-                
                 assemble_gravity_forces(f, simulationParams.g, simulationParams.vertexMass);
+                std::cout << " + gravity force: " << f(2);
                 // Ground only needs to do collision if we got gravity
-                assemble_ground_barrier_forces(f, q, simulationParams.min_barrier_distance);
+                assemble_ground_barrier_forces(f, q, simulationParams.min_barrier_distance, simulationParams);
+                std::cout << " + Barrier force: " << f(2);
             }
+            std::cout << std::endl;
         };
 
         auto stiffness = [&](Eigen::SparseMatrix<double> &K, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::VectorXd> qdot){
@@ -120,7 +121,12 @@ void simulate(){
             assemble_edge_stiffness(K, q, simulationData.V, simulationData.E, simulationData.l0, simulationData.k_axial);
             assemble_crease_stiffness(K, q, simulationData.edge_adjacent_vertices, simulationData.k_crease, simulationData.edge_target_angle);
             assemble_damping_stiffness(K, qdot, simulationData.E, simulationData.k_axial, simulationParams.zeta);
-            assemble_ground_barrier_stiffness(K, q, simulationParams.min_barrier_distance);
+
+
+            if (simulationParams.ENABLE_GRAVITY){
+                assemble_ground_barrier_stiffness(K, q, simulationParams.min_barrier_distance);
+            }
+            
             
         };
 
@@ -133,9 +139,9 @@ void simulate(){
         
 
         // Make sure the floating mesh doesn't drift off with gravity disabled
-        if (!simulationParams.ENABLE_GRAVITY){
-            centerMesh();
-        }
+        // if (!simulationParams.ENABLE_GRAVITY || !simulationParams.ENABLE_DYNAMIC_SIMULATION){
+        //     centerMesh();
+        // }
 
         // update vertex positions from q and increment time
         updateV(simulationData.V, simulationData.q);
@@ -226,14 +232,6 @@ int main(int argc, char *argv[])
 
     bool first_frame = true;
     viewer.callback_pre_draw = [&](igl::opengl::glfw::Viewer& v) -> bool {
-
-        // // the first frame needs to maximise the window. comment this out to disable automatic fullscreen
-        // if (first_frame){
-        //     glfwMaximizeWindow(v.window);
-        //     first_frame = false;
-        // }
-
-
         // This forces a redraw every frame
         return false;
     };
@@ -243,14 +241,13 @@ int main(int argc, char *argv[])
     
     // Clean up
     viewer_ptr = nullptr;
-    simulating = false;
+    simulationParams.simulating = false;
 
     if (args.size() >= 1){
         writeAverageStrainDuringSimulation(args[0]);
     } else {
         writeAverageStrainDuringSimulation("defaultsquare");
     }
-    
     
     return 0;
 }

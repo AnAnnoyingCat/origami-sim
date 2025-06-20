@@ -34,6 +34,7 @@ struct SimulationParams {
     double min_barrier_distance;// Parameter which determines how close origami can get to the gorund before barrier forces engage
     double spawn_height;        // Controls how high up the flat paper spawns before falling to the ground. 
     Eigen::Vector3d g;          // Gravity force vector
+    bool simulating;
 
     // This controls broader simulation parameters. Self explanatory (I hope)
     bool ENABLE_STRAIN_VISUALIZATION;
@@ -43,4 +44,5 @@ struct SimulationParams {
     bool USE_IMPLICIT_EULER;
     bool LOG_SIMULATION_TIME;
     bool USE_SNAPPING_GLUE_MODE;
+
 };

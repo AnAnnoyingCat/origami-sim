@@ -53,6 +53,7 @@ void calculateDynamicTargetAngle(SimulationData& simulationData, SimulationParam
 		double end_angle = currentInstructions.end_angle;
 
 		if (currentInstructions.mode.has_value()){
+			std::cout << "we have a mode: " << currentInstructions.mode.value() << std::endl;
 			if (currentInstructions.mode == "glued"){
 				// Fold is now glued. 
 
@@ -87,6 +88,11 @@ void calculateDynamicTargetAngle(SimulationData& simulationData, SimulationParam
 			} else if (currentInstructions.mode == "free"){
 				// Freely swinging creases have a target angle of NaN, which nicely propagates through all equations
 				fold_timeline[per_fold_position_in_timeline[currEdge]].end_angle = nan("");
+			} else if (currentInstructions.mode == "toggle_gravity") {
+				// Toggle gravity and reset instructions
+				std::cout << "Toggling gravity!" << std::endl;
+				simulationParams.ENABLE_GRAVITY = !simulationParams.ENABLE_GRAVITY;
+				fold_timeline[per_fold_position_in_timeline[currEdge]].mode.reset();
 			} else {
 				std::cerr << "unknown fold mode in fold instruction" << std::endl;
 			}

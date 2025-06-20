@@ -1,5 +1,6 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
+#include <iostream>
 
 /**
  * @brief Calculates the gravity force acting on each particle
