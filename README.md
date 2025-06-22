@@ -1,17 +1,19 @@
 
-# Origami Simulation with Collision and Friction (TODO: Find better title)
+# Origami Simulation with Collision and Friction
 
-This is a physics based Origami simulation aimed at simulating the behaviour of actuated creases including approximating friction and other physical forces
+This is a physics based Origami simulation aimed at simulating the behaviour of actuated creases including approximating contact and friction.
+This project is written as a Bachelor's thesis with the [Computational Design Laboratory](https://cdl.ethz.ch/).  
+It takes [.fold](https://github.com/edemaine/fold) files as [Crease Pattern](https://en.wikipedia.org/wiki/Crease_pattern) input, as well as .json parameter files and actuation profiles.
+Much of the mathematics behind this simulation are based on [Origami Simulator](https://github.com/amandaghassaei/OrigamiSimulator).
 
-## Different types of creases
+## How to run locally
 
-<ul>
+Use the following commands to set up this simulation locally:
 
- <li><b>B</b>: Border creases. These make up the border of the origami. </li>
- <li><b>M/V</b>: Mountain and Valley folds. These are your normal kinds of folds. </li>
- <li><b>U</b>: Undriven creases. These may swing and fold freely. </li>
- <li><b>F</b>: Facet creases. These are used in triangulation. They are very stiff and try to stay flat. </li>
+```
+mkdir build
+cmake .. --DCMAKE_BUILD_TYPE="Release"
+make
+```
 
-</ul>
-
--> Call the program with ./origami-sim (Crease pattern) (Parameter) (actuation profile)
+and then call the executable with the arguments `./origami-simulator <Crease Pattern> <Parameters> <Actuation Profile>`

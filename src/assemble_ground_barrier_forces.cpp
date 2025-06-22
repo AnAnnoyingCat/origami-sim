@@ -5,6 +5,7 @@ void assemble_ground_barrier_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::
 	Eigen::Vector3d scratchpad_f;
 	for (int currVert = 0; currVert < q.size() / 3; currVert++){
 		get_barrier_force_for_vertex(scratchpad_f, q.segment<3>(3 * currVert), min_barrier_distance);
+		
 		f.segment<3>(3 * currVert) -= scratchpad_f;
 		
 		if (currVert == 0){

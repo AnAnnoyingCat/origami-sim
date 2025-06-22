@@ -100,8 +100,7 @@ void simulate(){
             std::cout << "Edge force: " << f(2);                  
             assemble_crease_forces(f, q, simulationData.edge_adjacent_vertices, simulationData.k_crease, simulationData.edge_target_angle);  
             std::cout << " + Crease force: " << f(2);
-            assemble_damping_forces(f, qdot, simulationData.E, simulationData.k_axial, simulationParams.zeta);
-            std::cout << " + damping force: " << f(2);
+            
             // If graivty is enabled, get that too
             if (simulationParams.ENABLE_GRAVITY){
                 assemble_gravity_forces(f, simulationParams.g, simulationParams.vertexMass);
@@ -110,6 +109,8 @@ void simulate(){
                 assemble_ground_barrier_forces(f, q, simulationParams.min_barrier_distance, simulationParams);
                 std::cout << " + Barrier force: " << f(2);
             }
+            assemble_damping_forces(f, qdot, simulationData.E, simulationData.k_axial, simulationParams.zeta);
+            std::cout << " + damping force: " << f(2);
             std::cout << std::endl;
         };
 

@@ -1,5 +1,5 @@
 {
-	"dt": 0.0005,
+	"dt": 0.00005,
 	"vertexMass": 1,
 	"EA": 500,
 	"k_fold": 500,
@@ -15,7 +15,7 @@
 	"strain_type": "edge",
 	"enable_dynamic_simulation": false,
 	"enable_gravity": true,
-	"use_implicit_euler": true,
+	"use_implicit_euler": false,
 	"log_simulation_time": false,
 	"use_snapping_glue_mode": true
 }
