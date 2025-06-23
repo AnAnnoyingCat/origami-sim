@@ -104,6 +104,18 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 		} else {
 			simulationParams.spawn_height = 1;
 		}
+		if (params.contains("log_forces")){
+			simulationParams.LOG_FORCES = params["log_forces"].template get<bool>();
+		} else {
+			simulationParams.LOG_FORCES = false;
+		}
+		if (params.contains("k_barrier")){
+			simulationParams.k_barrier = params["k_barrier"].template get<double>();
+		} else {
+			simulationParams.k_barrier = 1;
+		}
+
+
 		simulationParams.simulating = true;
 		
 	} else {

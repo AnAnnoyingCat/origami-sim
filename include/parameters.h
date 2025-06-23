@@ -29,6 +29,7 @@ struct SimulationParams {
     double k_fold;              // Stiffness for a mountain or valley crease (Should be much smaller than the axial stiffness)
     double k_facet;             // Stiffness for a facet crease
     double k_face;              // Stiffness for the face constraints
+    double k_barrier;           // Stiffness for the barrier force
     double gluefactor;          // Glued edge i will have stiffness edge_stiffness(i) * gluefactor
     double zeta;                // Parameter in the damping ratio from the paper
     double min_barrier_distance;// Parameter which determines how close origami can get to the gorund before barrier forces engage
@@ -44,5 +45,6 @@ struct SimulationParams {
     bool USE_IMPLICIT_EULER;
     bool LOG_SIMULATION_TIME;
     bool USE_SNAPPING_GLUE_MODE;
+    bool LOG_FORCES;
 
 };

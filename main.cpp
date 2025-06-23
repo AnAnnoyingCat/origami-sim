@@ -123,9 +123,8 @@ void simulate(){
             assemble_crease_stiffness(K, q, simulationData.edge_adjacent_vertices, simulationData.k_crease, simulationData.edge_target_angle);
             assemble_damping_stiffness(K, qdot, simulationData.E, simulationData.k_axial, simulationParams.zeta);
 
-
             if (simulationParams.ENABLE_GRAVITY){
-                assemble_ground_barrier_stiffness(K, q, simulationParams.min_barrier_distance);
+                assemble_ground_barrier_stiffness(K, q, simulationParams.min_barrier_distance, simulationParams.k_barrier);
             }
             
             
@@ -163,6 +162,8 @@ void simulate(){
 
 int main(int argc, char *argv[])
 {    
+    test_barrier_stiffness();
+    return 1;
 
     // Read args into a vector
     std::vector<std::string> args;

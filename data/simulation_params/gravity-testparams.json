@@ -10,6 +10,7 @@
 	"gravity": [0,0,-9.81],
 	"min_barrier_distance": 2,
 	"spawn_height": 3,
+	"k_barrier": 2,
 
 	"visualize_strain": false,
 	"strain_type": "edge",
@@ -17,5 +18,6 @@
 	"enable_gravity": true,
 	"use_implicit_euler": false,
 	"log_simulation_time": false,
-	"use_snapping_glue_mode": true
+	"use_snapping_glue_mode": true,
+	"log_forces": true
 }
