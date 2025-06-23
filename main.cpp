@@ -96,22 +96,38 @@ void simulate(){
             // Get the basic forces
             std::cout << std::fixed;
             std::cout << std::setprecision(3);
-            assemble_edge_forces(f, q, simulationData.E, simulationData.l0, simulationData.k_axial);                                        
-            std::cout << "Edge force: " << f(2);                  
-            assemble_crease_forces(f, q, simulationData.edge_adjacent_vertices, simulationData.k_crease, simulationData.edge_target_angle);  
-            std::cout << " + Crease force: " << f(2);
+            assemble_edge_forces(f, q, simulationData.E, simulationData.l0, simulationData.k_axial);
+            if (simulationParams.LOG_FORCES){
+                std::cout << "Edge force: " << f(2);  
+            }                                        
+                            
+            assemble_crease_forces(f, q, simulationData.edge_adjacent_vertices, simulationData.k_crease, simulationData.edge_target_angle); 
+            if (simulationParams.LOG_FORCES){
+                std::cout << " + Crease force: " << f(2);
+            }     
             
+            assemble_damping_forces(f, qdot, simulationData.E, simulationData.k_axial, simulationParams.zeta);
+            if (simulationParams.LOG_FORCES){
+                std::cout << " + damping force: " << f(2);
+            }    
+
             // If graivty is enabled, get that too
             if (simulationParams.ENABLE_GRAVITY){
                 assemble_gravity_forces(f, simulationParams.g, simulationParams.vertexMass);
-                std::cout << " + gravity force: " << f(2);
+                if (simulationParams.LOG_FORCES){
+                    std::cout << " + gravity force: " << f(2);
+                }    
+                
                 // Ground only needs to do collision if we got gravity
                 assemble_ground_barrier_forces(f, q, simulationParams.min_barrier_distance, simulationParams);
-                std::cout << " + Barrier force: " << f(2);
+                if (simulationParams.LOG_FORCES){
+                    std::cout << " + Barrier force: " << f(2);
+                }
+                
             }
-            assemble_damping_forces(f, qdot, simulationData.E, simulationData.k_axial, simulationParams.zeta);
-            std::cout << " + damping force: " << f(2);
-            std::cout << std::endl;
+            if (simulationParams.LOG_FORCES){
+                std::cout << std::endl;    
+            }
         };
 
         auto stiffness = [&](Eigen::SparseMatrix<double> &K, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::VectorXd> qdot){
@@ -162,8 +178,6 @@ void simulate(){
 
 int main(int argc, char *argv[])
 {    
-    test_barrier_stiffness();
-    return 1;
 
     // Read args into a vector
     std::vector<std::string> args;
@@ -221,6 +235,8 @@ int main(int argc, char *argv[])
     viewer.core().is_animating = true; 
     viewer.data().double_sided = true;
     viewer.core().lighting_factor = 0.0f;
+    setup_floor(viewer_ptr);
+    
 
     // Start the simulation in a seperate thread
     std::thread simulation_thread(simulate);

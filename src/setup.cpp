@@ -455,3 +455,21 @@ void setup_dynamic_target_angles(std::string filename, Eigen::VectorXd& edge_tar
 
 	setupFoldTimeline(foldTimeline, edge_target_angle.size());
 }
+
+void setup_floor(igl::opengl::glfw::Viewer* viewer_ptr){
+	Eigen::MatrixXd floor_V(4, 3);
+    floor_V << -10, -10, 0,
+                10, -10, 0,
+                10,  10, 0,
+               -10,  10, 0;
+
+    Eigen::MatrixXi floor_F(2, 3);
+    floor_F << 0, 1, 2,
+               0, 2, 3;
+               
+    int floor_id = viewer_ptr->append_mesh();
+    viewer_ptr->data_list[floor_id].set_mesh(floor_V, floor_F);
+    viewer_ptr->data_list[floor_id].set_colors(Eigen::RowVector3d(0.8, 0.8, 0.8)); // light gray
+    viewer_ptr->data_list[floor_id].show_lines = false;   // Hide wireframe
+    viewer_ptr->data_list[floor_id].double_sided = true;  // Make visible from both sides
+}
