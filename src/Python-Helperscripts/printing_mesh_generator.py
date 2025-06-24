@@ -114,42 +114,97 @@ def create_layer_from_polygon(polygon, z_min, z_max):
     return trimesh.util.concatenate(meshes)
 
 
-def subtract_creases_from_boundary(boundary, creases, buffer_mm=1.0):
+def subtract_creases_from_boundary(boundary, creases, buffer_mm=1.5, vertex_buffer_mm=1.5):
+    from shapely.geometry import Point
+
+    # 1. Buffer creases (strip around lines)
     crease_buffer = creases.buffer(buffer_mm, cap_style=2)
-    cleared_polygon = boundary.difference(crease_buffer)
+
+    # 2. Collect crease endpoints
+    vertex_points = set()
+    if isinstance(creases, LineString):
+        coords = list(creases.coords)
+        vertex_points.add(tuple(coords[0]))
+        vertex_points.add(tuple(coords[-1]))
+    elif isinstance(creases, MultiLineString):
+        for line in creases.geoms:
+            coords = list(line.coords)
+            vertex_points.add(tuple(coords[0]))
+            vertex_points.add(tuple(coords[-1]))
+
+    # 3. Create circular buffers at endpoints
+    vertex_circles = [Point(p).buffer(vertex_buffer_mm) for p in vertex_points]
+
+    # 4. Combine all clearances into one
+    total_clearance = unary_union([crease_buffer] + vertex_circles)
+
+    # 5. Subtract from boundary
+    cleared_polygon = boundary.difference(total_clearance)
     return cleared_polygon
+
 
 def save_mesh(mesh, filename):
     mesh.export(filename)
 
+def get_clearance_geometries(creases, buffer_mm=1.5, vertex_buffer_mm=1.5):
+    from shapely.geometry import Point
+
+    # 1. Crease line buffer
+    crease_buffer = creases.buffer(buffer_mm, cap_style=2)
+
+    # 2. Extract unique endpoints of creases
+    vertex_points = set()
+    if isinstance(creases, LineString):
+        coords = list(creases.coords)
+        vertex_points.update([tuple(coords[0]), tuple(coords[-1])])
+    elif isinstance(creases, MultiLineString):
+        for line in creases.geoms:
+            coords = list(line.coords)
+            vertex_points.update([tuple(coords[0]), tuple(coords[-1])])
+
+    # 3. Circular vertex clearance
+    vertex_circles = [Point(p).buffer(vertex_buffer_mm) for p in vertex_points]
+    vertex_buffer = unary_union(vertex_circles)
+
+    return crease_buffer, vertex_buffer
+
+
 def main():
-    # Modify this path to your actual .fold file
-    fold_path = "/home/cwernke/BA/origami-sim/data/crease_patterns/defaultsquare.fold"
-    vertices, edges, assignments = load_fold(fold_path, target_size=50)
+    fold_path = "/home/cwernke/BA/origami-sim/data/crease_patterns/huffman.fold"
+    vertices, edges, assignments = load_fold(fold_path, target_size=200)
     boundary, creases = extract_geometry(vertices, edges, assignments)
-    
 
-    # TPU Layer (middle)
-    tpu_mesh = create_layer_from_polygon(boundary, 1.0, 1.8)
-    save_mesh(tpu_mesh, "tpu_layer.obj")
+    # Get buffers
+    crease_buffer, vertex_buffer = get_clearance_geometries(creases, buffer_mm=2, vertex_buffer_mm=3)
 
-    # PLA Layers
-    cleared_polygon = subtract_creases_from_boundary(boundary, creases, buffer_mm=1.5)
-    debug_plot(boundary, creases, cleared_polygon)
+    # TPU layer = boundary minus vertex clearance only
+    tpu_polygon = boundary.difference(vertex_buffer)
+    tpu_mesh = create_layer_from_polygon(tpu_polygon, 1.0, 1.6)
+    if tpu_mesh:
+        save_mesh(tpu_mesh, "tpu_layer.obj")
+    else:
+        print("Warning: TPU layer extrusion failed.")
+
+    # PLA layers = boundary minus crease + vertex clearance
+    full_clearance = unary_union([crease_buffer, vertex_buffer])
+    cleared_polygon = boundary.difference(full_clearance)
+
+    # debug_plot(boundary, creases, cleared_polygon)
+
     if cleared_polygon.is_empty:
-        print("Warning: PLA geometry is empty after crease subtraction.")
+        print("Warning: PLA geometry is empty after clearance.")
         return
 
     # Bottom PLA
     pla_bottom = create_layer_from_polygon(cleared_polygon, 0.0, 1.0)
-    if pla_bottom is not None:
+    if pla_bottom:
         save_mesh(pla_bottom, "pla_bottom.obj")
     else:
         print("Warning: PLA bottom layer extrusion failed.")
 
     # Top PLA
-    pla_top = create_layer_from_polygon(cleared_polygon, 1.8, 2.8)
-    if pla_top is not None:
+    pla_top = create_layer_from_polygon(cleared_polygon, 1.6, 2.6)
+    if pla_top:
         save_mesh(pla_top, "pla_top.obj")
     else:
         print("Warning: PLA top layer extrusion failed.")

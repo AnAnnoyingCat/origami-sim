@@ -235,7 +235,7 @@ int main(int argc, char *argv[])
     viewer.core().is_animating = true; 
     viewer.data().double_sided = true;
     viewer.core().lighting_factor = 0.0f;
-    setup_floor(viewer_ptr);
+    //setup_floor(viewer_ptr);
     
 
     // Start the simulation in a seperate thread

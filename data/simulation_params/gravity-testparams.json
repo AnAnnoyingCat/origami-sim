@@ -9,7 +9,7 @@
 	"zeta": 4,
 	"gravity": [0,0,-9.81],
 	"min_barrier_distance": 2,
-	"spawn_height": 3,
+	"spawn_height": 2,
 	"k_barrier": 1,
 
 	"visualize_strain": false,
