@@ -4,6 +4,8 @@
 #include <json.hpp>
 #include <fstream>
 #include <parameters.h>
+#include <igl/opengl/glfw/Viewer.h>
+
 /**
  * @brief Read all the simulation parameters from file filename
  * 
@@ -31,3 +33,9 @@ void setup_mesh(std::string filename, SimulationParams& simulationParams, Simula
  */
 void setup_dynamic_target_angles(std::string filename, Eigen::VectorXd& edge_target_angle);
 
+/**
+ * @brief Renders the floor to the simulation
+ * 
+ * @param viewer_ptr Pointer to the viewer handling the origami
+ */
+void setup_floor(igl::opengl::glfw::Viewer* viewer_ptr);
