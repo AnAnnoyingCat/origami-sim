@@ -160,11 +160,23 @@ void setup_mesh(std::string filename, SimulationParams& simulationParams, Simula
 			std::vector<std::vector<double>> coords = params["vertices_coords"].template get<std::vector<std::vector<double>>>();
 
 			simulationData.V.resize(coords.size(), 3);
+
+			double largestCoord;
+			// find largest coordinate and scale entire model to make largets coordinate to be around the ballpark of 100
 			for (int i = 0; i < coords.size(); i++){
-				simulationData.V(i, 0) = coords[i][0] * 10;
-				simulationData.V(i, 1) = coords[i][1] * 10;
+				std::cout << "simulationData.V(i, 0): " << coords[i][0] << "largestcoord: " << largestCoord << std::endl;
+				largestCoord = largestCoord < coords[i][0] ? coords[i][0] : largestCoord;
+				std::cout << "simulationData.V(i, 1): " << coords[i][1] << "largestcoord: " << largestCoord << std::endl;
+				largestCoord = largestCoord < coords[i][1] ? coords[i][1] : largestCoord;
+			}
+			double scalefactor = 100 / largestCoord;
+			std::cout << "largest coord: " << largestCoord << ", scale factor: " << scalefactor << std::endl;
+
+			for (int i = 0; i < coords.size(); i++){
+				simulationData.V(i, 0) = coords[i][0] * scalefactor;
+				simulationData.V(i, 1) = coords[i][1] * scalefactor;
 				if (coords[i].size() == 3){
-					simulationData.V(i, 2) = coords[i][2];
+					simulationData.V(i, 2) = coords[i][2] * scalefactor;
 				} else {
 					simulationData.V(i, 2) = simulationParams.spawn_height;
 				}
