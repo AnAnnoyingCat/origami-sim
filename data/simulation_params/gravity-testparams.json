@@ -2,7 +2,7 @@
 	"dt": 0.00005,
 	"vertexMass": 1,
 	"EA": 500,
-	"k_fold": 100,
+	"k_fold": 1000,
 	"k_facet": 2,
 	"k_face": 0.5,
 	"glue_factor": 5,
@@ -15,11 +15,11 @@
 
 	"visualize_strain": true,
 	"strain_type": "edge",
-	"enable_dynamic_simulation": false,
+	"enable_dynamic_simulation": true,
 	"enable_gravity": true,
 	"use_implicit_euler": false,
-	"log_simulation_time": false,
+	"log_simulation_time": true,
 	"use_snapping_glue_mode": true,
-	"log_forces": true,
+	"log_forces": false,
 	"show_floor": true
 }
