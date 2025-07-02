@@ -109,10 +109,20 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 		} else {
 			simulationParams.LOG_FORCES = false;
 		}
+		if (params.contains("show_floor")){
+			simulationParams.show_floor = params["show_floor"].template get<bool>();
+		} else {
+			simulationParams.show_floor = false;
+		}
 		if (params.contains("k_barrier")){
 			simulationParams.k_barrier = params["k_barrier"].template get<double>();
 		} else {
 			simulationParams.k_barrier = 1;
+		}
+		if (params.contains("sim_zoom_level")){
+			simulationParams.sim_zoom_level = params["sim_zoom_level"].template get<double>();
+		} else {
+			simulationParams.sim_zoom_level = 250;
 		}
 
 
@@ -151,8 +161,8 @@ void setup_mesh(std::string filename, SimulationParams& simulationParams, Simula
 
 			simulationData.V.resize(coords.size(), 3);
 			for (int i = 0; i < coords.size(); i++){
-				simulationData.V(i, 0) = coords[i][0];
-				simulationData.V(i, 1) = coords[i][1];
+				simulationData.V(i, 0) = coords[i][0] * 10;
+				simulationData.V(i, 1) = coords[i][1] * 10;
 				if (coords[i].size() == 3){
 					simulationData.V(i, 2) = coords[i][2];
 				} else {
@@ -456,20 +466,25 @@ void setup_dynamic_target_angles(std::string filename, Eigen::VectorXd& edge_tar
 	setupFoldTimeline(foldTimeline, edge_target_angle.size());
 }
 
-void setup_floor(igl::opengl::glfw::Viewer* viewer_ptr){
-	Eigen::MatrixXd floor_V(4, 3);
-    floor_V << -100, -100, 0,
-                100, -100, 0,
-                100,  100, 0,
-               -100,  100, 0;
+int setup_floor(igl::opengl::glfw::Viewer& viewer) {
+    // Create vertices for a square floor at z = 0
+    Eigen::MatrixXd floor_vertices(4, 3);
+    floor_vertices << -1000, -1000, 0,
+                       1000, -1000, 0,
+                       1000,  1000, 0,
+                      -1000,  1000, 0;
 
-    Eigen::MatrixXi floor_F(2, 3);
-    floor_F << 0, 1, 2,
-               0, 2, 3;
-               
-    int floor_id = viewer_ptr->append_mesh();
-    viewer_ptr->data_list[floor_id].set_mesh(floor_V, floor_F);
-    // viewer_ptr->data_list[floor_id].set_colors(Eigen::RowVector3d(0.8, 0.8, 0.8)); // light gray
-    // viewer_ptr->data_list[floor_id].show_lines = false;   // Hide wireframe
-    // viewer_ptr->data_list[floor_id].double_sided = true;  // Make visible from both sides
+    Eigen::MatrixXi floor_faces(2, 3);
+    floor_faces << 0, 1, 2,
+                   0, 2, 3;
+
+    int floor_id = viewer.append_mesh();
+    viewer.data(floor_id).set_mesh(floor_vertices, floor_faces);
+
+	// Floor visual settings
+    viewer.data(floor_id).set_colors(Eigen::RowVector3d(0.6, 0.6, 0.6));  // light grey
+    viewer.data(floor_id).show_lines = false;
+    viewer.data(floor_id).show_texture = false;
+    viewer.data(floor_id).show_faces = true;
+	return floor_id;
 }

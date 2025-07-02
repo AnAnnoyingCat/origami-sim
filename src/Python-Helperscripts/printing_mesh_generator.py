@@ -170,16 +170,16 @@ def get_clearance_geometries(creases, buffer_mm=1.5, vertex_buffer_mm=1.5):
 
 
 def main():
-    fold_path = "/home/cwernke/BA/origami-sim/data/crease_patterns/huffman.fold"
-    vertices, edges, assignments = load_fold(fold_path, target_size=200)
+    fold_path = "/home/cwernke/BA/origami-sim/data/crease_patterns/squarebase.fold"
+    vertices, edges, assignments = load_fold(fold_path, target_size=100)
     boundary, creases = extract_geometry(vertices, edges, assignments)
 
     # Get buffers
-    crease_buffer, vertex_buffer = get_clearance_geometries(creases, buffer_mm=2, vertex_buffer_mm=3)
+    crease_buffer, vertex_buffer = get_clearance_geometries(creases, buffer_mm=1.5, vertex_buffer_mm=2.5)
 
     # TPU layer = boundary minus vertex clearance only
     tpu_polygon = boundary.difference(vertex_buffer)
-    tpu_mesh = create_layer_from_polygon(tpu_polygon, 1.0, 1.6)
+    tpu_mesh = create_layer_from_polygon(tpu_polygon, 0.8, 1.3)
     if tpu_mesh:
         save_mesh(tpu_mesh, "tpu_layer.obj")
     else:
@@ -196,14 +196,14 @@ def main():
         return
 
     # Bottom PLA
-    pla_bottom = create_layer_from_polygon(cleared_polygon, 0.0, 1.0)
+    pla_bottom = create_layer_from_polygon(cleared_polygon, 0.0, 0.8)
     if pla_bottom:
         save_mesh(pla_bottom, "pla_bottom.obj")
     else:
         print("Warning: PLA bottom layer extrusion failed.")
 
     # Top PLA
-    pla_top = create_layer_from_polygon(cleared_polygon, 1.6, 2.6)
+    pla_top = create_layer_from_polygon(cleared_polygon, 1.3, 2.1)
     if pla_top:
         save_mesh(pla_top, "pla_top.obj")
     else:

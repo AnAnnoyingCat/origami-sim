@@ -40,6 +40,7 @@ Eigen::VectorXd tmp_force;
 
 // Pointer to the viewer for update reasons
 igl::opengl::glfw::Viewer* viewer_ptr = nullptr;
+int simulation_mesh_id;
 
 /// @brief If enabled in config, visualizes strain in the mesh using l0 or alpha0
 void visualizeStrain(){
@@ -51,7 +52,7 @@ void visualizeStrain(){
             } else if (simulationParams.STRAIN_TYPE == "edge"){
                 calculateAxialDeformationStrain(C, simulationData.F, simulationData.E, simulationData.q, simulationData.l0, simulationData.face_adjacent_edges);
             }
-            viewer_ptr->data().set_colors(C);
+            viewer_ptr->data(simulation_mesh_id).set_colors(C);
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
@@ -164,8 +165,8 @@ void simulate(){
         
         // Update the viewer's mesh
         if (viewer_ptr){
-            viewer_ptr->data().set_vertices(simulationData.V);
-            viewer_ptr->data().compute_normals();
+            viewer_ptr->data(simulation_mesh_id).set_vertices(simulationData.V);
+            viewer_ptr->data(simulation_mesh_id).compute_normals();
         }
 
         // Next time step
@@ -229,14 +230,22 @@ int main(int argc, char *argv[])
     igl::opengl::glfw::Viewer viewer;
     viewer_ptr = &viewer;
 
+
     // Set mesh and options
-    viewer.data().set_mesh(simulationData.V, simulationData.F);
-    viewer.data().set_face_based(true);
+    simulation_mesh_id = viewer.append_mesh();
+    viewer.data(simulation_mesh_id).set_mesh(simulationData.V, simulationData.F);
+    viewer.data(simulation_mesh_id).set_face_based(true);
+    viewer.data(simulation_mesh_id).double_sided = true;
     viewer.core().is_animating = true; 
-    viewer.data().double_sided = true;
     viewer.core().lighting_factor = 0.0f;
-    //setup_floor(viewer_ptr);
-    
+
+    if (simulationParams.show_floor){
+        // Set up the floor mesh
+        int floor_id = setup_floor(viewer);
+
+        // Adjust camera zoom
+        viewer.core().camera_zoom = simulationParams.sim_zoom_level;
+    }
 
     // Start the simulation in a seperate thread
     std::thread simulation_thread(simulate);

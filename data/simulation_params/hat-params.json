@@ -7,6 +7,7 @@
 	"k_face": 0.4,
 	"zeta": 4,
 	"gravity": [0,0,-9.81],
+	"sim_zoom_level": 250,
 
 	"visualize_strain": true,
 	"strain_type": "edge",

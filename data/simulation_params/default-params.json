@@ -9,6 +9,7 @@
 	"zeta": 3.5,
 	"gravity": [0,0,-9.81],
 	"min_barrier_distance": 0.1,
+	"sim_zoom_level": 250,
 
 	"visualize_strain": true,
 	"strain_type": "edge",
