@@ -239,6 +239,45 @@ void setup_mesh(std::string filename, SimulationParams& simulationParams, Simula
 			throw std::runtime_error("Oh no...");
 		}
 
+		// Set up Ground and IPC datastructures
+		// Initialize the ground
+		Eigen::MatrixXd ground_V(4, 3);		// Ground Vertices
+		Eigen::MatrixXi ground_E(5, 2);		// Ground Edges
+		Eigen::MatrixXi ground_F(2, 3);		// Ground Faces
+		ground_V << -1000, -1000, 0,
+					 1000, -1000, 0,
+					 1000,  1000, 0,
+					-1000,  1000, 0;
+		ground_E << 0, 1,	
+					1, 2,
+					2, 3,
+					3, 0,
+					2, 0;
+		ground_F << 0, 1, 2,
+					0, 2, 3;
+		simulationData.ground_V = ground_V;
+		simulationData.ground_E = ground_E;
+		simulationData.ground_F = ground_F;
+
+		// Initialize the rest positions
+		Eigen::MatrixXd rest_positions(simulationData.V.rows() + ground_V.rows(), 3);
+		rest_positions.topRows(simulationData.V.rows()) = simulationData.V;
+		rest_positions.bottomRows(simulationData.ground_V.rows()) = simulationData.ground_V;
+		simulationData.rest_positions = rest_positions;
+
+		// Initialize total edges and faces
+		Eigen::MatrixXi total_edges(simulationData.E.rows() + ground_E.rows(), 2);
+		total_edges.topRows(simulationData.E.rows()) = simulationData.E;
+		Eigen::MatrixXi offset_ground_E = ground_E.array() + simulationData.V.rows();
+		total_edges.bottomRows(ground_E.rows()) = offset_ground_E;
+
+		Eigen::MatrixXi total_faces(simulationData.F.rows() + ground_F.rows(), 3);
+		total_faces.topRows(simulationData.F.rows()) = simulationData.F;
+		Eigen::MatrixXi offset_ground_F = ground_F.array() + simulationData.V.rows();
+		total_faces.bottomRows(ground_F.rows()) = offset_ground_F;
+
+		ipc::CollisionMesh collision_mesh(rest_positions, total_edges, total_faces);
+		simulationData.collision_mesh = collision_mesh;
 
 		// Assign edge target angles. If edge doesn't have a target angle the angle is set to nan.
 		if (params.contains("edges_foldAngle") && params.contains("edges_assignment")){

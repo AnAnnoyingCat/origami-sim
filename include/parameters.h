@@ -14,8 +14,13 @@ struct SimulationData {
     Eigen::MatrixXi F;                              // Faces of the CP, mx3 matrix
     Eigen::MatrixXi E;                              // Edges of the CP (Springs), ex2 matrix
 
+    // Ground Variables
+    Eigen::MatrixXd ground_V;                       // Ground vertex positions
+    Eigen::MatrixXi ground_F;                       // Ground faces
+    Eigen::MatrixXi ground_E;                       // Ground Edges
+
     // IPC Variables
-    Eigen::MatrixXd rest_positions;                 // Undeformed vertex positions for IPC
+    Eigen::MatrixXd rest_positions;                 // Undeformed vertex positions for IPC <- Includes both model and ground. always in the order << V, ground_V
     ipc::CollisionMesh collision_mesh;              // Collision mesh used by IPC
 
     // Simulation Variables
