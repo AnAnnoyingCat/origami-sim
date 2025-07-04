@@ -22,3 +22,7 @@ void get_barrier_stiffness_for_vertex(double& stiffness, const Eigen::Vector3d q
 		stiffness *= k_barrier;
 	}
 }
+
+void assemble_ground_barier_stiffness_IPC_toolkit(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, double min_barrier_distance){
+	
+}

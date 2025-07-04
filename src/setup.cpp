@@ -161,7 +161,7 @@ void setup_mesh(std::string filename, SimulationParams& simulationParams, Simula
 
 			simulationData.V.resize(coords.size(), 3);
 
-			double largestCoord;
+			double largestCoord = std::numeric_limits<double>::lowest();
 			// find largest coordinate and scale entire model to make largets coordinate to be around the ballpark of 100
 			for (int i = 0; i < coords.size(); i++){
 				std::cout << "simulationData.V(i, 0): " << coords[i][0] << "largestcoord: " << largestCoord << std::endl;
@@ -169,7 +169,7 @@ void setup_mesh(std::string filename, SimulationParams& simulationParams, Simula
 				std::cout << "simulationData.V(i, 1): " << coords[i][1] << "largestcoord: " << largestCoord << std::endl;
 				largestCoord = largestCoord < coords[i][1] ? coords[i][1] : largestCoord;
 			}
-			double scalefactor = 100 / largestCoord;
+			double scalefactor = std::isnan(100 / largestCoord) ? 10 : 100 / largestCoord;
 			std::cout << "largest coord: " << largestCoord << ", scale factor: " << scalefactor << std::endl;
 
 			for (int i = 0; i < coords.size(); i++){
