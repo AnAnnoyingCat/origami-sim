@@ -156,9 +156,9 @@ void simulate(){
         
 
         // Make sure the floating mesh doesn't drift off with gravity disabled
-        // if (!simulationParams.ENABLE_GRAVITY || !simulationParams.ENABLE_DYNAMIC_SIMULATION){
-        //     centerMesh();
-        // }
+        if (!simulationParams.ENABLE_GRAVITY){
+            centerMesh();
+        }
 
         // update vertex positions from q and increment time
         updateV(simulationData.V, simulationData.q);

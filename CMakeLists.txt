@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
 set(CMAKE_CXX_EXTENSIONS Off)
 set(VORPALINE_PLATFORM Linux64-gcc-dynamic)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(LIBIGL_WITH_OPENGL ON CACHE BOOL "" FORCE)
 set(LIBIGL_WITH_OPENGL_GLFW ON CACHE BOOL "" FORCE)
@@ -25,10 +26,12 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(ipc_toolkit)
 include_directories(${ipc_toolkit_SOURCE_DIR}/src)
+message(STATUS "IPC Toolkit source dir: ${ipc_toolkit_SOURCE_DIR}/src")
 
 # include directories
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/external/include)
+
 
 find_package(OpenMP)
 

@@ -1,16 +1,25 @@
 #pragma once
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
+#include <ipc/ipc.hpp>
 
 // Structs to keep track of simulation state and parameters
 struct SimulationData {
-    double t = 0;                                   // Simulation time
+
+    // Model Variables
     Eigen::VectorXd q;                              // Generalized Vertex Coordinates, size 3*x vector
     Eigen::VectorXd qdot;                           // Generalized Vertex Velocities
     Eigen::SparseMatrix<double> M;                  // Sparse Mass Matrix.
     Eigen::MatrixXd V;                              // Vertices of the CP, nx3 matrix
     Eigen::MatrixXi F;                              // Faces of the CP, mx3 matrix
     Eigen::MatrixXi E;                              // Edges of the CP (Springs), ex2 matrix
+
+    // IPC Variables
+    Eigen::MatrixXd rest_positions;                 // Undeformed vertex positions for IPC
+    ipc::CollisionMesh collision_mesh;              // Collision mesh used by IPC
+
+    // Simulation Variables
+    double t = 0;                                   // Simulation time
     Eigen::VectorXd edge_target_angle;              // Final Target fold angle for each edge
     Eigen::VectorXd curr_theta;                     // Current Target fold angle for each edge (CURRENTLY UNUSED)
     Eigen::VectorXd l0;                             // Original length of the Edges, size e vector
