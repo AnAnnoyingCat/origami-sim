@@ -27,6 +27,6 @@ void get_barrier_force_for_vertex(Eigen::Vector3d &f, const Eigen::Vector3d q0, 
 	f << 0, 0, force;
 }
 
-void assemble_ground_barier_forces_IPC_toolkit(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, double min_barrier_distance, SimulationParams& simulationParams){
+void assemble_ground_barier_forces_IPC_toolkit(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, SimulationParams& simulationParams){
 	
 }

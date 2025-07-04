@@ -3,6 +3,7 @@
 #include <axial_constraints.h>
 #include <iostream>
 #include <parameters.h>
+#include <ipc/ipc.hpp>
 
 /**
  * @brief Calculate the size 3*n vector of forces acting from collision with the ground
