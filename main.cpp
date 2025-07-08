@@ -30,6 +30,7 @@
 #include <IPC-helperfunctions.h>
 #include <ipc/ipc.hpp>
 #include <ipc/potentials/barrier_potential.hpp>
+#include <ipc/potentials/friction_potential.hpp>
 
 
 // This keeps track of all data of the simulation
@@ -130,6 +131,7 @@ void simulate(){
                     std::cout << " + gravity force: " << f(2);
                 }    
             }
+            
 
             if (simulationParams.LOG_FORCES){
                 std::cout << std::endl;    
@@ -155,6 +157,8 @@ void simulate(){
 
         // Detect active collisions
         simulationData.collisions.build(simulationData.collision_mesh, simulationData.deformed_vertices, simulationParams.min_barrier_distance);
+
+        // Build friction using frictionCollision
 
         // Time integration
         if (simulationParams.USE_IMPLICIT_EULER){

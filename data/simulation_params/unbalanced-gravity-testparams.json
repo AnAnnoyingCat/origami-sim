@@ -8,8 +8,8 @@
 	"glue_factor": 5,
 	"zeta": 4,
 	"gravity": [0,0,-9.81],
-	"min_barrier_distance": 0.2,
-	"spawn_height": 0.25,
+	"min_barrier_distance": 0.5,
+	"spawn_height": 0.5,
 	"k_barrier": 250,
 	"sim_zoom_level": 50,
 
@@ -20,6 +20,7 @@
 	"use_implicit_euler": false,
 	"log_simulation_time": false,
 	"use_snapping_glue_mode": true,
-	"log_forces": true,
-	"show_floor": true
+	"log_forces": false,
+	"enable_floor": true,
+	"enable_barrier": true
 }

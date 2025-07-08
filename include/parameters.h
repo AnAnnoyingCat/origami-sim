@@ -26,7 +26,6 @@ struct SimulationData {
     ipc::CollisionMesh collision_mesh;              // Collision mesh used by IPC
     ipc::Collisions collisions;                     // IPCs active collisions
     
-
     // Simulation Variables
     double t = 0;                                   // Simulation time
     Eigen::VectorXd edge_target_angle;              // Final Target fold angle for each edge
