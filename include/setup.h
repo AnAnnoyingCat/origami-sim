@@ -37,4 +37,4 @@ void setup_dynamic_target_angles(std::string filename, Eigen::VectorXd& edge_tar
  * @brief Sets up a large floor at z=0
  * 
  */
-int setup_floor(igl::opengl::glfw::Viewer& viewer);
+int setup_floor(igl::opengl::glfw::Viewer& viewer, SimulationData& simulationData);

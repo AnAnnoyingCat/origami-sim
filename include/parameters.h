@@ -2,6 +2,7 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include <ipc/ipc.hpp>
+#include <ipc/potentials/barrier_potential.hpp>
 
 // Structs to keep track of simulation state and parameters
 struct SimulationData {
@@ -21,7 +22,10 @@ struct SimulationData {
 
     // IPC Variables
     Eigen::MatrixXd rest_positions;                 // Undeformed vertex positions for IPC <- Includes both model and ground. always in the order << V, ground_V
+    Eigen::MatrixXd deformed_vertices;              // Deformed vertex positions for IPC <- both model and ground
     ipc::CollisionMesh collision_mesh;              // Collision mesh used by IPC
+    ipc::Collisions collisions;                     // IPCs active collisions
+    
 
     // Simulation Variables
     double t = 0;                                   // Simulation time
@@ -51,7 +55,7 @@ struct SimulationParams {
     Eigen::Vector3d g;          // Gravity force vector
     bool simulating;            // If this is ever set to false, all threads instantly terminates
     double sim_zoom_level;      // The starting zoom level of the simulation
-    bool show_floor;            // Toggles whether or not the floor is visible
+    bool enable_floor;            // Toggles whether or not the floor is visible
 
     // This controls broader simulation parameters. Self explanatory (I hope)
     bool ENABLE_STRAIN_VISUALIZATION;

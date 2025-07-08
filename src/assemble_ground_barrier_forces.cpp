@@ -1,8 +1,10 @@
 #include "assemble_ground_barrier_forces.h"
 
 
-void assemble_ground_barrier_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, double min_barrier_distance, SimulationParams& simulationParams) {
+
+void assemble_ground_barrier_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, double min_barrier_distance, SimulationParams& simulationParams, SimulationData simulationData) {
 	Eigen::Vector3d scratchpad_f;
+	Eigen::VectorXd f_old(f);
 	for (int currVert = 0; currVert < q.size() / 3; currVert++){
 		get_barrier_force_for_vertex(scratchpad_f, q.segment<3>(3 * currVert), min_barrier_distance, simulationParams.k_barrier);
 		
@@ -15,6 +17,7 @@ void assemble_ground_barrier_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::
 			}
 		}
 	}
+	std::cout << "ground barrier forces: " << (f - f_old).transpose();
 }
 
 void get_barrier_force_for_vertex(Eigen::Vector3d &f, const Eigen::Vector3d q0, double d, double k_barrier){
@@ -27,6 +30,10 @@ void get_barrier_force_for_vertex(Eigen::Vector3d &f, const Eigen::Vector3d q0, 
 	f << 0, 0, force;
 }
 
-void assemble_ground_barier_forces_IPC_toolkit(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, SimulationParams& simulationParams){
+void assemble_barier_forces_IPC(Eigen::VectorXd &f, SimulationParams& simulationParams, SimulationData& simulationData){
+	const ipc::BarrierPotential B(simulationParams.min_barrier_distance);
+	Eigen::VectorXd barrier_potential_grad = B.gradient(simulationData.collisions, simulationData.collision_mesh, simulationData.deformed_vertices);
+	f -= simulationParams.k_barrier * barrier_potential_grad.head(f.size());
 	
+	// std::cout << ", IPC barrier forces: " << barrier_potential_grad.transpose().head(12) << std::endl;
 }

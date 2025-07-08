@@ -26,7 +26,11 @@
 #include <parameters.h>
 #include <finite_difference_tester.h>
 #include <assemble_ground_barrier_forces.h>
-#include <assemble_ground_barrier_stiffness.h>    
+#include <assemble_ground_barrier_stiffness.h>
+#include <IPC-helperfunctions.h>
+#include <ipc/ipc.hpp>
+#include <ipc/potentials/barrier_potential.hpp>
+
 
 // This keeps track of all data of the simulation
 SimulationData simulationData;
@@ -120,12 +124,16 @@ void simulate(){
                 }    
                 
                 // Ground only needs to do collision if we got gravity
-                assemble_ground_barrier_forces(f, q, simulationParams.min_barrier_distance, simulationParams);
-                if (simulationParams.LOG_FORCES){
-                    std::cout << " + Barrier force: " << f(2);
-                }
+                //assemble_ground_barrier_forces(f, q, simulationParams.min_barrier_distance, simulationParams, simulationData);
+                
                 
             }
+
+            assemble_barier_forces_IPC(f, simulationParams, simulationData);
+            if (simulationParams.LOG_FORCES){
+                std::cout << " + Barrier force: " << f(2);
+            }
+
             if (simulationParams.LOG_FORCES){
                 std::cout << std::endl;    
             }
@@ -139,13 +147,23 @@ void simulate(){
             assemble_edge_stiffness(K, q, simulationData.V, simulationData.E, simulationData.l0, simulationData.k_axial);
             assemble_crease_stiffness(K, q, simulationData.edge_adjacent_vertices, simulationData.k_crease, simulationData.edge_target_angle);
             assemble_damping_stiffness(K, qdot, simulationData.E, simulationData.k_axial, simulationParams.zeta);
+            assemble_barier_stiffness_IPC(K, simulationParams, simulationData);
 
             if (simulationParams.ENABLE_GRAVITY){
-                assemble_ground_barrier_stiffness(K, q, simulationParams.min_barrier_distance, simulationParams.k_barrier);
+                // assemble_ground_barrier_stiffness(K, q, simulationParams.min_barrier_distance, simulationParams.k_barrier);
             }
             
             
         };
+
+        // Get the current collision mesh before caluculating all the forces
+        make_collision_mesh(simulationData, simulationParams);
+
+        // Get the currnent deformed positions 
+        get_deformed_positions(simulationData, simulationParams);
+
+        // Detect active collisions
+        simulationData.collisions.build(simulationData.collision_mesh, simulationData.deformed_vertices, simulationParams.min_barrier_distance);
 
         // Time integration
         if (simulationParams.USE_IMPLICIT_EULER){
@@ -239,9 +257,9 @@ int main(int argc, char *argv[])
     viewer.core().is_animating = true; 
     viewer.core().lighting_factor = 0.0f;
 
-    if (simulationParams.show_floor){
+    if (simulationParams.enable_floor){
         // Set up the floor mesh
-        int floor_id = setup_floor(viewer);
+        int floor_id = setup_floor(viewer, simulationData);
 
         // Adjust camera zoom
         viewer.core().camera_zoom = simulationParams.sim_zoom_level;

@@ -13,5 +13,6 @@
 	"strain_type": "edge",
 	"enable_dynamic_simulation": true,
 	"enable_gravity": false,
+	"log_simulation_time": true,
 	"use_implicit_euler": true
 }

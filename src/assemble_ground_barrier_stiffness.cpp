@@ -23,6 +23,23 @@ void get_barrier_stiffness_for_vertex(double& stiffness, const Eigen::Vector3d q
 	}
 }
 
-void assemble_ground_barier_stiffness_IPC_toolkit(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, double min_barrier_distance){
-	
+void assemble_barier_stiffness_IPC(Eigen::SparseMatrix<double> &K, SimulationParams& simulationParams, SimulationData& simulationData){
+	const ipc::BarrierPotential B(simulationParams.min_barrier_distance);
+	Eigen::SparseMatrix<double> barrier_potential_hess = B.hessian(simulationData.collisions, simulationData.collision_mesh, simulationData.deformed_vertices);
+
+	const int dim = simulationData.V.rows() * 3;
+
+	// Extract top left block from the full hessian
+	std::vector<Eigen::Triplet<double>> triplets;
+    for (int k = 0; k < barrier_potential_hess.outerSize(); ++k) {
+        for (Eigen::SparseMatrix<double>::InnerIterator it(barrier_potential_hess, k); it; ++it) {
+            if (it.row() < dim && it.col() < dim) {
+                triplets.emplace_back(it.row(), it.col(), it.value());
+            }
+        }
+    }
+	Eigen::SparseMatrix<double> hess_block(dim, dim);
+    hess_block.setFromTriplets(triplets.begin(), triplets.end());
+
+	K -= simulationParams.k_barrier * hess_block;
 }
