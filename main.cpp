@@ -114,24 +114,21 @@ void simulate(){
             assemble_damping_forces(f, qdot, simulationData.E, simulationData.k_axial, simulationParams.zeta);
             if (simulationParams.LOG_FORCES){
                 std::cout << " + damping force: " << f(2);
-            }    
+            }
 
-            // If graivty is enabled, get that too
+            if (simulationParams.enable_barrier){
+                assemble_barier_forces_IPC(f, simulationParams, simulationData);
+                if (simulationParams.LOG_FORCES){
+                    std::cout << " + Barrier force: " << f(2);
+                }
+            }
+
+            // If gravity is enabled, get that too
             if (simulationParams.ENABLE_GRAVITY){
                 assemble_gravity_forces(f, simulationParams.g, simulationParams.vertexMass);
                 if (simulationParams.LOG_FORCES){
                     std::cout << " + gravity force: " << f(2);
                 }    
-                
-                // Ground only needs to do collision if we got gravity
-                //assemble_ground_barrier_forces(f, q, simulationParams.min_barrier_distance, simulationParams, simulationData);
-                
-                
-            }
-
-            assemble_barier_forces_IPC(f, simulationParams, simulationData);
-            if (simulationParams.LOG_FORCES){
-                std::cout << " + Barrier force: " << f(2);
             }
 
             if (simulationParams.LOG_FORCES){
@@ -148,12 +145,6 @@ void simulate(){
             assemble_crease_stiffness(K, q, simulationData.edge_adjacent_vertices, simulationData.k_crease, simulationData.edge_target_angle);
             assemble_damping_stiffness(K, qdot, simulationData.E, simulationData.k_axial, simulationParams.zeta);
             assemble_barier_stiffness_IPC(K, simulationParams, simulationData);
-
-            if (simulationParams.ENABLE_GRAVITY){
-                // assemble_ground_barrier_stiffness(K, q, simulationParams.min_barrier_distance, simulationParams.k_barrier);
-            }
-            
-            
         };
 
         // Get the current collision mesh before caluculating all the forces

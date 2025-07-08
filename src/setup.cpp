@@ -125,6 +125,13 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 		} else {
 			simulationParams.sim_zoom_level = 250;
 		}
+		if (params.contains("enable_barrier")){
+			simulationParams.enable_barrier = params["enable_barrier"].template get<bool>();
+		} else {
+			simulationParams.enable_barrier = false;
+		}
+
+		
 
 
 		simulationParams.simulating = true;

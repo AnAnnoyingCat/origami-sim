@@ -17,5 +17,6 @@
 	"enable_gravity": false,
 	"use_implicit_euler": false,
 	"log_simulation_time": false,
-	"use_snapping_glue_mode": false
+	"use_snapping_glue_mode": false,
+	"enable_barrier": true
 }

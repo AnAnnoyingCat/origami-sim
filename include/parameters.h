@@ -55,7 +55,8 @@ struct SimulationParams {
     Eigen::Vector3d g;          // Gravity force vector
     bool simulating;            // If this is ever set to false, all threads instantly terminates
     double sim_zoom_level;      // The starting zoom level of the simulation
-    bool enable_floor;            // Toggles whether or not the floor is visible
+    bool enable_floor;          // Toggles whether or not the floor is visible
+    bool enable_barrier;        // Toggles whether or not to use barrier forces
 
     // This controls broader simulation parameters. Self explanatory (I hope)
     bool ENABLE_STRAIN_VISUALIZATION;
