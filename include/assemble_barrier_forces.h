@@ -5,6 +5,8 @@
 #include <parameters.h>
 #include <ipc/ipc.hpp>
 #include <ipc/potentials/barrier_potential.hpp>
+#include <ipc/barrier/adaptive_stiffness.hpp>
+#include <ipc/utils/world_bbox_diagonal_length.hpp>
 
 /**
  * @brief Calculate the size 3*n vector of forces acting from collision with the ground
@@ -21,4 +23,4 @@ void get_barrier_force_for_vertex(Eigen::Vector3d &f, const Eigen::Vector3d q0, 
  * @brief Calculates size 3*n vector of forces acting from collisions with the ground using IPC-Toolkit. Assumes collisions were previously built
  * 
  */
-void assemble_barier_forces_IPC(Eigen::VectorXd &f, SimulationParams& simulationParams, SimulationData& simulationData);
+void assemble_barier_forces_IPC(Eigen::VectorXd &f, SimulationParams& simulationParams, SimulationData& simulationData, bool first_time);

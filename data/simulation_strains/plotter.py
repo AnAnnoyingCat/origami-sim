@@ -52,5 +52,5 @@ def plot_strain(file_path):
     plt.show()
 
 if __name__ == "__main__":
-    file_path = "/home/cwernke/origami-sim/data/simulation_strains/crease_robot_strain_no_ROT.txt"
+    file_path = "/home/cwernke/origami-sim/data/simulation_strains/huffman_strain.txt"
     plot_strain(file_path)

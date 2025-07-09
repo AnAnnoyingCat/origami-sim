@@ -7,8 +7,8 @@
 #include <finite_difference_tester.h>
 #include <assemble_damping_forces.h>
 #include <assemble_damping_stiffness.h>
-#include <assemble_ground_barrier_forces.h>
-#include <assemble_ground_barrier_stiffness.h>
+#include <assemble_barrier_forces.h>
+#include <assemble_barrier_stiffness.h>
 
 void test_axial_hessian(){
     double epsilon = 1e-6;

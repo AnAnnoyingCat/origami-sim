@@ -1,4 +1,4 @@
-#include "assemble_ground_friction_forces.h"
+#include "assemble_friction_forces.h"
 
 void assemble_ground_friction_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, double min_barrier_distance) {
 	

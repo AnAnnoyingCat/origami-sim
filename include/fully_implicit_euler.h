@@ -32,14 +32,9 @@ inline void implicit_euler(Eigen::VectorXd &q, Eigen::VectorXd &qdot, double dt,
     for (int i = 0; i < MAX_ITERATIONS; i++){
         qdot = (q - q_prev) / dt;
 
-        force(tmp_force, q, qdot);
+        force(tmp_force, q, qdot, (i == 0));
         stiffness(tmp_stiffness, q, qdot);
-        // std::cout << "Initial residual G.norm() = "  << (mass * (-dt * qdot_prev) - tmp_force * dt * dt).norm() << std::endl;
-        // std::cout << "mass: " << mass << std::endl;
-        // std::cout << "dt: " << dt << std::endl;
-        // std::cout << "qdotprev: " << qdot_prev << std::endl;
-        // std::cout << "temp force: " << tmp_force << std::endl;
-        // Calculate vector G
+
         G = mass * (q - q_prev - qdot_prev*dt) - tmp_force * dt * dt;
         
         if (G.norm() < TOLERANCE){

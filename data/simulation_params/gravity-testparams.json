@@ -1,5 +1,5 @@
 {
-	"dt": 0.0005,
+	"dt": 0.005,
 	"vertexMass": 1,
 	"EA": 500,
 	"k_fold": 150,
@@ -9,7 +9,7 @@
 	"zeta": 4,
 	"gravity": [0,0,-9.81],
 	"min_barrier_distance": 0.3,
-	"spawn_height": 100,
+	"spawn_height": 0.5,
 	"k_barrier": 250,
 	"sim_zoom_level": 5,
 

@@ -9,7 +9,7 @@
 	"zeta": 4,
 	"gravity": [0.001,0,-9.81],
 	"min_barrier_distance": 1,
-	"spawn_height": 1.2,
+	"spawn_height": 1,
 	"k_barrier": 250,
 	"sim_zoom_level": 5,
 
@@ -22,5 +22,6 @@
 	"use_snapping_glue_mode": true,
 	"log_forces": false,
 	"enable_floor": true,
-	"enable_barrier": true
+	"enable_barrier": true,
+	"enable_automatic_barrier_stiffness": false
 }

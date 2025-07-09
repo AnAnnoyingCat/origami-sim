@@ -130,6 +130,11 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 		} else {
 			simulationParams.enable_barrier = false;
 		}
+		if (params.contains("enable_automatic_barrier_stiffness")){
+			simulationParams.enable_auto_k_barrier = params["enable_automatic_barrier_stiffness"].template get<bool>();
+		} else {
+			simulationParams.enable_auto_k_barrier = true;
+		}
 
 		
 

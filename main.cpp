@@ -25,8 +25,8 @@
 #include <assemble_gravity_stiffness.h>
 #include <parameters.h>
 #include <finite_difference_tester.h>
-#include <assemble_ground_barrier_forces.h>
-#include <assemble_ground_barrier_stiffness.h>
+#include <assemble_barrier_forces.h>
+#include <assemble_barrier_stiffness.h>
 #include <IPC-helperfunctions.h>
 #include <ipc/ipc.hpp>
 #include <ipc/potentials/barrier_potential.hpp>
@@ -94,7 +94,7 @@ void simulate(){
             calculateDynamicTargetAngle(simulationData, simulationParams);
         }
 
-        auto forces = [&](Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::VectorXd> qdot){
+        auto forces = [&](Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::VectorXd> qdot, bool first_time){
             // Set f to zero and then add all the forces to it
             f.resize(q.size());
             f.setZero();
@@ -117,13 +117,6 @@ void simulate(){
                 std::cout << " + damping force: " << f(2);
             }
 
-            if (simulationParams.enable_barrier){
-                assemble_barier_forces_IPC(f, simulationParams, simulationData);
-                if (simulationParams.LOG_FORCES){
-                    std::cout << " + Barrier force: " << f(2);
-                }
-            }
-
             // If gravity is enabled, get that too
             if (simulationParams.ENABLE_GRAVITY){
                 assemble_gravity_forces(f, simulationParams.g, simulationParams.vertexMass);
@@ -132,6 +125,12 @@ void simulate(){
                 }    
             }
             
+            if (simulationParams.enable_barrier){
+                assemble_barier_forces_IPC(f, simulationParams, simulationData, first_time);
+                if (simulationParams.LOG_FORCES){
+                    std::cout << " + Barrier force: " << f(2);
+                }
+            }
 
             if (simulationParams.LOG_FORCES){
                 std::cout << std::endl;    

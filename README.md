@@ -17,5 +17,3 @@ make
 ```
 
 and then call the executable with the arguments `./origami-simulator <Crease Pattern> <Parameters> <Actuation Profile>`
-
-"C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json"

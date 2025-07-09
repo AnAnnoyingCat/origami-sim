@@ -25,6 +25,12 @@ struct SimulationData {
     Eigen::MatrixXd deformed_vertices;              // Deformed vertex positions for IPC <- both model and ground
     ipc::CollisionMesh collision_mesh;              // Collision mesh used by IPC
     ipc::Collisions collisions;                     // IPCs active collisions
+    double bbox_diagonal;                           // Lets IPC track the scale of the simulation. call this with only the simulation mesh because the floor is overly large
+    double max_barrier_stiffness;                   // Initial guess of barrier stiffness and max it can reach this newton solve
+    double barrier_stiffness;                       // Current barrierr stiffness used by my solver this iteration
+    double prev_distance;                           // Previous minimal distance between any primitives
+    double curr_distance;                           // Current minimal distance between any primitives
+
     
     // Simulation Variables
     double t = 0;                                   // Simulation time
@@ -56,6 +62,7 @@ struct SimulationParams {
     double sim_zoom_level;      // The starting zoom level of the simulation
     bool enable_floor;          // Toggles whether or not the floor is visible
     bool enable_barrier;        // Toggles whether or not to use barrier forces
+    bool enable_auto_k_barrier; // Toggles whether or not to use IPC's auto barrier stiffness
 
     // This controls broader simulation parameters. Self explanatory (I hope)
     bool ENABLE_STRAIN_VISUALIZATION;

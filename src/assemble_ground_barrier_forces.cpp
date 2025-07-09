@@ -1,4 +1,4 @@
-#include "assemble_ground_barrier_forces.h"
+#include "assemble_barrier_forces.h"
 
 
 
@@ -30,10 +30,48 @@ void get_barrier_force_for_vertex(Eigen::Vector3d &f, const Eigen::Vector3d q0, 
 	f << 0, 0, force;
 }
 
-void assemble_barier_forces_IPC(Eigen::VectorXd &f, SimulationParams& simulationParams, SimulationData& simulationData){
+void assemble_barier_forces_IPC(Eigen::VectorXd &f, SimulationParams& simulationParams, SimulationData& simulationData, bool first_time){
+	// Calculate the barrier potential derivative
 	const ipc::BarrierPotential B(simulationParams.min_barrier_distance);
 	Eigen::VectorXd barrier_potential_grad = B.gradient(simulationData.collisions, simulationData.collision_mesh, simulationData.deformed_vertices);
-	f -= simulationParams.k_barrier * barrier_potential_grad.head(f.size());
-	
-	// std::cout << ", IPC barrier forces: " << barrier_potential_grad.transpose().head(12) << std::endl;
+
+	if (simulationParams.enable_auto_k_barrier){
+		// Update barrier stiffness
+		if (!first_time){
+			// Calculate current mindistance
+			simulationData.curr_distance = simulationData.collisions.compute_minimum_distance(simulationData.collision_mesh, simulationData.deformed_vertices);
+			
+			// Calculate current barrier stiffness
+			simulationData.barrier_stiffness = ipc::update_barrier_stiffness(
+				simulationData.prev_distance, 
+				simulationData.curr_distance, 
+				simulationData.max_barrier_stiffness, 
+				simulationData.barrier_stiffness, 
+				simulationData.bbox_diagonal);
+			
+			// Update previous distance
+			simulationData.prev_distance = simulationData.curr_distance;
+
+		} else {
+			// Get approximate scale of simulation
+			simulationData.bbox_diagonal = ipc::world_bbox_diagonal_length(simulationData.deformed_vertices);
+
+			// Make initial barrier stiffness guess
+			simulationData.barrier_stiffness = ipc::initial_barrier_stiffness(
+				simulationData.bbox_diagonal, 
+				B.barrier(), 
+				simulationParams.min_barrier_distance, 
+				simulationParams.vertexMass, 
+				f, 
+				barrier_potential_grad, 
+				simulationData.max_barrier_stiffness);
+			
+			// Calculate current minimum distance
+			simulationData.prev_distance = simulationData.collisions.compute_minimum_distance(simulationData.collision_mesh, simulationData.deformed_vertices);
+		}
+		// Add the barrier stiffness * barrier force to the force vector
+		f -= simulationData.barrier_stiffness * barrier_potential_grad.head(f.size());
+	} else {
+		f -= simulationParams.k_barrier * barrier_potential_grad.head(f.size());
+	}
 }
