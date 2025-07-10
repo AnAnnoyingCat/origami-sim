@@ -18,9 +18,10 @@
 	"enable_dynamic_simulation": true,
 	"enable_gravity": true,
 	"use_implicit_euler": true,
-	"log_simulation_time": false,
+	"log_simulation_time": true,
 	"use_snapping_glue_mode": true,
 	"log_forces": false,
 	"enable_floor": true,
-	"enable_barrier": true
+	"enable_barrier": true,
+	"enable_friction": true
 }

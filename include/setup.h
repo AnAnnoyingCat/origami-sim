@@ -5,6 +5,13 @@
 #include <fstream>
 #include <parameters.h>
 #include <igl/opengl/glfw/Viewer.h>
+#include <iostream>
+#include <trig_helper_functions.h>
+#include <dynamic_target_angle.h>
+#include <vector>
+#include <IPC-helperfunctions.h>
+#include <ipc/potentials/barrier_potential.hpp>
+#include <ipc/potentials/friction_potential.hpp>
 
 /**
  * @brief Read all the simulation parameters from file filename

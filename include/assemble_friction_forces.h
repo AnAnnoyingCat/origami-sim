@@ -7,6 +7,7 @@
 #include <ipc/potentials/friction_potential.hpp>
 
 
+
 /**
  * @brief Calculates size 3*n vector of forces acting from collisions with the ground using IPC-Toolkit. Assumes collisions were previously built
  * 

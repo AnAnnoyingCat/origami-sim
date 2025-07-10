@@ -24,8 +24,7 @@ void get_barrier_stiffness_for_vertex(double& stiffness, const Eigen::Vector3d q
 }
 
 void assemble_barier_stiffness_IPC(Eigen::SparseMatrix<double> &K, SimulationParams& simulationParams, SimulationData& simulationData){
-	const ipc::BarrierPotential B(simulationParams.min_barrier_distance);
-	Eigen::SparseMatrix<double> barrier_potential_hess = B.hessian(simulationData.collisions, simulationData.collision_mesh, simulationData.deformed_vertices);
+	Eigen::SparseMatrix<double> barrier_potential_hess = simulationData.barrier_potential.hessian(simulationData.collisions, simulationData.collision_mesh, simulationData.deformed_vertices);
 
 	const int dim = simulationData.V.rows() * 3;
 

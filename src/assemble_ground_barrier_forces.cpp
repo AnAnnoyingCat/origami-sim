@@ -2,7 +2,7 @@
 
 
 
-void assemble_ground_barrier_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, double min_barrier_distance, SimulationParams& simulationParams, SimulationData simulationData) {
+void assemble_ground_barrier_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, double min_barrier_distance, SimulationParams& simulationParams, SimulationData& simulationData) {
 	Eigen::Vector3d scratchpad_f;
 	Eigen::VectorXd f_old(f);
 	for (int currVert = 0; currVert < q.size() / 3; currVert++){
@@ -32,8 +32,7 @@ void get_barrier_force_for_vertex(Eigen::Vector3d &f, const Eigen::Vector3d q0, 
 
 void assemble_barier_forces_IPC(Eigen::VectorXd &f, SimulationParams& simulationParams, SimulationData& simulationData, bool first_time){
 	// Calculate the barrier potential derivative
-	const ipc::BarrierPotential B(simulationParams.min_barrier_distance);
-	Eigen::VectorXd barrier_potential_grad = B.gradient(simulationData.collisions, simulationData.collision_mesh, simulationData.deformed_vertices);
+	Eigen::VectorXd barrier_potential_grad = simulationData.barrier_potential.gradient(simulationData.collisions, simulationData.collision_mesh, simulationData.deformed_vertices);
 
 	if (simulationParams.enable_auto_k_barrier){
 		// Update barrier stiffness
@@ -59,7 +58,7 @@ void assemble_barier_forces_IPC(Eigen::VectorXd &f, SimulationParams& simulation
 			// Make initial barrier stiffness guess
 			simulationData.barrier_stiffness = ipc::initial_barrier_stiffness(
 				simulationData.bbox_diagonal, 
-				B.barrier(), 
+				simulationData.barrier_potential.barrier(), 
 				simulationParams.min_barrier_distance, 
 				simulationParams.vertexMass, 
 				f, 

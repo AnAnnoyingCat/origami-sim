@@ -7,6 +7,8 @@
 	"k_face": 0.5,
 	"glue_factor": 10,
 	"zeta": 3.5,
+	"mu": 0.1,
+	"eps_v": 1e-4,
 	"gravity": [0,0,-9.81],
 	"min_barrier_distance": 0.1,
 	"spawn_height": 0.5,
@@ -21,6 +23,7 @@
 	"log_simulation_time": false,
 	"use_snapping_glue_mode": false,
 	"enable_barrier": false,
+	"enable_friction": false,
 	"log_forces": false,
 	"enable_floor": false,
 	"enable_automatic_barrier_stiffness": false

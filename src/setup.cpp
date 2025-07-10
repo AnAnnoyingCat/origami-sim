@@ -1,9 +1,5 @@
 #include <setup.h>
-#include <iostream>
-#include <trig_helper_functions.h>
-#include <dynamic_target_angle.h>
-#include <vector>
-#include <IPC-helperfunctions.h>
+
 
 using json = nlohmann::json;
 
@@ -13,6 +9,7 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 	if (file){
 		json params = json::parse(file);
 
+		// Just go through all the possible parameters and set them up
 		if (params.contains("dt")){
 			simulationParams.dt = params["dt"].template get<double>();
 		} else {
@@ -135,9 +132,21 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 		} else {
 			simulationParams.enable_auto_k_barrier = true;
 		}
-
-		
-
+		if (params.contains("mu")){
+			simulationParams.mu = params["mu"].template get<double>();
+		} else {
+			simulationParams.mu = 0.1;
+		}
+		if (params.contains("eps_v")){
+			simulationParams.eps_v = params["eps_v"].template get<double>();
+		} else {
+			simulationParams.eps_v = 0.1;
+		}
+		if (params.contains("enable_friction")){
+			simulationParams.enable_friction = params["enable_friction"].template get<bool>();
+		} else {
+			simulationParams.enable_friction = true;
+		}
 
 		simulationParams.simulating = true;
 		
@@ -425,7 +434,11 @@ void setup_mesh(std::string filename, SimulationParams& simulationParams, Simula
 			throw std::runtime_error("Oh no...");
 		}
 
-
+		// Set up IPC's BarrierPotential and FrictionPotential
+		ipc::BarrierPotential B(simulationParams.min_barrier_distance);
+		simulationData.barrier_potential  = B;
+		ipc::FrictionPotential D(simulationParams.eps_v);
+		simulationData.friction_potential = D;
 
 	} else {
 		std::cerr << "There was an error reading your .fold file!" << std::endl;

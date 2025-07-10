@@ -15,7 +15,7 @@
  * @param q 
  * @param min_barrier_distance 
  */
-void assemble_ground_barrier_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, double min_barrier_distance, SimulationParams& simulationParams, SimulationData simulationData);
+void assemble_ground_barrier_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, double min_barrier_distance, SimulationParams& simulationParams, SimulationData& simulationData);
 
 void get_barrier_force_for_vertex(Eigen::Vector3d &f, const Eigen::Vector3d q0, double d, double k_barrier);
 

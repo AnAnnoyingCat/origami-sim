@@ -27,6 +27,8 @@
 #include <finite_difference_tester.h>
 #include <assemble_barrier_forces.h>
 #include <assemble_barrier_stiffness.h>
+#include <assemble_friction_forces.h>
+#include <assemble_friction_stiffness.h>
 #include <IPC-helperfunctions.h>
 #include <ipc/ipc.hpp>
 #include <ipc/potentials/barrier_potential.hpp>
@@ -132,6 +134,13 @@ void simulate(){
                 }
             }
 
+            if (simulationParams.enable_friction){
+                assemble_friction_forces_IPC(f, simulationParams, simulationData);
+                if (simulationParams.LOG_FORCES){
+                    std::cout << " + friction force: " << f(2);
+                }
+            }
+
             if (simulationParams.LOG_FORCES){
                 std::cout << std::endl;    
             }
@@ -145,25 +154,23 @@ void simulate(){
             assemble_edge_stiffness(K, q, simulationData.V, simulationData.E, simulationData.l0, simulationData.k_axial);
             assemble_crease_stiffness(K, q, simulationData.edge_adjacent_vertices, simulationData.k_crease, simulationData.edge_target_angle);
             assemble_damping_stiffness(K, qdot, simulationData.E, simulationData.k_axial, simulationParams.zeta);
-            assemble_barier_stiffness_IPC(K, simulationParams, simulationData);
+            if (simulationParams.enable_barrier){
+                assemble_barier_stiffness_IPC(K, simulationParams, simulationData);
+            }
+            if (simulationParams.enable_friction){
+                assemble_friction_stiffness_IPC(K, simulationParams, simulationData);
+            }
+            
         };
 
         // Get the current collision mesh before caluculating all the forces
         make_collision_mesh(simulationData, simulationParams);
 
-        // Get the currnent deformed positions 
-        get_deformed_positions(simulationData, simulationParams);
-
-        // Detect active collisions
-        simulationData.collisions.build(simulationData.collision_mesh, simulationData.deformed_vertices, simulationParams.min_barrier_distance);
-
-        // Build friction using frictionCollision
-
         // Time integration
         if (simulationParams.USE_IMPLICIT_EULER){
-            implicit_euler(simulationData.q, simulationData.qdot, simulationParams.dt, simulationData.M, forces, stiffness, tmp_force, tmp_stiffness);
+            implicit_euler(simulationData.q, simulationData.qdot, simulationParams.dt, simulationData.M, forces, stiffness, tmp_force, tmp_stiffness, simulationData, simulationParams);
         } else {
-            forward_euler(simulationData.q, simulationData.qdot, simulationParams.dt, forces, tmp_force);
+            forward_euler(simulationData.q, simulationData.qdot, simulationParams.dt, forces, tmp_force, simulationData, simulationParams);
         }
         
 

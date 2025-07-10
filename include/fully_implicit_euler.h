@@ -17,7 +17,7 @@
  * @param tmp_stiffness 	Scratch space to calculate stiffness in
  */
 template<typename FORCE, typename STIFFNESS>
-inline void implicit_euler(Eigen::VectorXd &q, Eigen::VectorXd &qdot, double dt, const Eigen::SparseMatrix<double> &mass, FORCE &force, STIFFNESS &stiffness, Eigen::VectorXd &tmp_force, Eigen::SparseMatrix<double> &tmp_stiffness) {
+inline void implicit_euler(Eigen::VectorXd &q, Eigen::VectorXd &qdot, double dt, const Eigen::SparseMatrix<double> &mass, FORCE &force, STIFFNESS &stiffness, Eigen::VectorXd &tmp_force, Eigen::SparseMatrix<double> &tmp_stiffness, SimulationData& simulationData, SimulationParams& simulationParams) {
     
     const int MAX_ITERATIONS = 20;
     const double TOLERANCE = 1e-12;
@@ -31,6 +31,14 @@ inline void implicit_euler(Eigen::VectorXd &q, Eigen::VectorXd &qdot, double dt,
 
     for (int i = 0; i < MAX_ITERATIONS; i++){
         qdot = (q - q_prev) / dt;
+
+        // Get the currnent deformed positions 
+        get_deformed_positions(simulationData, simulationParams);
+
+        // Detect active collisions
+        simulationData.collisions.build(simulationData.collision_mesh, simulationData.deformed_vertices, simulationParams.min_barrier_distance);
+        // Set up friction specific collision
+        simulationData.friction_collisions.build(simulationData.collision_mesh, simulationData.deformed_vertices, simulationData.collisions, simulationData.barrier_potential, simulationData.barrier_stiffness, simulationParams.mu);
 
         force(tmp_force, q, qdot, (i == 0));
         stiffness(tmp_stiffness, q, qdot);
