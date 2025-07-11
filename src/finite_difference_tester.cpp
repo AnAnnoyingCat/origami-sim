@@ -7,8 +7,8 @@
 #include <finite_difference_tester.h>
 #include <assemble_damping_forces.h>
 #include <assemble_damping_stiffness.h>
-#include <assemble_ground_barrier_forces.h>
-#include <assemble_ground_barrier_stiffness.h>
+#include <assemble_barrier_forces.h>
+#include <assemble_barrier_stiffness.h>
 
 void test_axial_hessian(){
     double epsilon = 1e-6;
@@ -230,65 +230,65 @@ void test_damping_stiffness(){
     std::cout << "========================================================================\n" << std::endl;
 }
 
-void test_barrier_stiffness(){
-    double epsilon = 1e-5;
-    double mindistance = 1.0;
-    double k_barrier = 1.0;
-    Eigen::Vector3d q(0, 0, 0.2);
+// void test_barrier_stiffness(){
+//     double epsilon = 1e-5;
+//     double mindistance = 1.0;
+//     double k_barrier = 1.0;
+//     Eigen::Vector3d q(0, 0, 0.2);
 
-    Eigen::VectorXd k_axial;
-    SimulationParams params;
-    params.k_barrier = 1.0;
+//     Eigen::VectorXd k_axial;
+//     SimulationParams params;
+//     params.k_barrier = 1.0;
 
-    // Storage for analytical derivative
-    Eigen::SparseMatrix<double> stiffness_by_me;
-    stiffness_by_me.setZero();
-    stiffness_by_me.resize(3,3);
-    assemble_ground_barrier_stiffness(stiffness_by_me, q, mindistance, k_barrier);
+//     // Storage for analytical derivative
+//     Eigen::SparseMatrix<double> stiffness_by_me;
+//     stiffness_by_me.setZero();
+//     stiffness_by_me.resize(3,3);
+//     assemble_ground_barrier_stiffness(stiffness_by_me, q, mindistance, k_barrier);
 
-    // Storage for numerical derivative
-    Eigen::Matrix<double, 3, 3> stiffness_numerical;
-    stiffness_numerical.setZero();
+//     // Storage for numerical derivative
+//     Eigen::Matrix<double, 3, 3> stiffness_numerical;
+//     stiffness_numerical.setZero();
 
-    // Central difference approximation
-    for (int i = 0; i < 3; i++) {
-        Eigen::Vector3d q_perturbed_p = q;
-        Eigen::Vector3d q_perturbed_n = q;
+//     // Central difference approximation
+//     for (int i = 0; i < 3; i++) {
+//         Eigen::Vector3d q_perturbed_p = q;
+//         Eigen::Vector3d q_perturbed_n = q;
 
-        q_perturbed_p(i) += epsilon;
-        q_perturbed_n(i) -= epsilon;
+//         q_perturbed_p(i) += epsilon;
+//         q_perturbed_n(i) -= epsilon;
 
-        Eigen::VectorXd f_p, f_n;
-        f_p.resize(3);
-        f_n.resize(3);
-        f_p.setZero();
-        f_n.setZero();
+//         Eigen::VectorXd f_p, f_n;
+//         f_p.resize(3);
+//         f_n.resize(3);
+//         f_p.setZero();
+//         f_n.setZero();
 		
-		assemble_ground_barrier_forces(f_p, q_perturbed_p, mindistance, params);
-        assemble_ground_barrier_forces(f_n, q_perturbed_n, mindistance, params);
+// 		assemble_ground_barrier_forces(f_p, q_perturbed_p, mindistance, params);
+//         assemble_ground_barrier_forces(f_n, q_perturbed_n, mindistance, params);
 
-        // Central difference: (f(x+e) - f(x-e)) / (2e)
-        stiffness_numerical.col(i) = (f_p - f_n) / (2 * epsilon);
+//         // Central difference: (f(x+e) - f(x-e)) / (2e)
+//         stiffness_numerical.col(i) = (f_p - f_n) / (2 * epsilon);
 
-        // Debug prints
-        std::cout << "Perturbation index: " << i << std::endl;
-        std::cout << "qdot_perturbed_p:\n" << q_perturbed_p.transpose() << std::endl;
-        std::cout << "qdot_perturbed_n:\n" << q_perturbed_n.transpose() << std::endl;
-        std::cout << "f(q+ε): " << f_p.transpose() << std::endl;
-        std::cout << "f(q-ε): " << f_n.transpose() << std::endl;
-        std::cout << "Column " << i << " of numerical stiffness:\n" << stiffness_numerical.col(i).transpose() << "\n\n";
+//         // Debug prints
+//         std::cout << "Perturbation index: " << i << std::endl;
+//         std::cout << "qdot_perturbed_p:\n" << q_perturbed_p.transpose() << std::endl;
+//         std::cout << "qdot_perturbed_n:\n" << q_perturbed_n.transpose() << std::endl;
+//         std::cout << "f(q+ε): " << f_p.transpose() << std::endl;
+//         std::cout << "f(q-ε): " << f_n.transpose() << std::endl;
+//         std::cout << "Column " << i << " of numerical stiffness:\n" << stiffness_numerical.col(i).transpose() << "\n\n";
 		
-    }
+//     }
 
 
-    // Compute and print the difference
-    Eigen::Matrix<double, 3, 3> diff = stiffness_by_me - stiffness_numerical;
-    double error = diff.norm();
+//     // Compute and print the difference
+//     Eigen::Matrix<double, 3, 3> diff = stiffness_by_me - stiffness_numerical;
+//     double error = diff.norm();
 
-    std::cout << "============== Testing barrier force and stiffness =====================\n" << std::endl;
-    std::cout << "My force:\n" << stiffness_by_me << std::endl;
-    std::cout << "Numerical force:\n" << stiffness_numerical << std::endl;
-    std::cout << "Difference (mine - Numerical):\n" << diff << std::endl;
-    std::cout << "Frobenius norm of difference: " << error << std::endl;
-    std::cout << "========================================================================\n" << std::endl;
-}
+//     std::cout << "============== Testing barrier force and stiffness =====================\n" << std::endl;
+//     std::cout << "My force:\n" << stiffness_by_me << std::endl;
+//     std::cout << "Numerical force:\n" << stiffness_numerical << std::endl;
+//     std::cout << "Difference (mine - Numerical):\n" << diff << std::endl;
+//     std::cout << "Frobenius norm of difference: " << error << std::endl;
+//     std::cout << "========================================================================\n" << std::endl;
+// }

@@ -25,8 +25,15 @@
 #include <assemble_gravity_stiffness.h>
 #include <parameters.h>
 #include <finite_difference_tester.h>
-#include <assemble_ground_barrier_forces.h>
-#include <assemble_ground_barrier_stiffness.h>    
+#include <assemble_barrier_forces.h>
+#include <assemble_barrier_stiffness.h>
+#include <assemble_friction_forces.h>
+#include <assemble_friction_stiffness.h>
+#include <IPC-helperfunctions.h>
+#include <ipc/ipc.hpp>
+#include <ipc/potentials/barrier_potential.hpp>
+#include <ipc/potentials/friction_potential.hpp>
+
 
 // This keeps track of all data of the simulation
 SimulationData simulationData;
@@ -89,7 +96,7 @@ void simulate(){
             calculateDynamicTargetAngle(simulationData, simulationParams);
         }
 
-        auto forces = [&](Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::VectorXd> qdot){
+        auto forces = [&](Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::VectorXd> qdot, bool first_time){
             // Set f to zero and then add all the forces to it
             f.resize(q.size());
             f.setZero();
@@ -110,22 +117,30 @@ void simulate(){
             assemble_damping_forces(f, qdot, simulationData.E, simulationData.k_axial, simulationParams.zeta);
             if (simulationParams.LOG_FORCES){
                 std::cout << " + damping force: " << f(2);
-            }    
+            }
 
-            // If graivty is enabled, get that too
+            // If gravity is enabled, get that too
             if (simulationParams.ENABLE_GRAVITY){
                 assemble_gravity_forces(f, simulationParams.g, simulationParams.vertexMass);
                 if (simulationParams.LOG_FORCES){
                     std::cout << " + gravity force: " << f(2);
                 }    
-                
-                // Ground only needs to do collision if we got gravity
-                assemble_ground_barrier_forces(f, q, simulationParams.min_barrier_distance, simulationParams);
+            }
+            
+            if (simulationParams.enable_barrier){
+                assemble_barier_forces_IPC(f, simulationParams, simulationData, first_time);
                 if (simulationParams.LOG_FORCES){
                     std::cout << " + Barrier force: " << f(2);
                 }
-                
             }
+
+            if (simulationParams.enable_friction){
+                assemble_friction_forces_IPC(f, simulationParams, simulationData);
+                if (simulationParams.LOG_FORCES){
+                    std::cout << " + friction force: " << f(2);
+                }
+            }
+
             if (simulationParams.LOG_FORCES){
                 std::cout << std::endl;    
             }
@@ -139,26 +154,30 @@ void simulate(){
             assemble_edge_stiffness(K, q, simulationData.V, simulationData.E, simulationData.l0, simulationData.k_axial);
             assemble_crease_stiffness(K, q, simulationData.edge_adjacent_vertices, simulationData.k_crease, simulationData.edge_target_angle);
             assemble_damping_stiffness(K, qdot, simulationData.E, simulationData.k_axial, simulationParams.zeta);
-
-            if (simulationParams.ENABLE_GRAVITY){
-                assemble_ground_barrier_stiffness(K, q, simulationParams.min_barrier_distance, simulationParams.k_barrier);
+            if (simulationParams.enable_barrier){
+                assemble_barier_stiffness_IPC(K, simulationParams, simulationData);
             }
-            
+            if (simulationParams.enable_friction){
+                assemble_friction_stiffness_IPC(K, simulationParams, simulationData);
+            }
             
         };
 
+        // Get the current collision mesh before caluculating all the forces
+        make_collision_mesh(simulationData, simulationParams);
+
         // Time integration
         if (simulationParams.USE_IMPLICIT_EULER){
-            implicit_euler(simulationData.q, simulationData.qdot, simulationParams.dt, simulationData.M, forces, stiffness, tmp_force, tmp_stiffness);
+            implicit_euler(simulationData.q, simulationData.qdot, simulationParams.dt, simulationData.M, forces, stiffness, tmp_force, tmp_stiffness, simulationData, simulationParams);
         } else {
-            forward_euler(simulationData.q, simulationData.qdot, simulationParams.dt, forces, tmp_force);
+            forward_euler(simulationData.q, simulationData.qdot, simulationParams.dt, forces, tmp_force, simulationData, simulationParams);
         }
         
 
         // Make sure the floating mesh doesn't drift off with gravity disabled
-        // if (!simulationParams.ENABLE_GRAVITY || !simulationParams.ENABLE_DYNAMIC_SIMULATION){
-        //     centerMesh();
-        // }
+        if (!simulationParams.ENABLE_GRAVITY){
+            centerMesh();
+        }
 
         // update vertex positions from q and increment time
         updateV(simulationData.V, simulationData.q);
@@ -239,9 +258,9 @@ int main(int argc, char *argv[])
     viewer.core().is_animating = true; 
     viewer.core().lighting_factor = 0.0f;
 
-    if (simulationParams.show_floor){
+    if (simulationParams.enable_floor){
         // Set up the floor mesh
-        int floor_id = setup_floor(viewer);
+        int floor_id = setup_floor(viewer, simulationData);
 
         // Adjust camera zoom
         viewer.core().camera_zoom = simulationParams.sim_zoom_level;

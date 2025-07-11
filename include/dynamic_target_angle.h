@@ -1,3 +1,4 @@
+#pragma once
 #include <Eigen/Dense>
 #include <strain_calculations.h>
 #include <map>

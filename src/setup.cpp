@@ -1,8 +1,5 @@
 #include <setup.h>
-#include <iostream>
-#include <trig_helper_functions.h>
-#include <dynamic_target_angle.h>
-#include <vector>
+
 
 using json = nlohmann::json;
 
@@ -12,6 +9,7 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 	if (file){
 		json params = json::parse(file);
 
+		// Just go through all the possible parameters and set them up
 		if (params.contains("dt")){
 			simulationParams.dt = params["dt"].template get<double>();
 		} else {
@@ -109,10 +107,10 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 		} else {
 			simulationParams.LOG_FORCES = false;
 		}
-		if (params.contains("show_floor")){
-			simulationParams.show_floor = params["show_floor"].template get<bool>();
+		if (params.contains("enable_floor")){
+			simulationParams.enable_floor = params["enable_floor"].template get<bool>();
 		} else {
-			simulationParams.show_floor = false;
+			simulationParams.enable_floor = false;
 		}
 		if (params.contains("k_barrier")){
 			simulationParams.k_barrier = params["k_barrier"].template get<double>();
@@ -124,7 +122,31 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 		} else {
 			simulationParams.sim_zoom_level = 250;
 		}
-
+		if (params.contains("enable_barrier")){
+			simulationParams.enable_barrier = params["enable_barrier"].template get<bool>();
+		} else {
+			simulationParams.enable_barrier = false;
+		}
+		if (params.contains("enable_automatic_barrier_stiffness")){
+			simulationParams.enable_auto_k_barrier = params["enable_automatic_barrier_stiffness"].template get<bool>();
+		} else {
+			simulationParams.enable_auto_k_barrier = true;
+		}
+		if (params.contains("mu")){
+			simulationParams.mu = params["mu"].template get<double>();
+		} else {
+			simulationParams.mu = 0.1;
+		}
+		if (params.contains("eps_v")){
+			simulationParams.eps_v = params["eps_v"].template get<double>();
+		} else {
+			simulationParams.eps_v = 0.1;
+		}
+		if (params.contains("enable_friction")){
+			simulationParams.enable_friction = params["enable_friction"].template get<bool>();
+		} else {
+			simulationParams.enable_friction = true;
+		}
 
 		simulationParams.simulating = true;
 		
@@ -161,7 +183,7 @@ void setup_mesh(std::string filename, SimulationParams& simulationParams, Simula
 
 			simulationData.V.resize(coords.size(), 3);
 
-			double largestCoord;
+			double largestCoord = std::numeric_limits<double>::lowest();
 			// find largest coordinate and scale entire model to make largets coordinate to be around the ballpark of 100
 			for (int i = 0; i < coords.size(); i++){
 				std::cout << "simulationData.V(i, 0): " << coords[i][0] << "largestcoord: " << largestCoord << std::endl;
@@ -169,7 +191,7 @@ void setup_mesh(std::string filename, SimulationParams& simulationParams, Simula
 				std::cout << "simulationData.V(i, 1): " << coords[i][1] << "largestcoord: " << largestCoord << std::endl;
 				largestCoord = largestCoord < coords[i][1] ? coords[i][1] : largestCoord;
 			}
-			double scalefactor = 100 / largestCoord;
+			double scalefactor = std::isnan(100 / largestCoord) ? 10 : 100 / largestCoord;
 			std::cout << "largest coord: " << largestCoord << ", scale factor: " << scalefactor << std::endl;
 
 			for (int i = 0; i < coords.size(); i++){
@@ -239,6 +261,26 @@ void setup_mesh(std::string filename, SimulationParams& simulationParams, Simula
 			throw std::runtime_error("Oh no...");
 		}
 
+		// Initialize the ground
+		Eigen::MatrixXd ground_V(4, 3);		// Ground Vertices
+		Eigen::MatrixXi ground_E(5, 2);		// Ground Edges
+		Eigen::MatrixXi ground_F(2, 3);		// Ground Faces
+		ground_V << -1000, -1000, 0,
+					1000, -1000, 0,
+					1000,  1000, 0,
+					-1000,  1000, 0;
+		ground_E << 0, 1,	
+					1, 2,
+					2, 3,
+					3, 0,
+					2, 0;
+		ground_F << 0, 2, 1,
+					0, 3, 2;
+		simulationData.ground_V = ground_V;
+		simulationData.ground_E = ground_E;
+		simulationData.ground_F = ground_F;
+	
+		make_collision_mesh(simulationData, simulationParams);
 
 		// Assign edge target angles. If edge doesn't have a target angle the angle is set to nan.
 		if (params.contains("edges_foldAngle") && params.contains("edges_assignment")){
@@ -392,7 +434,11 @@ void setup_mesh(std::string filename, SimulationParams& simulationParams, Simula
 			throw std::runtime_error("Oh no...");
 		}
 
-
+		// Set up IPC's BarrierPotential and FrictionPotential
+		ipc::BarrierPotential B(simulationParams.min_barrier_distance);
+		simulationData.barrier_potential  = B;
+		ipc::FrictionPotential D(simulationParams.eps_v);
+		simulationData.friction_potential = D;
 
 	} else {
 		std::cerr << "There was an error reading your .fold file!" << std::endl;
@@ -478,20 +524,10 @@ void setup_dynamic_target_angles(std::string filename, Eigen::VectorXd& edge_tar
 	setupFoldTimeline(foldTimeline, edge_target_angle.size());
 }
 
-int setup_floor(igl::opengl::glfw::Viewer& viewer) {
-    // Create vertices for a square floor at z = 0
-    Eigen::MatrixXd floor_vertices(4, 3);
-    floor_vertices << -1000, -1000, 0,
-                       1000, -1000, 0,
-                       1000,  1000, 0,
-                      -1000,  1000, 0;
-
-    Eigen::MatrixXi floor_faces(2, 3);
-    floor_faces << 0, 1, 2,
-                   0, 2, 3;
+int setup_floor(igl::opengl::glfw::Viewer& viewer, SimulationData& simulationData) {
 
     int floor_id = viewer.append_mesh();
-    viewer.data(floor_id).set_mesh(floor_vertices, floor_faces);
+    viewer.data(floor_id).set_mesh(simulationData.ground_V, simulationData.ground_F);
 
 	// Floor visual settings
     viewer.data(floor_id).set_colors(Eigen::RowVector3d(0.6, 0.6, 0.6));  // light grey
