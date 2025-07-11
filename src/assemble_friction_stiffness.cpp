@@ -1,22 +1,22 @@
 #include "assemble_friction_stiffness.h"
 
 void assemble_friction_stiffness_IPC(Eigen::SparseMatrix<double> &K, SimulationParams &simulationParams, SimulationData &simulationData) {
-    // make a qdot_full with both model and ground vertices
-	Eigen::VectorXd qdot_full(simulationData.qdot.size() + 3 * simulationData.ground_V.rows());
     
-	qdot_full.setZero();
-	qdot_full.head(simulationData.qdot.size()) = simulationData.qdot;
-    std::cout << "=============== Stiffness ============" << std::endl;
-    std::cout << "K.size(): " << K.size() << std::endl;
-	std::cout << "deformed_vertices.rows(): " << simulationData.deformed_vertices.rows() << std::endl;
-	std::cout << "collision_mesh.num_vertices(): " << simulationData.collision_mesh.num_vertices() << std::endl;
-	std::cout << "qdot_full : " << qdot_full.transpose() << std::endl;
+	int full_size = simulationData.V.size() + simulationData.ground_V.size();
 
-	Eigen::SparseMatrix<double> friction_potential_hess = simulationData.friction_potential.hessian(simulationData.friction_collisions, simulationData.collision_mesh, qdot_full);
+	// Fill velocities into a matrix
+	Eigen::MatrixXd qdot_matrix_full(full_size, 3);
+	qdot_matrix_full.setZero();
+	for (int i = 0; i < simulationData.V.rows(); i++){
+		qdot_matrix_full.row(i) = simulationData.qdot.segment<3>(3 * i);
+	}
+
+	// Calculate friction hessian
+	Eigen::SparseMatrix<double> friction_potential_hess = simulationData.friction_potential.hessian(simulationData.friction_collisions, simulationData.collision_mesh, qdot_matrix_full);
 
 	const int dim = simulationData.V.rows() * 3;
 
-	// Extract top left block from the full hessian
+	// Extract top left block from the full hessian (we only apply forces to the model, not to the floor)
 	std::vector<Eigen::Triplet<double>> triplets;
     for (int k = 0; k < friction_potential_hess.outerSize(); ++k) {
         for (Eigen::SparseMatrix<double>::InnerIterator it(friction_potential_hess, k); it; ++it) {

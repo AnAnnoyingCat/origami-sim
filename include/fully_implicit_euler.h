@@ -32,6 +32,7 @@ inline void implicit_euler(Eigen::VectorXd &q, Eigen::VectorXd &qdot, double dt,
     for (int i = 0; i < MAX_ITERATIONS; i++){
         qdot = (q - q_prev) / dt;
 
+        // THIS SHOULD GO INSIDE IMPLICIT EULER I THINK...?
         // Get the currnent deformed positions 
         get_deformed_positions(simulationData, simulationParams);
 

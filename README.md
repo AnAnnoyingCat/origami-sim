@@ -11,9 +11,13 @@ Much of the mathematics behind this simulation are based on [Origami Simulator](
 Use the following commands to set up this simulation locally:
 
 ```
-mkdir build
+mkdir release
 cmake -DCMAKE_BUILD_TYPE=Release ..
-make
+make -j$(nproc)
 ```
 
 and then call the executable with the arguments `./origami-simulator <Crease Pattern> <Parameters> <Actuation Profile>`
+
+
+gprof ./origami-simulator gmon.out > profile.txt
+less profile.txt
