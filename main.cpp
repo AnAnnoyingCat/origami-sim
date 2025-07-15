@@ -127,14 +127,14 @@ void simulate(){
                 }    
             }
             
-            if (simulationParams.enable_barrier){
+            if (simulationParams.enable_barrier && simulationParams.ENABLE_GRAVITY){
                 assemble_barier_forces_IPC(f, simulationParams, simulationData, first_time);
                 if (simulationParams.LOG_FORCES){
                     std::cout << " + Barrier force: " << f(2);
                 }
             }
 
-            if (simulationParams.enable_friction){
+            if (simulationParams.enable_friction && simulationParams.ENABLE_GRAVITY){
                 assemble_friction_forces_IPC(f, simulationParams, simulationData);
                 if (simulationParams.LOG_FORCES){
                     std::cout << " + friction force: " << f(2);
@@ -154,10 +154,10 @@ void simulate(){
             assemble_edge_stiffness(K, q, simulationData.V, simulationData.E, simulationData.l0, simulationData.k_axial);
             assemble_crease_stiffness(K, q, simulationData.edge_adjacent_vertices, simulationData.k_crease, simulationData.edge_target_angle);
             assemble_damping_stiffness(K, qdot, simulationData.E, simulationData.k_axial, simulationParams.zeta);
-            if (simulationParams.enable_barrier){
+            if (simulationParams.enable_barrier && simulationParams.ENABLE_GRAVITY){
                 assemble_barier_stiffness_IPC(K, simulationParams, simulationData);
             }
-            if (simulationParams.enable_friction){
+            if (simulationParams.enable_friction && simulationParams.ENABLE_GRAVITY){
                 assemble_friction_stiffness_IPC(K, simulationParams, simulationData);
             }
             
@@ -175,9 +175,9 @@ void simulate(){
         
 
         // Make sure the floating mesh doesn't drift off with gravity disabled
-        if (!simulationParams.ENABLE_GRAVITY){
-            centerMesh();
-        }
+        // if (!simulationParams.ENABLE_GRAVITY){
+        //     centerMesh();
+        // }
 
         // update vertex positions from q and increment time
         updateV(simulationData.V, simulationData.q);

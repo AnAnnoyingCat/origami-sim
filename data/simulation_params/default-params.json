@@ -27,5 +27,4 @@
 	"log_forces": false,
 	"enable_floor": false,
 	"enable_automatic_barrier_stiffness": false
-
 }
