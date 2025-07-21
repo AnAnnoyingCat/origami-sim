@@ -32,15 +32,16 @@ inline void implicit_euler(Eigen::VectorXd &q, Eigen::VectorXd &qdot, double dt,
     for (int i = 0; i < MAX_ITERATIONS; i++){
         qdot = (q - q_prev) / dt;
 
-        // THIS SHOULD GO INSIDE IMPLICIT EULER I THINK...?
-        // Get the currnent deformed positions 
-        get_deformed_positions(simulationData, simulationParams);
+        // Get the currnent deformed positions only if barrier or friction is enabled
+        if (simulationParams.enable_barrier || simulationParams.enable_friction){
+            get_deformed_positions(simulationData, simulationParams);
 
-        // Detect active collisions
-        simulationData.collisions.build(simulationData.collision_mesh, simulationData.deformed_vertices, simulationParams.min_barrier_distance);
-        // Set up friction specific collision
-        simulationData.friction_collisions.build(simulationData.collision_mesh, simulationData.deformed_vertices, simulationData.collisions, simulationData.barrier_potential, simulationData.barrier_stiffness, simulationParams.mu);
-
+            // Detect active collisions
+            simulationData.collisions.build(simulationData.collision_mesh, simulationData.deformed_vertices, simulationParams.min_barrier_distance);
+            // Set up friction specific collision
+            simulationData.friction_collisions.build(simulationData.collision_mesh, simulationData.deformed_vertices, simulationData.collisions, simulationData.barrier_potential, simulationData.barrier_stiffness, simulationParams.mu);
+        }        
+        
         force(tmp_force, q, qdot, (i == 0));
         stiffness(tmp_stiffness, q, qdot);
 

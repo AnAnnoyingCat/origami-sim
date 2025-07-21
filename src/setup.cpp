@@ -145,7 +145,7 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 		if (params.contains("enable_friction")){
 			simulationParams.enable_friction = params["enable_friction"].template get<bool>();
 		} else {
-			simulationParams.enable_friction = true;
+			simulationParams.enable_friction = false;
 		}
 
 		simulationParams.simulating = true;
@@ -279,8 +279,11 @@ void setup_mesh(std::string filename, SimulationParams& simulationParams, Simula
 		simulationData.ground_V = ground_V;
 		simulationData.ground_E = ground_E;
 		simulationData.ground_F = ground_F;
-	
-		make_collision_mesh(simulationData, simulationParams);
+		
+		// Make IPC's collsion mesh. Not needed if barrier isn't enabled
+		if (simulationParams.enable_barrier || simulationParams.enable_friction){
+			make_collision_mesh(simulationData, simulationParams);
+		}
 
 		// Assign edge target angles. If edge doesn't have a target angle the angle is set to nan.
 		if (params.contains("edges_foldAngle") && params.contains("edges_assignment")){
@@ -433,7 +436,7 @@ void setup_mesh(std::string filename, SimulationParams& simulationParams, Simula
 			std::cout << "Missing parameter \"faces_vertices\" or \"faces_edges\" or \"edges_assignment\"..." << std::endl;
 			throw std::runtime_error("Oh no...");
 		}
-
+		
 		// Set up IPC's BarrierPotential and FrictionPotential
 		ipc::BarrierPotential B(simulationParams.min_barrier_distance);
 		simulationData.barrier_potential  = B;

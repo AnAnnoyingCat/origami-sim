@@ -14,7 +14,7 @@
 	"enable_dynamic_simulation": true,
 	"enable_gravity": false,
 	"log_simulation_time": false,
-	"use_implicit_euler": true
+	"use_implicit_euler": false
 
 	
 	

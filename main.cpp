@@ -163,8 +163,11 @@ void simulate(){
             
         };
 
-        // Get the current collision mesh before caluculating all the forces
-        make_collision_mesh(simulationData, simulationParams);
+        // Get the current collision mesh before caluculating all the forces (only needed if barrier or friction is even enabled, otherwise a waste of resources)
+        if (simulationParams.enable_barrier || simulationParams.enable_friction){
+            make_collision_mesh(simulationData, simulationParams);
+        }
+        
 
         // Time integration
         if (simulationParams.USE_IMPLICIT_EULER){
