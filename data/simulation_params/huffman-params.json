@@ -13,7 +13,7 @@
 	"strain_type": "edge",
 	"enable_dynamic_simulation": false,
 	"enable_gravity": false,
-	"use_implicit_euler": true,
+	"use_implicit_euler": false,
 	"glue_factor": 5,
 	"min_barrier_distance": 1,
 	"spawn_height": 1,

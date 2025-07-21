@@ -1,0 +1,31 @@
+{
+	"dt": 0.005,
+	"vertexMass": 1,
+	"EA": 5000,
+	"k_fold": 1000,
+	"k_facet": 1000,
+	"k_face": 0.5,
+	"glue_factor": 20,
+	"zeta": 0.5,
+	"mu": 0.1,
+	"eps_v": 1e-4,
+	"gravity": [0,0,-9.81],
+	"min_barrier_distance": 1,
+	"spawn_height": 25,
+	"k_barrier": 1000,
+	"sim_zoom_level": 10,
+
+	"visualize_strain": true,
+	"strain_type": "edge",
+	"enable_dynamic_simulation": true,
+	"enable_gravity": false,
+	"use_implicit_euler": true,
+	"log_simulation_time": true,
+	"use_snapping_glue_mode": false,
+	"enable_barrier": true,
+	"enable_friction": false,
+	"log_forces": false,
+	"enable_floor": true,
+	"enable_automatic_barrier_stiffness": false
+
+}

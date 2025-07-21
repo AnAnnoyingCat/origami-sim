@@ -177,8 +177,8 @@ void simulate(){
         }
         
 
-        // Make sure the floating mesh doesn't drift off with gravity disabled
-        if (!simulationParams.ENABLE_GRAVITY){
+        // Make sure the floating mesh doesn't drift off with gravity disabled, but don't do it if the floor is enabled
+        if (!simulationParams.ENABLE_GRAVITY && !simulationParams.enable_floor){
             centerMesh();
         }
 
