@@ -76,7 +76,7 @@ struct SimulationParams {
     bool enable_barrier;        // Toggles whether or not to use barrier forces
     bool enable_friction;       // Toggles whether or not to use friction forces
     bool enable_auto_k_barrier; // Toggles whether or not to use IPC's auto barrier stiffness
-
+    bool loop_timeline;         // Toggles whether or not the timeline will loop, jumping to t=0 after reaching last instruction
 
     // This controls broader simulation parameters. Self explanatory (I hope)
     bool ENABLE_STRAIN_VISUALIZATION;
