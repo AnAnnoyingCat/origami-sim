@@ -17,7 +17,3 @@ make -j$(nproc)
 ```
 
 and then call the executable with the arguments `./origami-simulator <Crease Pattern> <Parameters> <Actuation Profile>`
-
-
-gprof ./origami-simulator gmon.out > profile.txt
-less profile.txt
