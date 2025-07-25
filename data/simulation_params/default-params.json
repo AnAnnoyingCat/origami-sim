@@ -24,6 +24,7 @@
 	"enable_automatic_barrier_stiffness": false,
 
 	"visualize_strain": true,
+	"center_mesh": true,
 	"strain_type": "edge",
 	"use_implicit_euler": false,
 	"log_simulation_time": false,

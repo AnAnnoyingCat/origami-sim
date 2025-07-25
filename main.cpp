@@ -77,11 +77,26 @@ void updateV(Eigen::MatrixXd& V, Eigen::VectorXd q){
 void centerMesh(){ 
     Eigen::Vector3d center;
     center.setZero();
-    center(2) = simulationParams.spawn_height;
     for (int currVertex = 0; currVertex < simulationData.V.rows(); currVertex++){
         center += simulationData.q.segment<3>(3 * currVertex);
     }
     center /= simulationData.V.rows();
+    
+    for (int currVertex = 0; currVertex < simulationData.V.rows(); currVertex++){
+        simulationData.q.segment<3>(3 * currVertex) -= center;
+    }
+}
+
+/// @brief Move the center of mass back to the middle of the screen, but only along the ground plane
+void centerMesh2D(){ 
+    Eigen::Vector3d center;
+    center.setZero();
+    for (int currVertex = 0; currVertex < simulationData.V.rows(); currVertex++){
+        center += simulationData.q.segment<3>(3 * currVertex);
+    }
+    
+    center /= simulationData.V.rows();
+    center(2) = 0;
     for (int currVertex = 0; currVertex < simulationData.V.rows(); currVertex++){
         simulationData.q.segment<3>(3 * currVertex) -= center;
     }
@@ -178,8 +193,12 @@ void simulate(){
         
 
         // Make sure the floating mesh doesn't drift off with gravity disabled, but don't do it if the floor is enabled
-        if (!simulationParams.ENABLE_GRAVITY && !simulationParams.enable_floor){
+        if (simulationParams.center_mesh && !simulationParams.ENABLE_GRAVITY && !simulationParams.enable_floor){
+            std::cout << "centering mesh" << std::endl;
             centerMesh();
+        } else if (simulationParams.center_mesh) {
+            std::cout << "centering mesh" << std::endl;
+            centerMesh2D();
         }
 
         // update vertex positions from q and increment time

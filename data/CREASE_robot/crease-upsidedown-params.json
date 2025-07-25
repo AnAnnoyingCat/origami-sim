@@ -7,8 +7,8 @@
 	"k_face": 0.5,
 	"glue_factor": 50,
 	"zeta": 0.5,
-	"mu": 0.5,
-	"eps_v": 1e-2,
+	"mu": 0.8,
+	"eps_v": 1e-4,
 	"gravity": [0,0,-9.81],
 	"min_barrier_distance": 1,
 	"spawn_height": 30,
@@ -21,11 +21,12 @@
 	"enable_gravity": false,
 	"use_implicit_euler": false,
 	"log_simulation_time": true,
-	"use_snapping_glue_mode": false,
+	"use_snapping_glue_mode": true,
 	"enable_barrier": true,
 	"enable_friction": true,
 	"log_forces": false,
 	"enable_floor": true,
-	"enable_automatic_barrier_stiffness": false
+	"enable_automatic_barrier_stiffness": false,
+	"center_mesh": true
 
 }

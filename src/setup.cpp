@@ -133,12 +133,12 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 			simulationParams.enable_auto_k_barrier = true;
 		}
 		if (params.contains("mu")){
-			simulationParams.mu = params["mu"].template get<double>();
-		} else {
+			simulationParams.mu = params["mu"].template get<double>();			
+		} else {			
 			simulationParams.mu = 0.1;
 		}
 		if (params.contains("eps_v")){
-			simulationParams.eps_v = params["eps_v"].template get<double>();
+			simulationParams.eps_v = params["eps_v"].template get<double>();			
 		} else {
 			simulationParams.eps_v = 0.1;
 		}
@@ -146,6 +146,11 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 			simulationParams.enable_friction = params["enable_friction"].template get<bool>();
 		} else {
 			simulationParams.enable_friction = false;
+		}
+		if (params.contains("center_mesh")){
+			simulationParams.center_mesh = params["center_mesh"].template get<bool>();
+		} else {
+			simulationParams.center_mesh = true;
 		}
 
 		simulationParams.simulating = true;

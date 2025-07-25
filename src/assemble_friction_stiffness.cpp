@@ -28,5 +28,5 @@ void assemble_friction_stiffness_IPC(Eigen::SparseMatrix<double> &K, SimulationP
 	Eigen::SparseMatrix<double> hess_block(dim, dim);
     hess_block.setFromTriplets(triplets.begin(), triplets.end());
 
-	K -= simulationParams.k_barrier * hess_block;
+	K -= hess_block;
 }
