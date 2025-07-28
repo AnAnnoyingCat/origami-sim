@@ -55,7 +55,7 @@ struct SimulationData {
 };
 
 struct SimulationParams {
-    // This controls the physics part of the simulation
+    // Physics related simulation parameters
     double dt;                  // Time Step
     double vertexMass;          // Per vertex mass. Currently constant
     double EA;                  // Axial stiffness parameter, used in calculating axial stiffness
@@ -72,21 +72,20 @@ struct SimulationParams {
     Eigen::Vector3d g;          // Gravity force vector
     bool simulating;            // If this is ever set to false, all threads instantly terminates
     double sim_zoom_level;      // The starting zoom level of the simulation
+
+    // Boolean Simulation Parameters
     bool enable_floor;          // Toggles whether or not the floor is visible
     bool enable_barrier;        // Toggles whether or not to use barrier forces
     bool enable_friction;       // Toggles whether or not to use friction forces
     bool enable_auto_k_barrier; // Toggles whether or not to use IPC's auto barrier stiffness
     bool loop_timeline;         // Toggles whether or not the timeline will loop, jumping to t=0 after reaching last instruction
-    bool center_mesh;           // Toggles whether or not the model should be centered every frame to prevent drifting
-
-    // This controls broader simulation parameters. Self explanatory (I hope)
-    bool ENABLE_STRAIN_VISUALIZATION;
-    std::string STRAIN_TYPE;
-    bool ENABLE_DYNAMIC_SIMULATION;
-    bool ENABLE_GRAVITY;
-    bool USE_IMPLICIT_EULER;
-    bool LOG_SIMULATION_TIME;
-    bool USE_SNAPPING_GLUE_MODE;
+    bool center_mesh;           // Toggles whether or not the model should be centered every frame to prevent drifting    bool enable_strain_visualization;
+    std::string strain_type;
+    bool enable_dynamic_simulation;
+    bool enable_gravity;
+    bool enable_implicit_euler;
+    bool enable_logging_simulation_time;
+    bool enable_snapping_glue_mode;
     bool LOG_FORCES;
 
 };

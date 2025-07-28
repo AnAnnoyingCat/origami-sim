@@ -54,9 +54,9 @@ void visualizeStrain(){
     while(simulationParams.simulating){
         if (viewer_ptr){
             Eigen::MatrixXd C;
-            if (simulationParams.STRAIN_TYPE == "face"){
+            if (simulationParams.strain_type == "face"){
                 calculateFaceAngleStrain(C, simulationData.F, simulationData.q, simulationData.alpha0);
-            } else if (simulationParams.STRAIN_TYPE == "edge"){
+            } else if (simulationParams.strain_type == "edge"){
                 calculateAxialDeformationStrain(C, simulationData.F, simulationData.E, simulationData.q, simulationData.l0, simulationData.face_adjacent_edges);
             }
             viewer_ptr->data(simulation_mesh_id).set_colors(C);
@@ -107,7 +107,7 @@ void simulate(){
     while (simulationParams.simulating){
         
         // If simulation type is dynamic, recalculate the target angle for the curren frame
-        if (simulationParams.ENABLE_DYNAMIC_SIMULATION){
+        if (simulationParams.enable_dynamic_simulation){
             calculateDynamicTargetAngle(simulationData, simulationParams);
         }
 
@@ -135,7 +135,7 @@ void simulate(){
             }
 
             // If gravity is enabled, get that too
-            if (simulationParams.ENABLE_GRAVITY){
+            if (simulationParams.enable_gravity){
                 assemble_gravity_forces(f, simulationParams.g, simulationParams.vertexMass);
                 if (simulationParams.LOG_FORCES){
                     std::cout << " + gravity force: " << f(2);
@@ -185,7 +185,7 @@ void simulate(){
         
 
         // Time integration
-        if (simulationParams.USE_IMPLICIT_EULER){
+        if (simulationParams.enable_implicit_euler){
             implicit_euler(simulationData.q, simulationData.qdot, simulationParams.dt, simulationData.M, forces, stiffness, tmp_force, tmp_stiffness, simulationData, simulationParams);
         } else {
             forward_euler(simulationData.q, simulationData.qdot, simulationParams.dt, forces, tmp_force, simulationData, simulationParams);
@@ -212,7 +212,7 @@ void simulate(){
 
         // Next time step
         simulationData.t += simulationParams.dt;
-        if (simulationParams.LOG_SIMULATION_TIME){
+        if (simulationParams.enable_logging_simulation_time){
             std::cout << "t: " << simulationData.t << std::endl;
         }
     }
@@ -292,7 +292,7 @@ int main(int argc, char *argv[])
     std::thread simulation_thread(simulate);
     simulation_thread.detach();
 
-    if (simulationParams.ENABLE_STRAIN_VISUALIZATION){
+    if (simulationParams.enable_strain_visualization){
         // Start the energy status in another thread if needed
         std::thread strain_visualization(visualizeStrain);
         strain_visualization.detach();

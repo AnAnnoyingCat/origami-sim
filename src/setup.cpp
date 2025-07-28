@@ -51,24 +51,24 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 			simulationParams.min_barrier_distance = 0.1;
 		}
 		if (params.contains("visualize_strain")){
-			simulationParams.ENABLE_STRAIN_VISUALIZATION = params["visualize_strain"].template get<bool>();
+			simulationParams.enable_strain_visualization = params["visualize_strain"].template get<bool>();
 		} else {
-			simulationParams.ENABLE_STRAIN_VISUALIZATION = false;
+			simulationParams.enable_strain_visualization = false;
 		}
 		if (params.contains("strain_type")){
-			simulationParams.STRAIN_TYPE = params["strain_type"].template get<std::string>();
+			simulationParams.strain_type = params["strain_type"].template get<std::string>();
 		} else {
-			simulationParams.STRAIN_TYPE = "face";
+			simulationParams.strain_type = "face";
 		}
 		if (params.contains("enable_dynamic_simulation")){
-			simulationParams.ENABLE_DYNAMIC_SIMULATION = params["enable_dynamic_simulation"].template get<bool>();
+			simulationParams.enable_dynamic_simulation = params["enable_dynamic_simulation"].template get<bool>();
 		} else {
-			simulationParams.ENABLE_DYNAMIC_SIMULATION = true;
+			simulationParams.enable_dynamic_simulation = true;
 		}
 		if (params.contains("enable_gravity")){
-			simulationParams.ENABLE_GRAVITY = params["enable_gravity"].template get<bool>();
+			simulationParams.enable_gravity = params["enable_gravity"].template get<bool>();
 		} else {
-			simulationParams.ENABLE_GRAVITY = true;
+			simulationParams.enable_gravity = true;
 		}
 		if (params.contains("gravity")){
 			for (int i = 0; i < 3; ++i){
@@ -77,10 +77,10 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 		} else {
 			simulationParams.g = Eigen::Vector3d(0, 0, -9.81); // default gravity
 		}
-		if (params.contains("use_implicit_euler")){
-			simulationParams.USE_IMPLICIT_EULER = params["use_implicit_euler"].template get<bool>();
+		if (params.contains("enable_implicit_euler")){
+			simulationParams.enable_implicit_euler = params["enable_implicit_euler"].template get<bool>();
 		} else {
-			simulationParams.USE_IMPLICIT_EULER = true;
+			simulationParams.enable_implicit_euler = true;
 		}
 		if (params.contains("glue_factor")){
 			simulationParams.gluefactor = params["glue_factor"].template get<double>();
@@ -88,14 +88,14 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 			simulationParams.gluefactor = 1;
 		}
 		if (params.contains("log_simulation_time")){
-			simulationParams.LOG_SIMULATION_TIME = params["log_simulation_time"].template get<bool>();
+			simulationParams.enable_logging_simulation_time = params["log_simulation_time"].template get<bool>();
 		} else {
-			simulationParams.LOG_SIMULATION_TIME = false;
+			simulationParams.enable_logging_simulation_time = false;
 		}
 		if (params.contains("use_snapping_glue_mode")){
-			simulationParams.USE_SNAPPING_GLUE_MODE = params["use_snapping_glue_mode"].template get<bool>();
+			simulationParams.enable_snapping_glue_mode = params["use_snapping_glue_mode"].template get<bool>();
 		} else {
-			simulationParams.USE_SNAPPING_GLUE_MODE = true;
+			simulationParams.enable_snapping_glue_mode = true;
 		}
 		if (params.contains("spawn_height")){
 			simulationParams.spawn_height = params["spawn_height"].template get<double>();

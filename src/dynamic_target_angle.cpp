@@ -57,7 +57,7 @@ void calculateDynamicTargetAngle(SimulationData& simulationData, SimulationParam
 			if (currentInstructions.mode == "glued"){
 				// Fold is now glued. 
 
-				if (simulationParams.USE_SNAPPING_GLUE_MODE){
+				if (simulationParams.enable_snapping_glue_mode){
 					// Set the target angles to be the percise expected target angle (what we *should* have reached up to here)
 					fold_timeline[per_fold_position_in_timeline[currEdge]].end_angle = start_angle;
 					end_angle = start_angle;
@@ -91,7 +91,7 @@ void calculateDynamicTargetAngle(SimulationData& simulationData, SimulationParam
 			} else if (currentInstructions.mode == "toggle_gravity") {
 				// Toggle gravity and reset instructions
 				std::cout << "Toggling gravity!" << std::endl;
-				simulationParams.ENABLE_GRAVITY = !simulationParams.ENABLE_GRAVITY;
+				simulationParams.enable_gravity = !simulationParams.enable_gravity;
 				fold_timeline[per_fold_position_in_timeline[currEdge]].mode.reset();
 			} else {
 				std::cerr << "unknown fold mode in fold instruction" << std::endl;
