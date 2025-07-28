@@ -58,7 +58,7 @@ struct SimulationParams {
     // Physics related simulation parameters
     double dt;                  // Time Step
     double vertexMass;          // Per vertex mass. Currently constant
-    double EA;                  // Axial stiffness parameter, used in calculating axial stiffness
+    double k_axial;                  // Axial stiffness parameter, used in calculating axial stiffness
     double k_fold;              // Stiffness for a mountain or valley crease (Should be much smaller than the axial stiffness)
     double k_facet;             // Stiffness for a facet crease
     double k_face;              // Stiffness for the face constraints
@@ -74,18 +74,19 @@ struct SimulationParams {
     double sim_zoom_level;      // The starting zoom level of the simulation
 
     // Boolean Simulation Parameters
-    bool enable_floor;          // Toggles whether or not the floor is visible
-    bool enable_barrier;        // Toggles whether or not to use barrier forces
-    bool enable_friction;       // Toggles whether or not to use friction forces
-    bool enable_auto_k_barrier; // Toggles whether or not to use IPC's auto barrier stiffness
-    bool loop_timeline;         // Toggles whether or not the timeline will loop, jumping to t=0 after reaching last instruction
-    bool center_mesh;           // Toggles whether or not the model should be centered every frame to prevent drifting    bool enable_strain_visualization;
+    bool enable_floor;                          // Toggles whether or not the floor is visible
+    bool enable_barrier;                        // Toggles whether or not to use barrier forces
+    bool enable_friction;                       // Toggles whether or not to use friction forces
+    bool enable_auto_k_barrier;                 // Toggles whether or not to use IPC's auto barrier stiffness
+    bool loop_timeline;                         // Toggles whether or not the timeline will loop, jumping to t=0 after reaching last instruction
+    bool enable_mesh_centering;                           // Toggles whether or not the model should be centered every frame to prevent drifting    
+    bool enable_strain_visualization;
     std::string strain_type;
     bool enable_dynamic_simulation;
     bool enable_gravity;
     bool enable_implicit_euler;
     bool enable_logging_simulation_time;
     bool enable_snapping_glue_mode;
-    bool LOG_FORCES;
+    bool enable_logging_forces;
 
 };

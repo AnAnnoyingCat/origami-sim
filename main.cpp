@@ -120,43 +120,43 @@ void simulate(){
             std::cout << std::fixed;
             std::cout << std::setprecision(3);
             assemble_edge_forces(f, q, simulationData.E, simulationData.l0, simulationData.k_axial);
-            if (simulationParams.LOG_FORCES){
+            if (simulationParams.enable_logging_forces){
                 std::cout << "Edge force: " << f(2);  
             }                                        
                             
             assemble_crease_forces(f, q, simulationData.edge_adjacent_vertices, simulationData.k_crease, simulationData.edge_target_angle); 
-            if (simulationParams.LOG_FORCES){
+            if (simulationParams.enable_logging_forces){
                 std::cout << " + Crease force: " << f(2);
             }     
             
             assemble_damping_forces(f, qdot, simulationData.E, simulationData.k_axial, simulationParams.zeta);
-            if (simulationParams.LOG_FORCES){
+            if (simulationParams.enable_logging_forces){
                 std::cout << " + damping force: " << f(2);
             }
 
             // If gravity is enabled, get that too
             if (simulationParams.enable_gravity){
                 assemble_gravity_forces(f, simulationParams.g, simulationParams.vertexMass);
-                if (simulationParams.LOG_FORCES){
+                if (simulationParams.enable_logging_forces){
                     std::cout << " + gravity force: " << f(2);
                 }    
             }
             
             if (simulationParams.enable_barrier){
                 assemble_barier_forces_IPC(f, simulationParams, simulationData, first_time);
-                if (simulationParams.LOG_FORCES){
+                if (simulationParams.enable_logging_forces){
                     std::cout << " + Barrier force: " << f(2);
                 }
             }
 
             if (simulationParams.enable_friction){
                 assemble_friction_forces_IPC(f, simulationParams, simulationData);
-                if (simulationParams.LOG_FORCES){
+                if (simulationParams.enable_logging_forces){
                     std::cout << " + friction force: " << f(2);
                 }
             }
 
-            if (simulationParams.LOG_FORCES){
+            if (simulationParams.enable_logging_forces){
                 std::cout << std::endl;    
             }
         };
@@ -193,10 +193,10 @@ void simulate(){
         
 
         // Make sure the floating mesh doesn't drift off with gravity disabled, but don't do it if the floor is enabled
-        if (simulationParams.center_mesh && !simulationParams.ENABLE_GRAVITY && !simulationParams.enable_floor){
+        if (simulationParams.enable_mesh_centering && !simulationParams.enable_gravity && !simulationParams.enable_floor){
             std::cout << "centering mesh" << std::endl;
             centerMesh();
-        } else if (simulationParams.center_mesh) {
+        } else if (simulationParams.enable_mesh_centering) {
             std::cout << "centering mesh" << std::endl;
             centerMesh2D();
         }

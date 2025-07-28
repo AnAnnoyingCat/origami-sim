@@ -43,7 +43,7 @@ void calculateDynamicTargetAngle(SimulationData& simulationData, SimulationParam
 				// That was the last instruction
 				continue;
 			}
-			simulationData.k_axial(currEdge) = simulationParams.EA / simulationData.l0(currEdge);
+			simulationData.k_axial(currEdge) = simulationParams.k_axial / simulationData.l0(currEdge);
 			//std::cout << "Fold " << currEdge << " got new instructions. Reset stiffness to: " << simulationData.k_axial(currEdge) << std::endl;
 		}
 		

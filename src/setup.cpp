@@ -20,10 +20,10 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 		} else {
 			simulationParams.vertexMass = 1;
 		}
-		if (params.contains("EA")){
-			simulationParams.EA = params["EA"].template get<double>();
+		if (params.contains("k_axial")){
+			simulationParams.k_axial = params["k_axial"].template get<double>();
 		} else {
-			simulationParams.EA = 5e4;
+			simulationParams.k_axial = 5e4;
 		}
 		if (params.contains("k_fold")){
 			simulationParams.k_fold = params["k_fold"].template get<double>();
@@ -50,8 +50,8 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 		} else {
 			simulationParams.min_barrier_distance = 0.1;
 		}
-		if (params.contains("visualize_strain")){
-			simulationParams.enable_strain_visualization = params["visualize_strain"].template get<bool>();
+		if (params.contains("enable_strain_visualization")){
+			simulationParams.enable_strain_visualization = params["enable_strain_visualization"].template get<bool>();
 		} else {
 			simulationParams.enable_strain_visualization = false;
 		}
@@ -87,13 +87,13 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 		} else {
 			simulationParams.gluefactor = 1;
 		}
-		if (params.contains("log_simulation_time")){
-			simulationParams.enable_logging_simulation_time = params["log_simulation_time"].template get<bool>();
+		if (params.contains("enable_logging_simulation_time")){
+			simulationParams.enable_logging_simulation_time = params["enable_logging_simulation_time"].template get<bool>();
 		} else {
 			simulationParams.enable_logging_simulation_time = false;
 		}
-		if (params.contains("use_snapping_glue_mode")){
-			simulationParams.enable_snapping_glue_mode = params["use_snapping_glue_mode"].template get<bool>();
+		if (params.contains("enable_snapping_glue_mode")){
+			simulationParams.enable_snapping_glue_mode = params["enable_snapping_glue_mode"].template get<bool>();
 		} else {
 			simulationParams.enable_snapping_glue_mode = true;
 		}
@@ -102,10 +102,10 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 		} else {
 			simulationParams.spawn_height = 1;
 		}
-		if (params.contains("log_forces")){
-			simulationParams.LOG_FORCES = params["log_forces"].template get<bool>();
+		if (params.contains("enable_logging_forces")){
+			simulationParams.enable_logging_forces = params["enable_logging_forces"].template get<bool>();
 		} else {
-			simulationParams.LOG_FORCES = false;
+			simulationParams.enable_logging_forces = false;
 		}
 		if (params.contains("enable_floor")){
 			simulationParams.enable_floor = params["enable_floor"].template get<bool>();
@@ -147,10 +147,10 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 		} else {
 			simulationParams.enable_friction = false;
 		}
-		if (params.contains("center_mesh")){
-			simulationParams.center_mesh = params["center_mesh"].template get<bool>();
+		if (params.contains("enable_mesh_centering")){
+			simulationParams.enable_mesh_centering = params["enable_mesh_centering"].template get<bool>();
 		} else {
-			simulationParams.center_mesh = true;
+			simulationParams.enable_mesh_centering = true;
 		}
 
 		simulationParams.simulating = true;
@@ -332,7 +332,7 @@ void setup_mesh(std::string filename, SimulationParams& simulationParams, Simula
 				simulationData.l0(i) = difference.norm();
 
 				// Set up axial stiffness dependent on l0
-				simulationData.k_axial(i) = simulationParams.EA / simulationData.l0(i);
+				simulationData.k_axial(i) = simulationParams.k_axial / simulationData.l0(i);
 
 				// Set up crease stiffness dependent on l0
 				if (assignments[i] == "B"){

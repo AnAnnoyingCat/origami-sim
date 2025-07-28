@@ -2,13 +2,12 @@
 	"dt": 0.005,
 
 	"vertexMass": 1,
-	"EA": 50,
+	"k_axial": 50,
 	"k_fold": 2,
 	"k_facet": 40,
-	"k_face": 0.5,
 	"glue_factor": 10,
 	"zeta": 3.5,
-	"mu": 0.1,
+	"mu": 0.4,
 	"eps_v": 1e-4,
 	"gravity": [0,0,-9.81],
 	"min_barrier_distance": 0.1,
@@ -24,9 +23,10 @@
 	"enable_automatic_barrier_stiffness": false,
 	"enable_strain_visualization": true,
 	"strain_type": "edge",
-	"use_implicit_euler": false,
-	"log_simulation_time": false,
-	"use_snapping_glue_mode": false,
-	"log_forces": false
+	"center_mesh": false,
+	"enable_implicit_euler": false,
+	"enable_logging_simulation_time": false,
+	"enable_snapping_glue_mode": false,
+	"enable_logging_forces": false
 
 }
