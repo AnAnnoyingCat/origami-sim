@@ -194,10 +194,8 @@ void simulate(){
 
         // Make sure the floating mesh doesn't drift off with gravity disabled, but don't do it if the floor is enabled
         if (simulationParams.enable_mesh_centering && !simulationParams.enable_gravity && !simulationParams.enable_floor){
-            std::cout << "centering mesh" << std::endl;
             centerMesh();
         } else if (simulationParams.enable_mesh_centering) {
-            std::cout << "centering mesh" << std::endl;
             centerMesh2D();
         }
 

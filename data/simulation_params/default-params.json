@@ -23,7 +23,7 @@
 	"enable_automatic_barrier_stiffness": false,
 	"enable_strain_visualization": true,
 	"strain_type": "edge",
-	"center_mesh": false,
+	"enable_mesh_centering": false,
 	"enable_implicit_euler": false,
 	"enable_logging_simulation_time": false,
 	"enable_snapping_glue_mode": false,
