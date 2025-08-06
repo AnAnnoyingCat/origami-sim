@@ -230,7 +230,7 @@ int main(int argc, char *argv[])
         setup_mesh(args[0], simulationParams, simulationData);
 
         // Get path to activation profiles
-        setup_dynamic_target_angles(args[2], simulationData.edge_target_angle);
+        setup_dynamic_target_angles(args[2], simulationData.edge_target_angle, simulationParams);
     } else if (args.size() == 2){
         // Both CP and params provided, checking for actuation profiles at default path and name
         setup_simulation_params(args[1], simulationParams);
@@ -239,7 +239,7 @@ int main(int argc, char *argv[])
         // Get path to activation profiles
         args[0].replace(args[0].find("crease_patterns"), std::string("crease_patterns").length(), "activation_profiles");
         args[0].replace(args[0].find(".fold"), 5, ".json");
-        setup_dynamic_target_angles(args[0], simulationData.edge_target_angle);
+        setup_dynamic_target_angles(args[0], simulationData.edge_target_angle, simulationParams);
 
     } else if (args.size() == 1){
         // Only crease pattern provided
@@ -250,13 +250,13 @@ int main(int argc, char *argv[])
         // Get path to activation profiles
         args[0].replace(args[0].find("crease_patterns"), std::string("crease_patterns").length(), "activation_profiles");
         args[0].replace(args[0].find(".fold"), 5, ".json");
-        setup_dynamic_target_angles(args[0], simulationData.edge_target_angle);
+        setup_dynamic_target_angles(args[0], simulationData.edge_target_angle, simulationParams);
     } else {
         // No arguments provided, using default 
         std::cout << "No arguments provided, using default" << std::endl;
         setup_simulation_params("../data/simulation_params/default-params.json", simulationParams);
         setup_mesh("../data/crease_patterns/defaultsquare.fold", simulationParams, simulationData);
-        setup_dynamic_target_angles("../data/activation_profiles/defaultsquare.json", simulationData.edge_target_angle);
+        setup_dynamic_target_angles("../data/activation_profiles/defaultsquare.json", simulationData.edge_target_angle, simulationParams);
     }
 
     // Set up mass matrix

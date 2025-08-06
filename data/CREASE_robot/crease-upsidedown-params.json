@@ -26,5 +26,6 @@
 	"enable_logging_forces": false,
 	"enable_floor": true,
 	"enable_automatic_barrier_stiffness": false,
-	"enable_mesh_centering": true
+	"enable_mesh_centering": true,
+	"loop_final_x_commands": 8
 }

@@ -38,7 +38,7 @@ void setup_mesh(std::string filename, SimulationParams& simulationParams, Simula
  * @param filename      
  * @param edge_target_angle 
  */
-void setup_dynamic_target_angles(std::string filename, Eigen::VectorXd& edge_target_angle);
+void setup_dynamic_target_angles(std::string filename, Eigen::VectorXd& edge_target_angle, SimulationParams simulationParams);
 
 /**
  * @brief Sets up a large floor at z=0

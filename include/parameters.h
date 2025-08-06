@@ -78,8 +78,7 @@ struct SimulationParams {
     bool enable_barrier;                        // Toggles whether or not to use barrier forces
     bool enable_friction;                       // Toggles whether or not to use friction forces
     bool enable_auto_k_barrier;                 // Toggles whether or not to use IPC's auto barrier stiffness
-    bool loop_timeline;                         // Toggles whether or not the timeline will loop, jumping to t=0 after reaching last instruction
-    bool enable_mesh_centering;                           // Toggles whether or not the model should be centered every frame to prevent drifting    
+    bool enable_mesh_centering;                 // Toggles whether or not the model should be centered every frame to prevent drifting    
     bool enable_strain_visualization;
     std::string strain_type;
     bool enable_dynamic_simulation;
@@ -88,5 +87,6 @@ struct SimulationParams {
     bool enable_logging_simulation_time;
     bool enable_snapping_glue_mode;
     bool enable_logging_forces;
+    int loop_final_x_commands;                   // Loops the final x commands of the timeline indefinitely
 
 };

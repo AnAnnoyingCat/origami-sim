@@ -152,6 +152,11 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 		} else {
 			simulationParams.enable_mesh_centering = true;
 		}
+		if (params.contains("loop_final_x_commands")){
+			simulationParams.loop_final_x_commands = params["loop_final_x_commands"].template get<int>();
+		} else {
+			simulationParams.loop_final_x_commands = 0;
+		}
 
 		simulationParams.simulating = true;
 		
@@ -453,7 +458,7 @@ void setup_mesh(std::string filename, SimulationParams& simulationParams, Simula
 	}
 }
 
-void setup_dynamic_target_angles(std::string filename, Eigen::VectorXd& edge_target_angle){
+void setup_dynamic_target_angles(std::string filename, Eigen::VectorXd& edge_target_angle, SimulationParams simulationParams){
 	std::ifstream file(filename);
 	// save all the fold information in a custom struct
 	std::vector<FoldInstruction> foldTimeline;
@@ -496,6 +501,7 @@ void setup_dynamic_target_angles(std::string filename, Eigen::VectorXd& edge_tar
 						mode = val;
 					} else {
 						std::cerr << "Warning: Unknown mode string '" << val << "' for fold " << creaseNr << "\n";
+						mode = val;
 					}
 				} else {
 					std::cerr << "Warning: unknown fold instruction" << std::endl;
@@ -522,6 +528,45 @@ void setup_dynamic_target_angles(std::string filename, Eigen::VectorXd& edge_tar
 			foldTimeline.push_back({Interval(0, 1), i, 0, edge_target_angle(i)});
 		}
 	}
+
+	std::cout << "===== FoldTimeline BEFORE extension =====\n";
+	for (const auto& instr : foldTimeline) {
+		std::cout << "Fold " << instr.fold_number 
+				<< " [" << instr.time.begin << " - " << instr.time.end << "]\n";
+	}
+	std::cout << "Total instructions: " << foldTimeline.size() << "\n";
+
+
+	// Loop the final x instructions ("loop" just means repeat them with adjusted timesteps)
+	int loop_count = simulationParams.loop_final_x_commands;
+	int max_instr_length = 3000;
+	
+	if (loop_count != 0 && foldTimeline.size() > loop_count){
+		std::vector<FoldInstruction> loop_segment(foldTimeline.end() - loop_count, foldTimeline.end());
+		
+		double start_time = loop_segment[0].time.end;
+		// duration is from the start of the first to the end of the last instruction
+		double loop_duration = loop_segment[loop_count - 1].time.end - loop_segment[0].time.begin;
+
+		while (foldTimeline.size() + loop_count <= max_instr_length){
+			for (const auto& instr : loop_segment) {
+				double offset = start_time - loop_segment[0].time.begin;
+				FoldInstruction newInstr = instr;
+				newInstr.time.begin += offset;
+				newInstr.time.end += offset;
+				foldTimeline.push_back(newInstr);
+			}
+			start_time += loop_duration;
+		}
+	}
+
+	std::cout << "===== FoldTimeline AFTER extension =====\n";
+	for (const auto& instr : foldTimeline) {
+		std::cout << "Fold " << instr.fold_number 
+				<< " [" << instr.time.begin << " - " << instr.time.end << "]\n";
+	}
+	std::cout << "Total instructions: " << foldTimeline.size() << "\n";
+
 
 	for (const auto& instruction : foldTimeline) {
         std::cout << "Fold " << instruction.fold_number 
