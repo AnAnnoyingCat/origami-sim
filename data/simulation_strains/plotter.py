@@ -22,7 +22,7 @@ def plot_strain(file_path):
                 frames.append(int(parts[0]))
                 strains.append(float(parts[1]) * 100)  # Convert to percent
 
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(6, 6))
     plt.plot(frames, strains, marker='o', linewidth=2, color='black', markersize=0)  # Thinner line
 
     # Label peak point
@@ -52,5 +52,5 @@ def plot_strain(file_path):
     plt.show()
 
 if __name__ == "__main__":
-    file_path = "/home/cwernke/origami-sim/data/simulation_strains/huffman_strain.txt"
+    file_path = "/home/cwernke/origami-sim/data/simulation_strains/hat_strain.txt"
     plot_strain(file_path)

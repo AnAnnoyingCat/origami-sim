@@ -1,21 +1,17 @@
 {
-	"dt": 0.0025,
+	"dt": 0.000005,
 	"vertexMass": 1,
-	"EA": 1000,
+	"k_axial": 1000,
 	"k_fold": 2000,
 	"k_facet": 4000,
-	"k_face": 0.4,
 	"zeta": 4,
 	"gravity": [0,0,-9.81],
 	"sim_zoom_level": 250,
 
-	"visualize_strain": true,
+	"enable_strain_visualization": true,
 	"strain_type": "edge",
 	"enable_dynamic_simulation": true,
 	"enable_gravity": false,
-	"log_simulation_time": false,
-	"use_implicit_euler": false
-
-	
-	
+	"enable_logging_simulation_time": false,
+	"enable_implicit_euler": false
 }

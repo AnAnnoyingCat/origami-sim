@@ -277,6 +277,8 @@ int main(int argc, char *argv[])
     viewer.data(simulation_mesh_id).double_sided = true;
     viewer.core().is_animating = true; 
     viewer.core().lighting_factor = 0.0f;
+    viewer.core().background_color = Eigen::Vector4f(200.0f/255.0f, 200.0f/255.0f, 200.0f/255.0f, 1.0f); // light gray background
+
 
     if (simulationParams.enable_floor){
         // Set up the floor mesh

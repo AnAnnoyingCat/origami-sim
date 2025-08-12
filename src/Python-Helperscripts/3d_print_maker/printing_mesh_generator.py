@@ -170,8 +170,8 @@ def get_clearance_geometries(creases, buffer_mm=1.5, vertex_buffer_mm=1.5):
 
 
 def main():
-    fold_path = "/home/cwernke/origami-sim/src/Python-Helperscripts/3d_print_maker/Objects/Crease_Robot/crease_robot_with_motor_and_flaps.fold"
-    vertices, edges, assignments = load_fold(fold_path, target_size=220)
+    fold_path = "/home/cwernke/origami-sim/src/Python-Helperscripts/3d_print_maker/Objects/Crease_Robot_2/crease_v2.fold"
+    vertices, edges, assignments = load_fold(fold_path, target_size=250)
     boundary, creases = extract_geometry(vertices, edges, assignments)
 
     # Get buffers

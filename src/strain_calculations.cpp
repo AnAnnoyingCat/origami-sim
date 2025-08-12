@@ -95,8 +95,8 @@ void calculateAxialDeformationStrain(Eigen::MatrixXd& C, Eigen::MatrixXi& F, Eig
     // Then go over every face and assign it the largest edge deformation strain 
     for (int currFace = 0; currFace < F.rows(); currFace++){
         // Get the largest strain of the current face acjacent edges
-        double strain = std::max(std::abs(edgeStrains(face_adjacent_edges(currFace, 0))), std::max(std::abs(edgeStrains(face_adjacent_edges(currFace, 1))), std::abs(edgeStrains(face_adjacent_edges(currFace, 2)))));
-
+        //double strain = std::max(std::abs(edgeStrains(face_adjacent_edges(currFace, 0))), std::max(std::abs(edgeStrains(face_adjacent_edges(currFace, 1))), std::abs(edgeStrains(face_adjacent_edges(currFace, 2)))));
+        double strain = 1/3*std::abs(edgeStrains(face_adjacent_edges(currFace, 0))) + std::abs(edgeStrains(face_adjacent_edges(currFace, 1))) + std::abs(edgeStrains(face_adjacent_edges(currFace, 2)));
         // Multiply by 5 to effectively stretch the 0 - 0.2 interval to the interval 0 - 1. 
         strain = std::min(strain * 5, 1.0);
 
