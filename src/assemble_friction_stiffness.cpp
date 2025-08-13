@@ -2,7 +2,7 @@
 
 void assemble_friction_stiffness_IPC(Eigen::SparseMatrix<double> &K, SimulationParams &simulationParams, SimulationData &simulationData) {
     
-	int full_size = simulationData.V.size() + simulationData.ground_V.size();
+	int full_size = simulationData.V.rows() + simulationData.ground_V.rows();
 
 	// Fill velocities into a matrix
 	Eigen::MatrixXd qdot_matrix_full(full_size, 3);

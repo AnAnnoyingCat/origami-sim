@@ -38,7 +38,7 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 		if (params.contains("k_face")){
 			simulationParams.k_face = params["k_face"].template get<double>();
 		} else {
-			simulationParams.k_face = 2e2;
+			simulationParams.k_face = 0.5;
 		}
 		if (params.contains("zeta")){
 			simulationParams.zeta = params["zeta"].template get<double>();
@@ -150,7 +150,7 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 		if (params.contains("enable_mesh_centering")){
 			simulationParams.enable_mesh_centering = params["enable_mesh_centering"].template get<bool>();
 		} else {
-			simulationParams.enable_mesh_centering = true;
+			simulationParams.enable_mesh_centering = false;
 		}
 		if (params.contains("loop_final_x_commands")){
 			simulationParams.loop_final_x_commands = params["loop_final_x_commands"].template get<int>();
@@ -452,6 +452,8 @@ void setup_mesh(std::string filename, SimulationParams& simulationParams, Simula
 		simulationData.barrier_potential  = B;
 		ipc::FrictionPotential D(simulationParams.eps_v);
 		simulationData.friction_potential = D;
+		// Initialize barrier stiffness
+		simulationData.barrier_stiffness = simulationParams.k_barrier;
 
 	} else {
 		std::cerr << "There was an error reading your .fold file!" << std::endl;

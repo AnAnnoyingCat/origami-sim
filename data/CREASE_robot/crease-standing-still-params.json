@@ -1,11 +1,11 @@
 {
-	"dt": 0.0075,
+	"dt": 0.0005,
 	"vertexMass": 1,
 	"k_axial": 5000,
 	"k_fold": 1000,
 	"k_facet": 1000,
 	"glue_factor": 10,
-	"zeta": 0.05,
+	"zeta": 0.4,
 	"mu": 0.8,
 	"eps_v": 1e-4,
 	"gravity": [0,0,-9.81],
@@ -27,5 +27,5 @@
 	"enable_floor": true,
 	"enable_automatic_barrier_stiffness": false,
 	"enable_mesh_centering": false,
-	"loop_final_x_commands": 8
+	"loop_final_x_commands": 1
 }

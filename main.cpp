@@ -34,7 +34,6 @@
 #include <ipc/potentials/barrier_potential.hpp>
 #include <ipc/potentials/friction_potential.hpp>
 
-
 // This keeps track of all data of the simulation
 SimulationData simulationData;
 
@@ -116,48 +115,44 @@ void simulate(){
             f.resize(q.size());
             f.setZero();
 
+            const int v = 0;                 
+            const int off = 3 * v;
+            Eigen::VectorXd lastf = f;       
+
+            auto log_delta = [&](const char* label) {
+                if (simulationParams.enable_logging_forces) {
+                    std::cout << std::fixed << std::setprecision(3)
+                            << (label ? label : "")
+                            << (f - lastf).segment<3>(off).transpose()
+                            << std::endl;
+                }
+                lastf = f; // advance snapshot for the next term
+            };
+
             // Get the basic forces
-            std::cout << std::fixed;
-            std::cout << std::setprecision(3);
             assemble_edge_forces(f, q, simulationData.E, simulationData.l0, simulationData.k_axial);
-            if (simulationParams.enable_logging_forces){
-                std::cout << "Edge force: " << f(2);  
-            }                                        
+            log_delta("Edge force: ");                                  
                             
             assemble_crease_forces(f, q, simulationData.edge_adjacent_vertices, simulationData.k_crease, simulationData.edge_target_angle); 
-            if (simulationParams.enable_logging_forces){
-                std::cout << " + Crease force: " << f(2);
-            }     
+            log_delta("Crease force: ");
             
             assemble_damping_forces(f, qdot, simulationData.E, simulationData.k_axial, simulationParams.zeta);
-            if (simulationParams.enable_logging_forces){
-                std::cout << " + damping force: " << f(2);
-            }
+            log_delta("Damping force: ");
 
             // If gravity is enabled, get that too
             if (simulationParams.enable_gravity){
                 assemble_gravity_forces(f, simulationParams.g, simulationParams.vertexMass);
-                if (simulationParams.enable_logging_forces){
-                    std::cout << " + gravity force: " << f(2);
-                }    
+                log_delta("Gravity force: "); 
             }
             
             if (simulationParams.enable_barrier){
                 assemble_barier_forces_IPC(f, simulationParams, simulationData, first_time);
-                if (simulationParams.enable_logging_forces){
-                    std::cout << " + Barrier force: " << f(2);
-                }
+                log_delta("Barrier force: ");
             }
 
             if (simulationParams.enable_friction){
                 assemble_friction_forces_IPC(f, simulationParams, simulationData);
-                if (simulationParams.enable_logging_forces){
-                    std::cout << " + friction force: " << f(2);
-                }
-            }
-
-            if (simulationParams.enable_logging_forces){
-                std::cout << std::endl;    
+                log_delta("Friction force: ");
             }
         };
 
@@ -258,7 +253,7 @@ int main(int argc, char *argv[])
         setup_mesh("../data/crease_patterns/defaultsquare.fold", simulationParams, simulationData);
         setup_dynamic_target_angles("../data/activation_profiles/defaultsquare.json", simulationData.edge_target_angle, simulationParams);
     }
-
+    
     // Set up mass matrix
     make_mass_matrix(simulationData.M, simulationData.q, simulationParams.vertexMass);
 
