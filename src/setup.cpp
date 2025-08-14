@@ -159,6 +159,7 @@ void setup_simulation_params(std::string filename, SimulationParams& simulationP
 		}
 
 		simulationParams.simulating = true;
+		simulationParams.start_simulation = false;
 		
 	} else {
 		std::cout << "error: params file not found" << std::endl;     

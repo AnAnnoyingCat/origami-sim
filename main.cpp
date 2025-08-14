@@ -34,7 +34,10 @@
 #include <ipc/potentials/barrier_potential.hpp>
 #include <ipc/potentials/friction_potential.hpp>
 #include <sstream>
-#include <igl/png/writePNG.h>
+// #include <igl/png/writePNG.h>
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "cpp-helper/stb_image_write.h"
+
 
 // This keeps track of all data of the simulation
 SimulationData simulationData;
@@ -51,11 +54,12 @@ igl::opengl::glfw::Viewer* viewer_ptr = nullptr;
 int simulation_mesh_id;
 
 // Helper fields for image exporting
-Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic> R;
-Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic> G;
-Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic> B;
-Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic> A;
+// Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic> R;
+// Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic> G;
+// Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic> B;
+// Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic> A;
 int framecnt = 0;
+bool save_images = true;
 
 /// @brief If enabled in config, visualizes strain in the mesh using l0 or alpha0
 void visualizeStrain(){
@@ -110,24 +114,45 @@ void centerMesh2D(){
     }
 }
 /// @brief Helper function to export simulation frame
-void frameExporter(int fcount){
-    bool save_images = true;
-    int img_save_step = (int)(0.1 / simulationParams.dt);
-    
-    if (save_images) { // only do it load simulation mode!!
-        if (fcount % img_save_step == 0) {
-            std::stringstream ss;
-            ss << std::setw(5) << std::setfill('0') << int(fcount/img_save_step);
-            std::string filename = ss.str();
-            std::string file_path = std::string("../results/tmp/") + filename + std::string(".png");
-            viewer_ptr->core().draw_buffer(viewer_ptr->data(), false, R, G, B, A);
-            igl::png::writePNG(R, G, B, A, file_path.c_str());
+void frameExporter(igl::opengl::glfw::Viewer &viewer){   
+    int fnum = 0;
+    while (save_images) { // only do it load simulation mode!!
+        std::stringstream ss;
+        int img_save_step = (int)(0.1 / simulationParams.dt);
+        ss << std::setw(5) << std::setfill('0') << int(fnum);
+        std::string filename = ss.str();
+        std::string file_path = std::string("../results/tmp/") + filename + std::string(".png");
+        Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic> R;
+        Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic> G;
+        Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic> B;
+        Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic> A;
+        viewer.core().draw_buffer(viewer.data(simulation_mesh_id), false, R, G, B, A);
+        
+        // igl::png::writePNG(R, G, B, A, file_path.c_str()); implementation borrowed from this igl function
+        const int comp = 4;                                  // 4 Channels Red, Green, Blue, Alpha
+        const int stride_in_bytes = R.rows()*comp;           // Length of one row in bytes
+        std::vector<unsigned char> img(R.size()*comp,0);     // The image itself;
+        for (unsigned i = 0; i<R.rows();++i) {
+            for (unsigned j = 0; j < R.cols(); ++j) {
+                img[(j * R.rows() * comp) + (i * comp) + 0] = R(i,R.cols()-1-j);
+                img[(j * R.rows() * comp) + (i * comp) + 1] = G(i,R.cols()-1-j);
+                img[(j * R.rows() * comp) + (i * comp) + 2] = B(i,R.cols()-1-j);
+                img[(j * R.rows() * comp) + (i * comp) + 3] = A(i,R.cols()-1-j);
+            }
         }
+        stbi_write_png(file_path.c_str(), R.rows(), R.cols(), comp, img.data(), stride_in_bytes);
+        fnum++;
     }
 }
 
 /// @brief Main simulation loop, running in a seperate thread
 void simulate(){
+    while (not simulationParams.start_simulation) {
+        // do nothing..  need this line otherwise compiler skips this loop
+        printf("\rPress 's' to start the simulation");
+        fflush(stdout);        
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    }
     while (simulationParams.simulating){
         
         // If simulation type is dynamic, recalculate the target angle for the curren frame
@@ -230,7 +255,8 @@ void simulate(){
 
         // Next time step
         simulationData.t += simulationParams.dt;
-        frameExporter(framecnt++);
+        // frameExporter();
+        framecnt++;
         if (simulationParams.enable_logging_simulation_time){
             std::cout << "t: " << simulationData.t << std::endl;
         }
@@ -299,7 +325,10 @@ int main(int argc, char *argv[])
     viewer.core().is_animating = true; 
     viewer.core().lighting_factor = 0.0f;
     viewer.core().background_color = Eigen::Vector4f(200.0f/255.0f, 200.0f/255.0f, 200.0f/255.0f, 1.0f); // light gray background
-
+    
+    int window_width = 1280, window_height = 800;
+    viewer.core().viewport = Eigen::Vector4f(0,0,window_width,window_height);
+    viewer.launch_init(); // need this before starting simulation
 
     if (simulationParams.enable_floor){
         // Set up the floor mesh
@@ -319,14 +348,35 @@ int main(int argc, char *argv[])
         strain_visualization.detach();
     }
 
-    bool first_frame = true;
-    viewer.callback_pre_draw = [&](igl::opengl::glfw::Viewer& v) -> bool {
-        // This forces a redraw every frame
-        return false;
+    viewer.callback_key_pressed = [&](igl::opengl::glfw::Viewer&, unsigned int key, int mod)->bool {
+        if(key == 's') {
+            // adjust the camera and when ready press 's'
+            simulationParams.start_simulation = true;
+        }
+        if(key == 'f') {
+            // to start capture
+            frameExporter(viewer);
+        }
+        if(key == 'q') {
+            // to close
+            glfwWindowShouldClose(viewer.window);
+            viewer.launch_shut();
+            // Clean up
+            viewer_ptr = nullptr;
+            simulationParams.simulating = false;
+
+            if (args.size() >= 1){
+                writeAverageStrainDuringSimulation(args[0]);
+            } else {
+                writeAverageStrainDuringSimulation("defaultsquare");
+            }
+        }
+        return true;
     };
 
     // Launch viewer
-    viewer.launch();
+    viewer.launch_rendering(true);
+    viewer.launch_shut();
     
     // Clean up
     viewer_ptr = nullptr;

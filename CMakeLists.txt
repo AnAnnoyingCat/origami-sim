@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.19)
-cmake_policy(VERSION 3.19[...3.19])
+cmake_minimum_required(VERSION 3.6)
+cmake_policy(VERSION 3.6...4.0)
 
 project(origami-simulator)
 
@@ -11,10 +11,12 @@ set(CMAKE_CXX_EXTENSIONS Off)
 set(VORPALINE_PLATFORM Linux64-gcc-dynamic)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(LIBIGL_WITH_OPENGL ON CACHE BOOL "" FORCE)
-set(LIBIGL_WITH_OPENGL_GLFW ON CACHE BOOL "" FORCE)
-set(LIBIGL_WITH_PREDICATES ON CACHE BOOL "" FORCE)
-set(LIBIGL_WITH_PNG ON CACHE BOOL "" FORCE)
+# set(LIBIGL_OPENGL ON CACHE BOOL "" FORCE)
+# set(LIBIGL_GLFW ON CACHE BOOL "" FORCE)
+# set(LIBIGL_PNG ON CACHE BOOL "" FORCE)
+
+option(LIBIGL_OPENGL                       "Use OpenGL"          ON)
+option(LIBIGL_GLFW                         "Use GLFW"            ON)
 
 include(FetchContent)
 
@@ -47,5 +49,7 @@ file(GLOB CPP_FILES ${PROJECT_SOURCE_DIR}/src/*.cpp)
 # build executable
 add_executable(${PROJECT_NAME} main.cpp ${SRCFILES} ${H_FILES} ${CPP_FILES})
 
-target_link_libraries(${PROJECT_NAME} ipc::toolkit glfw glad png OpenMP::OpenMP_CXX )
+target_link_libraries(${PROJECT_NAME} ipc::toolkit igl::core predicates::predicates igl::glfw glad::glad igl::opengl OpenMP::OpenMP_CXX )
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE IGL_VIEWER_VIEWER_QUIET)
 

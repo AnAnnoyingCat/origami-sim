@@ -3,3 +3,5 @@ build/
 .vscode/
 data/simulation_strains
 performance_test/
+results/
+.cache/

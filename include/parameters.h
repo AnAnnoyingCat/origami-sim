@@ -71,6 +71,7 @@ struct SimulationParams {
     double spawn_height;        // Controls how high up the flat paper spawns before falling to the ground. 
     Eigen::Vector3d g;          // Gravity force vector
     bool simulating;            // If this is ever set to false, all threads instantly terminates
+    bool start_simulation;      // enable start of simulation with a button
     double sim_zoom_level;      // The starting zoom level of the simulation
 
     // Boolean Simulation Parameters
