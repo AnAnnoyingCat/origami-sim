@@ -33,6 +33,8 @@
 #include <ipc/ipc.hpp>
 #include <ipc/potentials/barrier_potential.hpp>
 #include <ipc/potentials/friction_potential.hpp>
+#include <sstream>
+#include <igl/png/writePNG.h>
 
 // This keeps track of all data of the simulation
 SimulationData simulationData;
@@ -47,6 +49,13 @@ Eigen::VectorXd tmp_force;
 // Pointer to the viewer for update reasons
 igl::opengl::glfw::Viewer* viewer_ptr = nullptr;
 int simulation_mesh_id;
+
+// Helper fields for image exporting
+Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic> R;
+Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic> G;
+Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic> B;
+Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic> A;
+int framecnt = 0;
 
 /// @brief If enabled in config, visualizes strain in the mesh using l0 or alpha0
 void visualizeStrain(){
@@ -98,6 +107,22 @@ void centerMesh2D(){
     center(2) = 0;
     for (int currVertex = 0; currVertex < simulationData.V.rows(); currVertex++){
         simulationData.q.segment<3>(3 * currVertex) -= center;
+    }
+}
+/// @brief Helper function to export simulation frame
+void frameExporter(int fcount){
+    bool save_images = true;
+    int img_save_step = (int)(0.1 / simulationParams.dt);
+    
+    if (save_images) { // only do it load simulation mode!!
+        if (fcount % img_save_step == 0) {
+            std::stringstream ss;
+            ss << std::setw(5) << std::setfill('0') << int(fcount/img_save_step);
+            std::string filename = ss.str();
+            std::string file_path = std::string("../results/tmp/") + filename + std::string(".png");
+            viewer_ptr->core().draw_buffer(viewer_ptr->data(), false, R, G, B, A);
+            igl::png::writePNG(R, G, B, A, file_path.c_str());
+        }
     }
 }
 
@@ -205,6 +230,7 @@ void simulate(){
 
         // Next time step
         simulationData.t += simulationParams.dt;
+        frameExporter(framecnt++);
         if (simulationParams.enable_logging_simulation_time){
             std::cout << "t: " << simulationData.t << std::endl;
         }

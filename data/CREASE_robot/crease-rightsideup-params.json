@@ -6,7 +6,7 @@
 	"k_facet": 1000,
 	"glue_factor": 10,
 	"zeta": 0.05,
-	"mu": 0.8,
+	"mu": 0.5,
 	"eps_v": 1e-4,
 	"gravity": [0,0,-9.81],
 	"min_barrier_distance": 1,

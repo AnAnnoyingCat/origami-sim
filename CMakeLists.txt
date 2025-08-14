@@ -14,6 +14,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(LIBIGL_WITH_OPENGL ON CACHE BOOL "" FORCE)
 set(LIBIGL_WITH_OPENGL_GLFW ON CACHE BOOL "" FORCE)
 set(LIBIGL_WITH_PREDICATES ON CACHE BOOL "" FORCE)
+set(LIBIGL_WITH_PNG ON CACHE BOOL "" FORCE)
 
 include(FetchContent)
 
@@ -46,5 +47,5 @@ file(GLOB CPP_FILES ${PROJECT_SOURCE_DIR}/src/*.cpp)
 # build executable
 add_executable(${PROJECT_NAME} main.cpp ${SRCFILES} ${H_FILES} ${CPP_FILES})
 
-target_link_libraries(${PROJECT_NAME} ipc::toolkit glfw glad OpenMP::OpenMP_CXX)
+target_link_libraries(${PROJECT_NAME} ipc::toolkit glfw glad png OpenMP::OpenMP_CXX )
 

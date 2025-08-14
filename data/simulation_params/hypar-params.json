@@ -17,7 +17,7 @@
 
 	"enable_dynamic_simulation": false,
 	"enable_gravity": false,
-	"enable_barrier": false,
+	"enable_barrier": true,
 	"enable_friction": false,
 	"enable_floor": false,
 	"enable_automatic_barrier_stiffness": false,
