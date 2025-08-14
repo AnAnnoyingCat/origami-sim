@@ -22,5 +22,6 @@
 	"enable_floor": false,
 	"enable_barrier": false,
 	"enable_automatic_barrier_stiffness": false,
-	"enable_friction": false
+	"enable_friction": false,
+	"enable_logging_simulation_time": true
 }

@@ -23,7 +23,7 @@
 	"enable_snapping_glue_mode": true,
 	"enable_barrier": true,
 	"enable_friction": true,
-	"enable_logging_forces": true,
+	"enable_logging_forces": false,
 	"enable_floor": true,
 	"enable_automatic_barrier_stiffness": false,
 	"enable_mesh_centering": false,

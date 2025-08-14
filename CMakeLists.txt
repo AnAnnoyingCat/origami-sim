@@ -51,5 +51,3 @@ add_executable(${PROJECT_NAME} main.cpp ${SRCFILES} ${H_FILES} ${CPP_FILES})
 
 target_link_libraries(${PROJECT_NAME} ipc::toolkit igl::core predicates::predicates igl::glfw glad::glad igl::opengl OpenMP::OpenMP_CXX )
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE IGL_VIEWER_VIEWER_QUIET)
-

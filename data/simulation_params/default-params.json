@@ -27,7 +27,7 @@
 	"enable_implicit_euler": false,
 	"enable_logging_simulation_time": false,
 	"enable_snapping_glue_mode": false,
-	"enable_logging_forces": true,
+	"enable_logging_forces": false,
 	"loop_final_x_commands": 0
 
 }

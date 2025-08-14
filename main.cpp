@@ -173,8 +173,7 @@ void simulate(){
                 if (simulationParams.enable_logging_forces) {
                     std::cout << std::fixed << std::setprecision(3)
                             << (label ? label : "")
-                            << (f - lastf).segment<3>(off).transpose()
-                            << std::endl;
+                            << (f - lastf).segment<3>(off).transpose();
                 }
                 lastf = f; // advance snapshot for the next term
             };
@@ -203,6 +202,10 @@ void simulate(){
             if (simulationParams.enable_friction){
                 assemble_friction_forces_IPC(f, simulationParams, simulationData);
                 log_delta("Friction force: ");
+            }
+
+            if (simulationParams.enable_logging_forces){
+                std::cout << std::endl;
             }
         };
 
@@ -326,7 +329,7 @@ int main(int argc, char *argv[])
     viewer.core().lighting_factor = 0.0f;
     viewer.core().background_color = Eigen::Vector4f(200.0f/255.0f, 200.0f/255.0f, 200.0f/255.0f, 1.0f); // light gray background
     
-    int window_width = 1280, window_height = 800;
+    int window_width = 1920, window_height = 1080;
     viewer.core().viewport = Eigen::Vector4f(0,0,window_width,window_height);
     viewer.launch_init(); // need this before starting simulation
 
