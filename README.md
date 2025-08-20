@@ -15,5 +15,7 @@ mkdir release
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j$(nproc)
 ```
+Good Exports:
+ffmpeg -framerate 30 -i %05d.png -c:v libx264 -crf 18 -preset slow -pix_fmt yuv420p ../myout.mp4
 
 and then call the executable with the arguments `./origami-simulator <Crease Pattern> <Parameters> <Actuation Profile>`

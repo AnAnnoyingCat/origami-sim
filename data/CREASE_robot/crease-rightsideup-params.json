@@ -12,7 +12,7 @@
 	"min_barrier_distance": 1,
 	"spawn_height": 30,
 	"k_barrier": 1000,
-	"sim_zoom_level": 10,
+	"sim_zoom_level": 1,
 
 	"enable_strain_visualization": true,
 	"strain_type": "edge",

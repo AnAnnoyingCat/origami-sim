@@ -1,18 +1,18 @@
 {
-	"dt": 0.0005,
+	"dt": 0.005,
 	"vertexMass": 1,
 	"k_axial": 5000,
 	"k_fold": 1000,
 	"k_facet": 1000,
 	"glue_factor": 10,
-	"zeta": 0.4,
-	"mu": 0.8,
+	"zeta": 0.2,
+	"mu": 0.4,
 	"eps_v": 1e-4,
 	"gravity": [0,0,-9.81],
 	"min_barrier_distance": 1,
 	"spawn_height": 30,
 	"k_barrier": 1000,
-	"sim_zoom_level": 10,
+	"sim_zoom_level": 2,
 
 	"enable_strain_visualization": true,
 	"strain_type": "edge",
@@ -27,5 +27,5 @@
 	"enable_floor": true,
 	"enable_automatic_barrier_stiffness": false,
 	"enable_mesh_centering": false,
-	"loop_final_x_commands": 1
+	"loop_final_x_commands": 0
 }
