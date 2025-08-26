@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import os
 
 # Hardcoded path to your .fold file
-FOLD_FILE_PATH = "/home/cwernke/origami-sim/src/Python-Helperscripts/3d_print_maker/Objects/Crease_Robot/crease_robot_with_motor_and_flaps.fold"
+FOLD_FILE_PATH = "/home/cwernke/origami-sim/src/Python-Helperscripts/3d_print_maker/Objects/Crease_Robot_2/crease_v2.fold"
 
 # Color map for edge assignments
 ASSIGNMENT_COLORS = {

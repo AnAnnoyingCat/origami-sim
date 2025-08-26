@@ -8,7 +8,7 @@
 	"gravity": [0,0,-9.81],
 	"sim_zoom_level": 2,
 
-	"enable_strain_visualization": false,
+	"enable_strain_visualization": true,
 	"strain_type": "edge",
 	"enable_dynamic_simulation": false,
 	"enable_gravity": false,

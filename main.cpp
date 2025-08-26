@@ -118,7 +118,7 @@ void frameExporter(igl::opengl::glfw::Viewer &viewer){
     int fnum = 0;
     while (save_images) { // only do it load simulation mode!!
         std::stringstream ss;
-        int img_save_step = (int)(0.1 / simulationParams.dt);
+        int img_save_step = (int)(0.01 / simulationParams.dt);
         ss << std::setw(5) << std::setfill('0') << int(fnum);
         std::string filename = ss.str();
         std::string file_path = std::string("../results/tmp/") + filename + std::string(".png");
@@ -328,6 +328,8 @@ int main(int argc, char *argv[])
     viewer.core().is_animating = true; 
     viewer.core().lighting_factor = 0.0f;
     viewer.core().background_color = Eigen::Vector4f(200.0f/255.0f, 200.0f/255.0f, 200.0f/255.0f, 1.0f); // light gray background
+    Eigen::MatrixXd C = Eigen::RowVector3d(122.0f/255.0f, 235.0f/255.0f, 52.0f/255.0f).replicate(simulationData.F.rows(), 1); // green model. will be overwritten if edge strain stuff is on
+    viewer.data(simulation_mesh_id).set_colors(C);
     
     int window_width = 1920, window_height = 1080;
     viewer.core().viewport = Eigen::Vector4f(0,0,window_width,window_height);

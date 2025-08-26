@@ -13,11 +13,11 @@
 	"min_barrier_distance": 0.1,
 	"k_barrier": 250,
 	"spawn_height": 0.5,
-	"sim_zoom_level": 250,
+	"sim_zoom_level": 600,
 
 	"enable_dynamic_simulation": false,
 	"enable_gravity": false,
-	"enable_barrier": true,
+	"enable_barrier": false,
 	"enable_friction": false,
 	"enable_floor": false,
 	"enable_automatic_barrier_stiffness": false,
@@ -25,7 +25,7 @@
 	"strain_type": "edge",
 	"enable_mesh_centering": false,
 	"enable_implicit_euler": false,
-	"enable_logging_simulation_time": true,
+	"enable_logging_simulation_time": false,
 	"enable_snapping_glue_mode": false,
 	"enable_logging_forces": false
 

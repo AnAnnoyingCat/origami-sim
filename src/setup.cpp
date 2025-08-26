@@ -542,7 +542,7 @@ void setup_dynamic_target_angles(std::string filename, Eigen::VectorXd& edge_tar
 
 	// Loop the final x instructions ("loop" just means repeat them with adjusted timesteps)
 	int loop_count = simulationParams.loop_final_x_commands;
-	int max_instr_length = 3000;
+	int max_instr_length = 10000;
 	
 	if (loop_count != 0 && foldTimeline.size() > loop_count){
 		std::vector<FoldInstruction> loop_segment(foldTimeline.end() - loop_count, foldTimeline.end());
