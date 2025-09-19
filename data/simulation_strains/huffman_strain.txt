@@ -1,2 +1,0 @@
-# Average strain over simulation: -nan
-# Frame	Strain

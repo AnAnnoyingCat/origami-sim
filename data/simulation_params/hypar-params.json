@@ -21,7 +21,7 @@
 	"enable_friction": false,
 	"enable_floor": false,
 	"enable_automatic_barrier_stiffness": false,
-	"enable_strain_visualization": true,
+	"enable_strain_visualization": false,
 	"strain_type": "edge",
 	"enable_mesh_centering": false,
 	"enable_implicit_euler": false,
